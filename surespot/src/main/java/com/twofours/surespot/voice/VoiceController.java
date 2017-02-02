@@ -280,8 +280,10 @@ public class VoiceController {
                 }
             }
         } catch (Exception e) {
-            SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
-            new File(mSendingFile).delete();
+            if (mSendingFile != null) {
+                SurespotLog.w(TAG, e, "sendVoiceMessage, deleting: %s", mSendingFile);
+                new File(mSendingFile).delete();
+            }
             Utils.makeToast(activity, activity.getString(R.string.error_message_generic));
         }
     }
