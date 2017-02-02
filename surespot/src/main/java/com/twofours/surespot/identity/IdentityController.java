@@ -83,9 +83,10 @@ public class IdentityController {
         if (identity != null) {
             setLastUser(context, identity.getUsername());
             Utils.putSharedPrefsString(context, "referrer", null);
-            SurespotApplication.getCachingService().login(identity, cookie, password);
-            // if we're logging in we probably didn't just buy it
-            // SurespotApplication.getBillingController().clearJustPurchased();
+            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            if (ccs != null) {
+                ccs.login(identity, cookie, password);
+            }
             mPasswords.put(identity.getUsername(), password);
         } else {
             SurespotLog.w(TAG, "getIdentity null");

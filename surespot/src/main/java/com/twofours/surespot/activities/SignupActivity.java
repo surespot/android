@@ -35,11 +35,10 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.backup.ImportIdentityActivity;
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.backup.ImportIdentityActivity;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
@@ -51,6 +50,7 @@ import com.twofours.surespot.services.CredentialCachingService.CredentialCaching
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -416,7 +416,6 @@ public class SignupActivity extends Activity {
                 if (SurespotApplication.getCachingService() != null) {
                     SurespotLog.i(TAG, "stopping cache");
                     SurespotApplication.getCachingService().stopSelf();
-                    SurespotApplication.setCachingService(null);
                 }
             }
         }

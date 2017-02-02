@@ -32,11 +32,10 @@ import android.widget.TextView.OnEditorActionListener;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.backup.ImportIdentityActivity;
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.backup.ImportIdentityActivity;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity;
@@ -50,6 +49,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.security.InvalidKeyException;
 import java.util.List;
@@ -504,7 +504,6 @@ public class LoginActivity extends Activity {
                 if (SurespotApplication.getCachingService() != null) {
                     SurespotLog.i(TAG, "stopping cache");
                     SurespotApplication.getCachingService().stopSelf();
-                    SurespotApplication.setCachingService(null);
                 }
             }
         }
