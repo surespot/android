@@ -1,10 +1,10 @@
 package com.twofours.surespot.network;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
@@ -26,10 +26,10 @@ public class NetworkHelper {
 
             SurespotLog.d(TAG, "password is in keystore, logging in %s", username);
 
-            new AsyncTask<Void, Void, Void>() {
-
+            Runnable runnable = new Runnable() {
                 @Override
-                protected Void doInBackground(Void... params) {
+                public void run() {
+
 
                     final SurespotIdentity identity = IdentityController.getIdentity(context, username, password);
                     if (identity != null) {
@@ -55,9 +55,9 @@ public class NetworkHelper {
                             }
                         });
                     }
-                    return null;
                 }
-            }.execute();
+            };
+            SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
 
         }
         else {
