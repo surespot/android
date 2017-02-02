@@ -36,16 +36,16 @@ import com.google.api.services.drive.model.ChildList;
 import com.google.api.services.drive.model.ChildReference;
 import com.google.api.services.drive.model.FileList;
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.IdentityOperationResult;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.ui.SingleProgressDialog;
+import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -799,9 +799,6 @@ public class ImportIdentityActivity extends Activity {
 //				return null;
 //			}
         }
-        catch (IOException e) {
-            SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-        }
         catch (SecurityException e) {
             SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
             // when key is revoked on server this happens...should return
@@ -818,7 +815,9 @@ public class ImportIdentityActivity extends Activity {
 
                 }
             });
-
+        }
+        catch (Exception e) {
+            SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
         }
 
         return identityDirId;
