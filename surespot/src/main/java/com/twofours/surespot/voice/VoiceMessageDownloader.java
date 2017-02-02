@@ -231,14 +231,14 @@ public class VoiceMessageDownloader {
                         }
                         finally {
 
-                            try {
-                                if (voiceStream != null) {
-                                    voiceStream.close();
-                                }
-                            }
-                            catch (IOException e) {
-                                SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
-                            }
+//                            try {
+//                                if (voiceStream != null) {
+//                                    voiceStream.close();
+//                                }
+//                            }
+//                            catch (IOException e) {
+//                                SurespotLog.w(TAG, e, "VoiceMessageDownloaderTask");
+//                            }
 
                             try {
                                 if (inputStream != null) {

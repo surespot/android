@@ -73,14 +73,14 @@ public class ImageViewActivity extends Activity {
                         }
                         finally {
 
-                            try {
-                                if (imageStream != null) {
-                                    imageStream.close();
-                                }
-                            }
-                            catch (IOException e) {
-                                SurespotLog.w(TAG, e, "ImageViewActivity");
-                            }
+//                            try {
+//                                if (imageStream != null) {
+//                                    imageStream.close();
+//                                }
+//                            }
+//                            catch (IOException e) {
+//                                SurespotLog.w(TAG, e, "ImageViewActivity");
+//                            }
 
                             try {
                                 if (inputStream != null) {

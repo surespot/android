@@ -206,13 +206,13 @@ public class FriendImageDownloader {
                     SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
                 } finally {
 
-                    try {
-                        if (imageStream != null) {
-                            imageStream.close();
-                        }
-                    } catch (IOException e) {
-                        SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
-                    }
+//                    try {
+//                        if (imageStream != null) {
+//                            imageStream.close();
+//                        }
+//                    } catch (IOException e) {
+//                        SurespotLog.w(TAG, e, "FriendImage DownloaderTask e");
+//                    }
 
                     try {
                         if (inputStream != null) {

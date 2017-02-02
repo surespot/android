@@ -237,14 +237,14 @@ public class MessageImageDownloader {
                     }
                     finally {
 
-                        try {
-                            if (encryptedImageStream != null) {
-                                encryptedImageStream.close();
-                            }
-                        }
-                        catch (IOException e) {
-                            SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-                        }
+//                        try {
+//                            if (encryptedImageStream != null) {
+//                                encryptedImageStream.close();
+//                            }
+//                        }
+//                        catch (IOException e) {
+//                            SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
+//                        }
 
                         try {
                             if (inputStream != null) {
