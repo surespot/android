@@ -999,7 +999,11 @@ public class IdentityController {
     }
 
     public static String getTheirLatestVersion(String ourUsername, String theirUsername) {
-        return SurespotApplication.getCachingService().getLatestVersion(ourUsername, theirUsername);
+        CredentialCachingService cachingService = SurespotApplication.getCachingService();
+        if (cachingService != null) {
+            return cachingService.getLatestVersion(ourUsername, theirUsername);
+        }
+        return null;
     }
 
     public static String getOurLatestVersion(Context context, String username) {
