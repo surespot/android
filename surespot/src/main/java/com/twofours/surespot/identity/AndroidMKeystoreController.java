@@ -105,8 +105,10 @@ public class AndroidMKeystoreController {
                 byte[] ivBytes = android.util.Base64.decode(iv, Base64.NO_WRAP);
                 byte[] encryptedBytes = android.util.Base64.decode(encryptedPassword, Base64.NO_WRAP);
                 byte[] decryptedBytes = KeyStoreEncryptionController.simpleDecrypt(keyStoreKey, encryptedBytes, ivBytes);
-                String password = new String(decryptedBytes, "UTF8");
-                return password;
+                if (decryptedBytes != null) {
+                    String password = new String(decryptedBytes, "UTF8");
+                    return password;
+                }
             }
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
             SurespotLog.d(TAG, "Error loading encrypted password: " + e.getMessage());
