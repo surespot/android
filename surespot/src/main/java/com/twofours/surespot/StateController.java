@@ -108,24 +108,26 @@ public class StateController {
             if (friends != null && friends.size() > 0) {
 
                 JSONArray jsonArray = new JSONArray();
-                ListIterator<Friend> iterator = friends.listIterator();
+                synchronized (friends) {
+                    ListIterator<Friend> iterator = friends.listIterator();
 
-                while (iterator.hasNext()) {
-                    Friend friend = iterator.next();
-                    jsonArray.put(friend.toJSONObject());
-                }
+                    while (iterator.hasNext()) {
+                        Friend friend = iterator.next();
+                        jsonArray.put(friend.toJSONObject());
+                    }
 
-                JSONObject jsonFriendState = new JSONObject();
-                try {
-                    jsonFriendState.put("userControlId", latestUserControlId);
-                    jsonFriendState.put("friends", jsonArray);
-                    String sFriends = jsonFriendState.toString();
-                    FileUtils.writeFile(filename, sFriends);
-                    SurespotLog.v(TAG, "Saved friends: %s", sFriends);
-                } catch (JSONException e) {
-                    SurespotLog.w(TAG, e, "saveFriends");
-                } catch (IOException e) {
-                    SurespotLog.w(TAG, e, "saveFriends");
+                    JSONObject jsonFriendState = new JSONObject();
+                    try {
+                        jsonFriendState.put("userControlId", latestUserControlId);
+                        jsonFriendState.put("friends", jsonArray);
+                        String sFriends = jsonFriendState.toString();
+                        FileUtils.writeFile(filename, sFriends);
+                        SurespotLog.v(TAG, "Saved friends: %s", sFriends);
+                    } catch (JSONException e) {
+                        SurespotLog.w(TAG, e, "saveFriends");
+                    } catch (IOException e) {
+                        SurespotLog.w(TAG, e, "saveFriends");
+                    }
                 }
             } else {
                 new File(filename).delete();

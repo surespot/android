@@ -37,7 +37,7 @@ import okhttp3.Response;
 public class FriendAdapter extends BaseAdapter {
     private final static String TAG = "FriendAdapter";
 
-    ArrayList<Friend> mFriends = new ArrayList<Friend>();
+    private final List<Friend> mFriends = Collections.synchronizedList(new ArrayList<Friend>());
     private NotificationManager mNotificationManager;
     private FriendAliasDecryptor mFriendAliasDecryptor;
     private boolean mLoading;
@@ -80,15 +80,17 @@ public class FriendAdapter extends BaseAdapter {
     }
 
     public Friend getFriend(String friendName) {
-        for (Friend friend : mFriends) {
-            if (friend.getName().equals(friendName)) {
-                return friend;
+        synchronized (mFriends) {
+            for (Friend friend : mFriends) {
+                if (friend.getName().equals(friendName)) {
+                    return friend;
+                }
             }
         }
         return null;
     }
 
-    public synchronized void addNewFriend(String name) {
+    public void addNewFriend(String name) {
         Friend friend = getFriend(name);
         if (friend == null) {
             friend = new Friend(name);
@@ -97,45 +99,45 @@ public class FriendAdapter extends BaseAdapter {
 
         friend.setNewFriend(true);
 
-        Collections.sort(mFriends);
+        sort();
         notifyDataSetChanged();
     }
 
-    public synchronized boolean addFriendInvited(String name) {
+    public boolean addFriendInvited(String name) {
         Friend friend = getFriend(name);
         if (friend == null) {
             friend = new Friend(name);
             mFriends.add(friend);
         }
         friend.setInvited(true);
-        Collections.sort(mFriends);
+        sort();
         notifyDataSetChanged();
         return true;
 
     }
 
-    public synchronized void addFriendInviter(String name) {
+    public void addFriendInviter(String name) {
         Friend friend = getFriend(name);
         if (friend == null) {
             friend = new Friend(name);
             mFriends.add(friend);
         }
         friend.setInviter(true);
-        Collections.sort(mFriends);
+        sort();
         notifyDataSetChanged();
 
     }
 
-    public synchronized void setChatActive(String name, boolean b) {
+    public void setChatActive(String name, boolean b) {
         Friend friend = getFriend(name);
         if (friend != null) {
             friend.setChatActive(b);
-            Collections.sort(mFriends);
+            sort();
             notifyDataSetChanged();
         }
     }
 
-    public synchronized void setFriends(List<Friend> friends) {
+    public void setFriends(List<Friend> friends) {
         if (friends != null) {
             SurespotLog.v(TAG, "setFriends, adding friends to adapter: " + this + ", count: " + friends.size());
             mFriends.clear();
@@ -144,7 +146,7 @@ public class FriendAdapter extends BaseAdapter {
         }
     }
 
-    public synchronized void addFriends(Collection<Friend> friends) {
+    public void addFriends(Collection<Friend> friends) {
         SurespotLog.v(TAG, "addFriends, adding friends to adapter: " + this + ", count: " + friends.size());
 
         for (Friend friend : friends) {
@@ -162,13 +164,15 @@ public class FriendAdapter extends BaseAdapter {
 
     private void decryptAliases() {
         SurespotLog.d(TAG, "decryptAliases");
-        for (Friend friend : mFriends) {
-            if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
-                String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(),mUsername,
-                        friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
+        synchronized (mFriends) {
+            for (Friend friend : mFriends) {
+                if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
+                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), mUsername,
+                            friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
-                SurespotLog.v(TAG, "setting alias for %s", friend.getName());
-                friend.setAliasPlain(plainText);
+                    SurespotLog.v(TAG, "setting alias for %s", friend.getName());
+                    friend.setAliasPlain(plainText);
+                }
             }
         }
 
@@ -184,9 +188,7 @@ public class FriendAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-
         return mFriends.get(position);
-
     }
 
     @Override
@@ -194,7 +196,7 @@ public class FriendAdapter extends BaseAdapter {
         return position;
     }
 
-    public synchronized void removeFriend(String name) {
+    public void removeFriend(String name) {
         mFriends.remove(getFriend(name));
         notifyDataSetChanged();
     }
@@ -346,7 +348,7 @@ public class FriendAdapter extends BaseAdapter {
                         }
                         mNotificationManager.cancel(mUsername + ":" + friendname,
                                 SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
-                        Collections.sort(mFriends);
+                        sort();
                         notifyDataSetChanged();
                     } else {
                         //if we got a 404 delete the user
@@ -383,39 +385,45 @@ public class FriendAdapter extends BaseAdapter {
         public Friend friend;
     }
 
-    public synchronized void sort() {
+    public void sort() {
         if (mFriends != null) {
-            Collections.sort(mFriends);
+            synchronized (mFriends) {
+                Collections.sort(mFriends);
+            }
         }
     }
 
-    public synchronized Collection<String> getFriendNames() {
+    public Collection<String> getFriendNames() {
         if (mFriends == null)
             return null;
         ArrayList<String> names = new ArrayList<String>();
-        for (Friend friend : mFriends) {
-            names.add(friend.getName());
+        synchronized (mFriends) {
+            for (Friend friend : mFriends) {
+                names.add(friend.getName());
+            }
         }
         return names;
     }
 
-    public ArrayList<Friend> getFriends() {
+    public List<Friend> getFriends() {
         return mFriends;
     }
 
-    public synchronized ArrayList<Friend> getActiveChatFriends() {
+    public ArrayList<Friend> getActiveChatFriends() {
         if (mFriends == null)
             return null;
         ArrayList<Friend> friends = new ArrayList<Friend>();
-        for (Friend friend : mFriends) {
-            if (friend.isChatActive()) {
-                friends.add(friend);
+        synchronized (mFriends) {
+            for (Friend friend : mFriends) {
+                if (friend.isChatActive()) {
+                    friends.add(friend);
+                }
             }
         }
         return friends;
     }
 
-    public synchronized int getFriendCount() {
+    public int getFriendCount() {
         if (mFriends == null)
             return 0;
         return mFriends.size();
