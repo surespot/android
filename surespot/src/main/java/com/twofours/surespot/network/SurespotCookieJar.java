@@ -1,6 +1,7 @@
 package com.twofours.surespot.network;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import okhttp3.Cookie;
@@ -12,7 +13,7 @@ import okhttp3.HttpUrl;
  */
 public class SurespotCookieJar implements CookieJar {
 
-    private List<Cookie> cookies = new ArrayList<>(5);
+    private List<Cookie> cookies = Collections.synchronizedList(new ArrayList<Cookie>(5));
 
     @Override
     public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
