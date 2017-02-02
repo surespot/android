@@ -18,17 +18,17 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -155,6 +155,9 @@ public class ChatUtils {
                 try {
                     Bitmap bitmap = null;
                     final File localImageFile = getTempImageUploadFile(activity);
+                    if (localImageFile == null) {
+                        return;
+                    }
                     final String localImageUri = Uri.fromFile(localImageFile).toString();
                     SurespotLog.d(TAG, "saving copy of unencrypted image to: %s", localImageFile.getAbsolutePath());
 
