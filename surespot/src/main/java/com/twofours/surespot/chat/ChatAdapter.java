@@ -75,20 +75,24 @@ public class ChatAdapter extends BaseAdapter {
 
     // get the last message that has an id
     public SurespotMessage getLastMessageWithId() {
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
-            SurespotMessage message = iterator.previous();
-            if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
-                return message;
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
+                SurespotMessage message = iterator.previous();
+                if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
+                    return message;
+                }
             }
         }
         return null;
     }
 
     public SurespotMessage getFirstMessageWithId() {
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext(); ) {
-            SurespotMessage message = iterator.next();
-            if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
-                return message;
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(0); iterator.hasNext(); ) {
+                SurespotMessage message = iterator.next();
+                if (message.getId() != null && message.getId() > 0 && !message.isGcm()) {
+                    return message;
+                }
             }
         }
         return null;
@@ -497,14 +501,16 @@ public class ChatAdapter extends BaseAdapter {
 
     public SurespotMessage deleteMessageByIv(String iv) {
         SurespotMessage message = null;
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
-            message = iterator.next();
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
+                message = iterator.next();
 
-            if (message.getIv().equals(iv)) {
-                iterator.remove();
-                message.setDeleted(true);
-                notifyDataSetChanged();
-                return message;
+                if (message.getIv().equals(iv)) {
+                    iterator.remove();
+                    message.setDeleted(true);
+                    notifyDataSetChanged();
+                    return message;
+                }
             }
         }
 
@@ -514,18 +520,20 @@ public class ChatAdapter extends BaseAdapter {
 
     public SurespotMessage deleteMessageById(Integer id, boolean notify) {
         SurespotMessage message = null;
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
-            message = iterator.previous();
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
+                message = iterator.previous();
 
-            Integer localId = message.getId();
-            if (localId != null && localId.equals(id)) {
-                SurespotLog.v(TAG, "deleting message");
-                message.setDeleted(true);
-                iterator.remove();
-                if (notify) {
-                    notifyDataSetChanged();
+                Integer localId = message.getId();
+                if (localId != null && localId.equals(id)) {
+                    SurespotLog.v(TAG, "deleting message");
+                    message.setDeleted(true);
+                    iterator.remove();
+                    if (notify) {
+                        notifyDataSetChanged();
+                    }
+                    return message;
                 }
-                return message;
             }
         }
 
@@ -534,13 +542,14 @@ public class ChatAdapter extends BaseAdapter {
 
     public SurespotMessage getMessageById(Integer id) {
         SurespotMessage message = null;
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
-            message = iterator.next();
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
+                message = iterator.next();
 
-            Integer localId = message.getId();
-            if (localId != null && localId.equals(id)) {
-
-                return message;
+                Integer localId = message.getId();
+                if (localId != null && localId.equals(id)) {
+                    return message;
+                }
             }
         }
         return null;
@@ -548,12 +557,14 @@ public class ChatAdapter extends BaseAdapter {
 
     public SurespotMessage getMessageByIv(String iv) {
         SurespotMessage message = null;
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
-            message = iterator.previous();
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(mMessages.size()); iterator.hasPrevious(); ) {
+                message = iterator.previous();
 
-            String localIv = message.getIv();
-            if (localIv != null && localIv.equals(iv)) {
-                return message;
+                String localIv = message.getIv();
+                if (localIv != null && localIv.equals(iv)) {
+                    return message;
+                }
             }
         }
 
@@ -561,31 +572,37 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     public void sort() {
-        Collections.sort(mMessages);
+        synchronized (mMessages) {
+            Collections.sort(mMessages);
+        }
     }
 
     public void deleteAllMessages(int utaiMessageId) {
         //
         // mMessages.clear();
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
-            SurespotMessage message = iterator.next();
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
+                SurespotMessage message = iterator.next();
 
-            if (message.getId() == null || (message.getId() != null && message.getId() <= utaiMessageId)) {
-                message.setDeleted(true);
-                iterator.remove();
+                if (message.getId() == null || (message.getId() != null && message.getId() <= utaiMessageId)) {
+                    message.setDeleted(true);
+                    iterator.remove();
+                }
             }
         }
     }
 
     public void deleteTheirMessages(int utaiMessageId) {
 
-        for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
-            SurespotMessage message = iterator.next();
+        synchronized (mMessages) {
+            for (ListIterator<SurespotMessage> iterator = mMessages.listIterator(); iterator.hasNext(); ) {
+                SurespotMessage message = iterator.next();
 
-            // if it's not our message, delete it
-            if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(mOurUsername)) {
-                message.setDeleted(true);
-                iterator.remove();
+                // if it's not our message, delete it
+                if (message.getId() != null && message.getId() <= utaiMessageId && !message.getFrom().equals(mOurUsername)) {
+                    message.setDeleted(true);
+                    iterator.remove();
+                }
             }
         }
     }
@@ -602,10 +619,11 @@ public class ChatAdapter extends BaseAdapter {
     public void checkLoaded() {
 
         if (!mLoaded) {
-
-            for (SurespotMessage message : mMessages) {
-                if (message.isLoading() && !message.isLoaded()) {
-                    return;
+            synchronized (mMessages) {
+                for (SurespotMessage message : mMessages) {
+                    if (message.isLoading() && !message.isLoaded()) {
+                        return;
+                    }
                 }
             }
 
