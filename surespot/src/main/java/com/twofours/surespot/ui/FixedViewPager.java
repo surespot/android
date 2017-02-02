@@ -15,6 +15,17 @@ public class FixedViewPager extends ViewPager {
 		super(context, attrs);
 	}
 
+	//fix from https://github.com/chrisbanes/PhotoView/issues/31
+	@Override
+	public boolean onTouchEvent(MotionEvent ev) {
+		try {
+			return super.onTouchEvent(ev);
+		} catch (IllegalArgumentException ex) {
+			ex.printStackTrace();
+		}
+		return false;
+	}
+
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 
@@ -22,7 +33,12 @@ public class FixedViewPager extends ViewPager {
 		if (isFakeDragging())
 			return false;
 
-		return super.onInterceptTouchEvent(ev);
-
+		try {
+			return super.onInterceptTouchEvent(ev);
+		}
+		catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
