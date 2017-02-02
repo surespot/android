@@ -1,8 +1,6 @@
 package com.twofours.surespot.ui;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Handler;
@@ -15,19 +13,22 @@ import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
+
+import java.util.Timer;
+import java.util.TimerTask;
 //import android.app.AlertDialog;
 
 public class MultiProgressDialog {
 	private static final String TAG = "MultiProgressDialog";
 	private int mProgressCounter;
 	private AlertDialog mMultiProgressDialog;
-	private Context mContext;
+	private Activity mContext;
 	private String mMessage;
 	private int mDelay;
 	private ImageView mImageView;
 	private Animation mAnimation;
 
-	public MultiProgressDialog(Context context, String message, int delay) {
+	public MultiProgressDialog(Activity context, String message, int delay) {
 		mProgressCounter = 0;
 		mContext = context;
 		mMessage = message;
@@ -86,7 +87,11 @@ public class MultiProgressDialog {
 						@Override
 						public void run() {
 							if (mProgressCounter > 0) {
-								mMultiProgressDialog.show();
+								//http://dimitar.me/android-displaying-dialogs-from-background-threads/
+								//RM#838
+								if (mContext != null && !mContext.isFinishing()) {
+									mMultiProgressDialog.show();
+								}
 							}
 						}
 					});

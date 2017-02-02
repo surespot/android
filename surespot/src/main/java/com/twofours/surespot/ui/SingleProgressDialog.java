@@ -1,5 +1,6 @@
 package com.twofours.surespot.ui;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Handler;
@@ -20,7 +21,7 @@ import java.util.TimerTask;
 public class SingleProgressDialog {
     private static final String TAG = "SingleProgressDialog";
     private AlertDialog mSingleProgressDialog;
-    private Context mContext;
+    private Activity mContext;
     private String mMessage;
     private int mDelay;
     private ImageView mImageView;
@@ -28,7 +29,7 @@ public class SingleProgressDialog {
     private Timer mTimer;
     private TimerTask mTimerTask;
 
-    public SingleProgressDialog(Context context, String message, int delay) {
+    public SingleProgressDialog(Activity context, String message, int delay) {
         mTimer = new Timer();
         mContext = context;
         mMessage = message;
@@ -79,7 +80,11 @@ public class SingleProgressDialog {
 
                     @Override
                     public void run() {
-                        mSingleProgressDialog.show();
+                        //http://dimitar.me/android-displaying-dialogs-from-background-threads/
+                        //RM#838
+                        if (mContext != null && !mContext.isFinishing()) {
+                            mSingleProgressDialog.show();
+                        }
                     }
                 });
             }
@@ -105,8 +110,7 @@ public class SingleProgressDialog {
                 if (mSingleProgressDialog != null && mSingleProgressDialog.isShowing()) {
                     try {
                         mSingleProgressDialog.dismiss();
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         SurespotLog.w(TAG, e, "hide");
                     }
                 }
