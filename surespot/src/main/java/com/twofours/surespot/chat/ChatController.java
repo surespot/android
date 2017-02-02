@@ -425,10 +425,10 @@ public class ChatController {
         SurespotLog.d(TAG, "handleCachedFile");
 
         SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
-        if (localMessage != null) {
+        if (localMessage != null && localMessage.getData() != null) {
             synchronized (localMessage) {
                 // if the data is different we haven't updated the url to point externally
-                if (localMessage.getId() == null && !localMessage.getData().equals(message.getData())) {
+                if (localMessage.getId() == null &&  !localMessage.getData().equals(message.getData())) {
                     // add the remote cache entry for the new url
 
                     String localUri = localMessage.getData();
