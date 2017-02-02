@@ -1218,6 +1218,10 @@ public class IdentityController {
             return true;
         }
 
+        if (mKs == null) {
+            return false;
+        }
+
         if (mKs.state() == KeyStore.State.UNLOCKED) {
             return true;
         }

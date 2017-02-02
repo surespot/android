@@ -18,13 +18,13 @@
 
 package org.nick.androidkeystore.android.security;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.security.IKeystoreService;
 import android.util.Log;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * @hide This should not be made public in its present form because it assumes
@@ -93,7 +93,7 @@ public class KeyStoreJb43 extends KeyStore {
         final int ret;
         try {
             ret = mBinder.test();
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             Log.w(TAG, "Cannot connect to keystore", e);
             throw new AssertionError(e);
         }
