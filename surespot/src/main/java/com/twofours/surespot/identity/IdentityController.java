@@ -542,7 +542,10 @@ public class IdentityController {
                                 String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
                                 if (file != null) {
                                     updateKeychainPassword(context, finalusername, password);
-                                    SurespotApplication.getCachingService().updateIdentity(identity, true);
+                                    CredentialCachingService ccs = SurespotApplication.getCachingService();
+                                    if (ccs != null) {
+                                        ccs.updateIdentity(identity, true);
+                                    }
                                     callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
                                             true));
                                 } else {
