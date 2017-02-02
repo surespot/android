@@ -45,15 +45,15 @@ import com.google.api.services.drive.model.ChildReference;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
 import com.twofours.surespot.R;
-import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.ui.SingleProgressDialog;
+import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -439,9 +439,6 @@ public class ExportIdentityActivity extends Activity {
                 return null;
             }
         }
-        catch (IOException e) {
-            SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
-        }
         catch (SecurityException e) {
             SurespotLog.e(TAG, e, "createDriveIdentityDirectory");
             // when key is revoked on server this happens...should return userrecoverable it seems
@@ -457,6 +454,9 @@ public class ExportIdentityActivity extends Activity {
                 }
             });
 
+        }
+        catch (Exception e) {
+            SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
         }
         return identityDirId;
 
