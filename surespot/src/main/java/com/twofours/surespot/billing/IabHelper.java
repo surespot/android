@@ -244,6 +244,13 @@ public class IabHelper {
 					e.printStackTrace();
 					return;
 				}
+				catch (Exception e) {
+					if (listener != null) {
+						listener.onIabSetupFinished(new IabResult(IABHELPER_UNKNOWN_ERROR, "Exception while setting up in-app billing."));
+					}
+					e.printStackTrace();
+					return;
+				}
 
 				if (listener != null) {
 					listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup successful."));
