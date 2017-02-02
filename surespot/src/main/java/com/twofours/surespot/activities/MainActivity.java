@@ -1033,7 +1033,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS:
                 if (SurespotApplication.getThemeChanged()) {
-                    destroy();
+                    ChatManager.detach(this);
                     finish();
                     final Intent intent = getIntent();
                     intent.putExtra("themeChanged", true);
