@@ -584,10 +584,9 @@ public class ChatUtils {
     public static JSONArray chatMessagesToJson(Collection<SurespotMessage> messages, boolean withPlain) {
         // avoid concurrent modification issues
         synchronized (messages) {
-            SurespotMessage[] messageArray = messages.toArray(new SurespotMessage[messages.size()]);
             JSONArray jsonMessages = new JSONArray();
 
-            for (SurespotMessage message : messageArray) {
+            for (SurespotMessage message : messages) {
                 jsonMessages.put(message.toJSONObject(withPlain));
             }
 
