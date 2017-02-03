@@ -12,15 +12,16 @@ import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.Utils;
 import com.viewpagerindicator.TitlePageIndicator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Created by adam on 11/14/16.
@@ -28,10 +29,11 @@ import java.util.HashMap;
 
 public class ChatManager {
     private static String TAG = "ChatManager";
-    private static HashMap<String, ChatController> mMap = new HashMap<>();
-    private static BroadcastReceiverHandler mConnectivityReceiver;
+    private static HashMap<String, ChatController> mChatControllers = new HashMap<>();
+    private static HashMap<Integer, BroadcastReceiverHandler> mHandlers = new HashMap<>();
     private static boolean mPaused;
     private static String mAttachedUsername;
+    private static HashSet<Integer> mIds = new HashSet<>(5);
 
 
 
@@ -40,11 +42,12 @@ public class ChatManager {
            return null;
         }
 
-        return mMap.get(username);
+        return mChatControllers.get(username);
     }
 
     public static synchronized ChatController attachChatController(Context context,
                                                                    String username,
+                                                                   int id,
                                                                    ViewPager viewPager,
                                                                    FragmentManager fm,
                                                                    TitlePageIndicator pageIndicator,
@@ -53,24 +56,26 @@ public class ChatManager {
                                                                    IAsyncCallback<Void> sendIntentCallback,
                                                                    IAsyncCallback<Friend> tabShowingCallback,
                                                                    IAsyncCallback<Object> listener) {
-        SurespotLog.d(TAG, "attachChatController, username: %s", username);
+        SurespotLog.d(TAG, "attachChatController %d, username: %s",id , username);
 
-        ChatController cc = mMap.get(username);
+        ChatController cc = mChatControllers.get(username);
         if (cc == null) {
             SurespotLog.d(TAG, "creating chat controller for %s", username);
             cc = new ChatController(context, username);
-            mMap.put(username, cc);
+            mChatControllers.put(username, cc);
         }
 
         cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
         mAttachedUsername = username;
-        if (mConnectivityReceiver == null) {
-            SurespotLog.d(TAG, "attachChatController, username: %s registering new broadcast receiver", username);
-            mConnectivityReceiver = new BroadcastReceiverHandler();
+        BroadcastReceiverHandler handler = mHandlers.get(id);
+        if (handler == null) {
+            SurespotLog.d(TAG, "attachChatController %d, username: %s registering new broadcast receiver", id, username);
+            handler = new BroadcastReceiverHandler();
+            mHandlers.put(id, handler);
             try {
-                context.registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+                context.registerReceiver(handler, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
             } catch (Exception e) {
-                SurespotLog.w(TAG, e, "detach");
+                SurespotLog.w(TAG, e, "attachChatController");
             }
         }
 
@@ -85,21 +90,24 @@ public class ChatManager {
     }
 
 
-    public static synchronized void detach(Context context) {
-        SurespotLog.d(TAG, "detach");
-        if (mConnectivityReceiver != null) {
+    public static synchronized void detach(Context context, int id) {
+        SurespotLog.d(TAG, "detach %d",id);
+        BroadcastReceiverHandler handler = mHandlers.get(id);
+        if (handler != null) {
             SurespotLog.d(TAG, "detach, unregistering broadcast receiver");
             try {
-                context.unregisterReceiver(mConnectivityReceiver);
+                context.unregisterReceiver(handler);
             } catch (Exception e) {
                 SurespotLog.w(TAG, e, "detach");
             }
-            mConnectivityReceiver = null;
+            mHandlers.remove(id);
         }
     }
 
-    public static synchronized void pause(String username) {
+    public static synchronized void pause(String username, int id) {
         mPaused = true;
+        mIds.remove(id);
+        SurespotLog.d(TAG, "paused %d, mIds: %s",id, mIds);
         ChatController cc = getChatController(username);
         if (cc != null) {
             cc.save();
@@ -107,8 +115,10 @@ public class ChatManager {
         }
     }
 
-    public static synchronized void resume(String username) {
+    public static synchronized void resume(String username, int id) {
         mPaused = false;
+        mIds.add(id);
+        SurespotLog.d(TAG, "resumed %d, mIds: %s",id, mIds);
         ChatController cc = getChatController(username);
         if (cc != null) {
             cc.resume();
@@ -117,12 +127,14 @@ public class ChatManager {
 
     public static synchronized boolean isUIAttached() {
         return !mPaused;
+        //return mIds.size() > 0;
     }
 
     public static synchronized void resetState(Context context) {
-        mMap.clear();
+        mIds.clear();
+        mChatControllers.clear();
         mAttachedUsername = null;
-        mConnectivityReceiver = null;
+        mHandlers.clear();
         FileUtils.wipeFileUploadDir(context);
     }
 

@@ -197,7 +197,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
 
-        SurespotLog.d(TAG, "onCreate");
+        SurespotLog.d(TAG, "onCreate %d", this.hashCode());
 
         boolean keystoreEnabled = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
         if (keystoreEnabled) {
@@ -556,8 +556,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void switchUser(String identityName) {
         SurespotLog.d(TAG, "switchUser, mUser: %s, identityName: %s", mUser, identityName);
         if (!identityName.equals(mUser)) {
-            ChatManager.pause(mUser);
-            ChatManager.detach(this);
+            ChatManager.pause(mUser, this.hashCode());
+            ChatManager.detach(this, this.hashCode());
             mUser = identityName;
 
             CredentialCachingService ccs = SurespotApplication.getCachingService();
@@ -769,6 +769,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         ChatManager.attachChatController(
                 this,
                 mUser,
+                this.hashCode(),
                 (ViewPager) mainView.findViewById(R.id.pager),
                 getFragmentManager(),
                 titlePageIndicator,
@@ -915,7 +916,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     protected void onResume() {
         super.onResume();
 
-        SurespotLog.d(TAG, "onResume, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", mUnlocking, mLaunched, mResumed, mPaused);
+        SurespotLog.d(TAG, "onResume %d, mUnlocking: %b, mLaunched: %b, mResumed: %b, mPaused: %b", this.hashCode(), mUnlocking, mLaunched, mResumed, mPaused);
         startWatchingExternalStorage();
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
@@ -943,13 +944,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         setBackgroundImage();
         setEditTextHints();
-        ChatManager.resume(mUser);
+        ChatManager.resume(mUser, this.hashCode());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        SurespotLog.d(TAG, "onPause");
+        SurespotLog.d(TAG, "onPause %d", this.hashCode());
 
         mPaused = true;
 
@@ -968,7 +969,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mDialog.dismiss();
         }
 
-        ChatManager.pause(mUser);
+        ChatManager.pause(mUser, this.hashCode());
 
 
         mResumed = false;
@@ -1034,7 +1035,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS:
                 if (SurespotApplication.getThemeChanged()) {
-                    ChatManager.detach(this);
+                    ChatManager.detach(this, this.hashCode());
                     finish();
                     final Intent intent = getIntent();
                     intent.putExtra("themeChanged", true);
@@ -1274,7 +1275,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         //calling finish and starting the activity again when we set the theme (see onActivityResult)
         //results in an onDestroy being called in the new instance (&$&*% AFTER it is loaded
         //use the global theme change flag to work around this
-        SurespotLog.d(TAG, "onDestroy, themeChanged: %b", SurespotApplication.getThemeChanged());
+        SurespotLog.d(TAG, "onDestroy %d themeChanged: %b", this.hashCode(), SurespotApplication.getThemeChanged());
 
         if (!SurespotApplication.getThemeChanged()) {
             destroy();
@@ -1291,7 +1292,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             unbindService(mConnection);
         }
 
-        ChatManager.detach(this);
+        ChatManager.detach(this, this.hashCode());
     }
 
 
