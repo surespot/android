@@ -1277,7 +1277,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.d(TAG, "onDestroy, themeChanged: %b", SurespotApplication.getThemeChanged());
 
         if (!SurespotApplication.getThemeChanged()) {
-            ChatManager.pause(mUser);
             destroy();
         } else {
             SurespotApplication.setThemeChanged(null);
