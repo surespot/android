@@ -21,7 +21,6 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Created by adam on 11/14/16.
@@ -33,7 +32,7 @@ public class ChatManager {
     private static HashMap<Integer, BroadcastReceiverHandler> mHandlers = new HashMap<>();
     private static boolean mPaused;
     private static String mAttachedUsername;
-    private static HashSet<Integer> mIds = new HashSet<>(5);
+    //private static HashSet<Integer> mIds = new HashSet<>(5);
 
 
 
@@ -106,8 +105,8 @@ public class ChatManager {
 
     public static synchronized void pause(String username, int id) {
         mPaused = true;
-        mIds.remove(id);
-        SurespotLog.d(TAG, "paused %d, mIds: %s",id, mIds);
+     //   mIds.remove(id);
+        SurespotLog.d(TAG, "paused %d",id);
         ChatController cc = getChatController(username);
         if (cc != null) {
             cc.save();
@@ -117,8 +116,8 @@ public class ChatManager {
 
     public static synchronized void resume(String username, int id) {
         mPaused = false;
-        mIds.add(id);
-        SurespotLog.d(TAG, "resumed %d, mIds: %s",id, mIds);
+       // mIds.add(id);
+        SurespotLog.d(TAG, "resumed %d",id);
         ChatController cc = getChatController(username);
         if (cc != null) {
             cc.resume();
@@ -131,7 +130,6 @@ public class ChatManager {
     }
 
     public static synchronized void resetState(Context context) {
-        mIds.clear();
         mChatControllers.clear();
         mAttachedUsername = null;
         mHandlers.clear();
