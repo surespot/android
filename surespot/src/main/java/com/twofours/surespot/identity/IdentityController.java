@@ -310,7 +310,10 @@ public class IdentityController {
             isLoggedIn = true;
         }
 
-        SurespotApplication.getCachingService().clearIdentityData(deletedUsername, true);
+        CredentialCachingService ccs = SurespotApplication.getCachingService();
+        if (ccs != null) {
+            ccs.clearIdentityData(deletedUsername, true);
+        }
         logout(context, deletedUsername, true);
         NetworkManager.getNetworkController(context, deletedUsername).clearCache();
 
@@ -487,7 +490,10 @@ public class IdentityController {
                                 String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
                                 if (file != null) {
                                     updateKeychainPassword(context, finalusername, password);
-                                    SurespotApplication.getCachingService().updateIdentity(identity, true);
+                                    CredentialCachingService ccs = SurespotApplication.getCachingService();
+                                    if (ccs != null) {
+                                        ccs.updateIdentity(identity, true);
+                                    }
                                     callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
                                             true));
                                 } else {
@@ -990,7 +996,7 @@ public class IdentityController {
             if (username != null) {
                 SurespotLog.d(TAG, "getting cookie for %s", username);
 
-                cookie = SurespotApplication.getCachingService().getCookie(username);
+                cookie = service.getCookie(username);
 
                 SurespotLog.d(TAG, "returning cookie: %s", cookie);
             }
@@ -1035,7 +1041,10 @@ public class IdentityController {
             SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
         }
 
-        SurespotApplication.getCachingService().updateIdentity(identity, true);
+        CredentialCachingService ccs = SurespotApplication.getCachingService();
+        if (ccs != null) {
+            ccs.updateIdentity(identity, true);
+        }
     }
 
     public static void updateLatestVersion(Context context, String username, String version) {
@@ -1064,7 +1073,10 @@ public class IdentityController {
             }
         } else {
             //not us
-            SurespotApplication.getCachingService().updateLatestVersion(getLoggedInUser(), username, version);
+            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            if (ccs != null) {
+                ccs.updateLatestVersion(getLoggedInUser(), username, version);
+            }
         }
     }
 

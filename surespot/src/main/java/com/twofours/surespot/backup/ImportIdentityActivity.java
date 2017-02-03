@@ -50,6 +50,7 @@ import com.twofours.surespot.utils.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -330,7 +331,7 @@ public class ImportIdentityActivity extends Activity {
     }
 
     private void setupLocal() {
-
+        SurespotLog.d(TAG, "setupLocal");
         ListView lvIdentities = (ListView) findViewById(R.id.lvLocalIdentities);
         lvIdentities.setEmptyView(findViewById(R.id.no_local_identities));
 
@@ -338,8 +339,9 @@ public class ImportIdentityActivity extends Activity {
 
         // query the filesystem for identities
         final File exportDir = FileUtils.getIdentityExportDir();
+        SurespotLog.d(TAG, "exportDir: %s", exportDir.getAbsolutePath());
         File[] files = IdentityController.getExportIdentityFiles(this, exportDir.getPath());
-
+        SurespotLog.d(TAG, "files: %s", Arrays.toString(files));
         TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 
         if (files != null) {

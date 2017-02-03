@@ -41,6 +41,7 @@ import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.utils.Utils;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -1102,7 +1103,10 @@ public class ChatController {
             StateController.wipeUserState(mContext, mUsername, deletedUser);
 
             // clear in memory cached data
-            SurespotApplication.getCachingService().clearUserData(deleter, deletedUser);
+            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            if (ccs != null) {
+                ccs.clearUserData(deleter, deletedUser);
+            }
 
             // clear the http cache
             mNetworkController.clearCache();

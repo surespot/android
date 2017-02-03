@@ -504,6 +504,7 @@ public class LoginActivity extends Activity {
                 if (SurespotApplication.getCachingService() != null) {
                     SurespotLog.i(TAG, "stopping cache");
                     SurespotApplication.getCachingService().stopSelf();
+                    SurespotApplication.setCachingService(null);
                 }
             }
         }

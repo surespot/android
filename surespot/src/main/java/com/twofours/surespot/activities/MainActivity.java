@@ -560,7 +560,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             ChatManager.detach(this);
             mUser = identityName;
 
-            if (!SurespotApplication.getCachingService().setSession(this, mUser)) {
+            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            if (ccs == null || !SurespotApplication.getCachingService().setSession(this, mUser)) {
                 launchLogin();
                 return;
             }
