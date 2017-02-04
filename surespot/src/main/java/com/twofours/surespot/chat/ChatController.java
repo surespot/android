@@ -2376,7 +2376,6 @@ public class ChatController {
 
             if (result != null) {
                 //update unsent message
-                message.setPlainData(null);
                 message.setData(result);
                 message.setFromVersion(ourLatestVersion);
                 message.setToVersion(theirLatestVersion);
