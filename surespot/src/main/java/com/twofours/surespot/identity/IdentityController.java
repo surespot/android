@@ -1367,12 +1367,41 @@ public class IdentityController {
                 SurespotLog.d(TAG, "Signing version %s with version %s", currentVersion, previousVersion);
                 KeyPair dhPair = identity.getKeyPairDH(currentVersion);
                 KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
-                String sDhPub = EncryptionController.encodePublicKey(dhPair.getPublic());
-                String sDsaPub = EncryptionController.encodePublicKey(dsaPair.getPublic());
+
+                String sDhPub = new String(ChatUtils.base64EncodeNowrap(dhPair.getPublic().getEncoded()));
+                String sDsaPub = new String(ChatUtils.base64EncodeNowrap(dsaPair.getPublic().getEncoded()));
+
+//                BCECPrivateKey dsa = (BCECPrivateKey) dsaPair.getPrivate();
+//                ECDomainParameters domain = new ECDomainParameters(curve.getCurve(), curve.getG(), curve.getN(), curve.getH());
+//                //domain.getG().
+//                ECPoint q =  curve.getG().multiply(dsa.getD());
+//                ECPublicKeyParameters params = new ECPublicKeyParameters(q, domain);
+//                byte[] pub = params.getQ().getEncoded(false);
+//                byte[] pub2 = ((BCECPublicKey) dsaPair.getPublic()).getQ().getEncoded(false);
+//                String p = Hex.toHexString(pub);
+//                String p2 = Hex.toHexString(pub2);
+
+
+
+
 
                 // sign the dh public key, username, and version so clients can validate
 
-                signatures.put(currentVersion, EncryptionController.sign(previousDSAKey, identity.getUsername(), i, sDhPub, sDsaPub));
+                String sig = EncryptionController.sign(previousDSAKey, identity.getUsername(), i, sDhPub, sDsaPub);
+
+                SurespotLog.d(TAG, "signed dh: %s, dsa: %s, sig: %s ", sDhPub, sDsaPub, sig);
+
+                signatures.put(currentVersion, sig);
+
+                boolean verified = EncryptionController.verifySig(
+
+                        dsaPair.getPublic(),
+                        sig,
+                        username,
+                        1,
+                        sDhPub,
+                        sDsaPub);
+
 
                 if (i > 1) {
                     previousVersion = Integer.toString(i);

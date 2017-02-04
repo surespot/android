@@ -1062,7 +1062,7 @@ public class NetworkController {
             responseHandler.onFailure(null, new IOException(e));
             return;
         }
-        postJSON("/sigs", params, responseHandler);
+        postJSON("/sigs2", params, responseHandler);
     }
 
     public String getUsername() {
