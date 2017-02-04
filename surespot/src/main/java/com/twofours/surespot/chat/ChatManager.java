@@ -4,7 +4,6 @@ import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -66,17 +65,17 @@ public class ChatManager {
 
         cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
         mAttachedUsername = username;
-        BroadcastReceiverHandler handler = mHandlers.get(id);
-        if (handler == null) {
-            SurespotLog.d(TAG, "attachChatController %d, username: %s registering new broadcast receiver", id, username);
-            handler = new BroadcastReceiverHandler();
-            mHandlers.put(id, handler);
-            try {
-                context.registerReceiver(handler, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-            } catch (Exception e) {
-                SurespotLog.w(TAG, e, "attachChatController");
-            }
-        }
+//        BroadcastReceiverHandler handler = mHandlers.get(id);
+//        if (handler == null) {
+//            SurespotLog.d(TAG, "attachChatController %d, username: %s registering new broadcast receiver", id, username);
+//            handler = new BroadcastReceiverHandler();
+//            mHandlers.put(id, handler);
+//            try {
+//                context.registerReceiver(handler, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+//            } catch (Exception e) {
+//                SurespotLog.w(TAG, e, "attachChatController");
+//            }
+//        }
 
         return cc;
     }
@@ -91,16 +90,16 @@ public class ChatManager {
 
     public static synchronized void detach(Context context, int id) {
         SurespotLog.d(TAG, "detach %d",id);
-        BroadcastReceiverHandler handler = mHandlers.get(id);
-        if (handler != null) {
-            SurespotLog.d(TAG, "detach, unregistering broadcast receiver");
-            try {
-                context.unregisterReceiver(handler);
-            } catch (Exception e) {
-                SurespotLog.w(TAG, e, "detach");
-            }
-            mHandlers.remove(id);
-        }
+//        BroadcastReceiverHandler handler = mHandlers.get(id);
+//        if (handler != null) {
+//            SurespotLog.d(TAG, "detach, unregistering broadcast receiver");
+//            try {
+//                context.unregisterReceiver(handler);
+//            } catch (Exception e) {
+//                SurespotLog.w(TAG, e, "detach");
+//            }
+//            mHandlers.remove(id);
+//        }
     }
 
     public static synchronized void pause(String username, int id) {
@@ -132,7 +131,7 @@ public class ChatManager {
     public static synchronized void resetState(Context context) {
         mChatControllers.clear();
         mAttachedUsername = null;
-        mHandlers.clear();
+     //   mHandlers.clear();
         FileUtils.wipeFileUploadDir(context);
     }
 
@@ -153,6 +152,16 @@ public class ChatManager {
                         if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
                             SurespotLog.d(TAG, "onReceive,  CONNECTED");
                             synchronized (this) {
+
+                                ConnectivityManager cm =
+                                        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+                                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                                SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
+                                //disconnect if we're connected and we just connected to wifi
+//                                if ( networkInfo2.getType() == ConnectivityManager.TYPE_WIFI || networkInfo2.getType() == ConnectivityManager.TYPE_WIMAX) {
+//                                    cc.disconnect();
+//                                }
                                 cc.clearError();
                                 cc.connect();
                                 cc.processNextMessage();
@@ -160,13 +169,13 @@ public class ChatManager {
                             return;
                         }
 
-                        if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
-                            SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
-                            synchronized (this) {
-                                cc.disconnect();
-                                cc.processNextMessage();
-                            }
-                        }
+//                        if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
+//                            SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
+//                            synchronized (this) {
+//                                cc.disconnect();
+//                                cc.processNextMessage();
+//                            }
+//                        }
                     }
                 }
             }
