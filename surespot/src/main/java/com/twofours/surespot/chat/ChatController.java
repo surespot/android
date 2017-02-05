@@ -590,7 +590,7 @@ public class ChatController {
                                 return;
                             }
 
-                            final boolean hasSigs = jsonResponse.has("sigs");
+                            final boolean hasSigs = jsonResponse.has("sigs2");
                             new AsyncTask<Void, Void, Void>() {
                                 @Override
                                 protected Void doInBackground(Void... voids) {
