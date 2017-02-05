@@ -195,12 +195,9 @@ public class ManageKeysActivity extends Activity {
 						protected void onPostExecute(final RollKeysWrapper result) {
 							if (result != null) {
 								// upload all this crap to the server
-								NetworkManager.getNetworkController(ManageKeysActivity.this, username).updateKeys3(
-										username,
-										dPassword,
-										new String(ChatUtils.base64EncodeNowrap(result.keyPairs[0].getPublic().getEncoded())),
-										new String(ChatUtils.base64EncodeNowrap(result.keyPairs[1].getPublic().getEncoded())),
-										result.authSig, result.tokenSig,
+								NetworkManager.getNetworkController(ManageKeysActivity.this, username).updateKeys3(username, dPassword,
+										EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
+										EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
 										result.keyVersion, result.clientSig, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
 											@Override
