@@ -291,7 +291,7 @@ public class NetworkController {
     }
 
 
-    public void createUser2(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
+    public void createUser3(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSig, String clientSig, String referrers, final CookieResponseHandler responseHandler) {
         JSONObject params = new JSONObject();
         boolean gcmUpdatedTemp = false;
         final String gcmIdReceived = Utils.getSharedPrefsString(mContext, SurespotConstants.PrefNames.GCM_ID_RECEIVED);
@@ -300,7 +300,7 @@ public class NetworkController {
             params.put("password", password);
             params.put("dhPub", publicKeyDH);
             params.put("dsaPub", publicKeyECDSA);
-            params.put("clientSig", clientSig);
+            params.put("clientSig2", clientSig);
             params.put("authSig", authSig);
             if (!TextUtils.isEmpty(referrers)) {
                 params.put("referrers", referrers);
@@ -328,7 +328,7 @@ public class NetworkController {
         final boolean gcmUpdated = gcmUpdatedTemp;
         mCookieStore.clear();
 
-        postJSON("/users2", params, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        postJSON("/users3", params, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
@@ -427,7 +427,7 @@ public class NetworkController {
 
     }
 
-    public void updateKeys(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
+    public void updateKeys3(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
                            String keyVersion, String clientSig, Callback asyncHttpResponseHandler) {
         JSONObject params = new JSONObject();
         try {
@@ -438,7 +438,7 @@ public class NetworkController {
             params.put("authSig", authSignature);
             params.put("tokenSig", tokenSignature);
             params.put("keyVersion", keyVersion);
-            params.put("clientSig", clientSig);
+            params.put("clientSig2", clientSig);
             params.put("version", SurespotApplication.getVersion());
             params.put("platform", "android");
 
@@ -452,7 +452,7 @@ public class NetworkController {
             return;
         }
 
-        postJSON("/keys2", params, asyncHttpResponseHandler);
+        postJSON("/keys3", params, asyncHttpResponseHandler);
     }
 
     private Cookie extractConnectCookie(SurespotCookieJar cookieStore) {

@@ -19,10 +19,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
@@ -31,6 +30,7 @@ import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -184,7 +184,10 @@ public class ManageKeysActivity extends Activity {
 							}
 
 							//sign new key with old key
-							String clientSig = EncryptionController.sign(latestPk, username, Integer.parseInt(keyVersion, 10), EncryptionController.encodePublicKey(keys[0].getPublic()), EncryptionController.encodePublicKey(keys[1].getPublic()));
+							String dh = new String(ChatUtils.base64EncodeNowrap(keys[0].getPublic().getEncoded()));
+							String dsa =  new String(ChatUtils.base64EncodeNowrap(keys[1].getPublic().getEncoded()));
+
+							String clientSig = EncryptionController.sign(latestPk, username, Integer.parseInt(keyVersion, 10), dh, dsa);
 
 							return new RollKeysWrapper(keys, tokenSignature, authSignature, keyVersion, clientSig);
 						}
@@ -192,9 +195,12 @@ public class ManageKeysActivity extends Activity {
 						protected void onPostExecute(final RollKeysWrapper result) {
 							if (result != null) {
 								// upload all this crap to the server
-								NetworkManager.getNetworkController(ManageKeysActivity.this, username).updateKeys(username, dPassword,
-										EncryptionController.encodePublicKey(result.keyPairs[0].getPublic()),
-										EncryptionController.encodePublicKey(result.keyPairs[1].getPublic()), result.authSig, result.tokenSig,
+								NetworkManager.getNetworkController(ManageKeysActivity.this, username).updateKeys3(
+										username,
+										dPassword,
+										new String(ChatUtils.base64EncodeNowrap(result.keyPairs[0].getPublic().getEncoded())),
+										new String(ChatUtils.base64EncodeNowrap(result.keyPairs[1].getPublic().getEncoded())),
+										result.authSig, result.tokenSig,
 										result.keyVersion, result.clientSig, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
 											@Override

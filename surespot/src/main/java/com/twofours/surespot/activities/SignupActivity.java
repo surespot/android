@@ -313,7 +313,9 @@ public class SignupActivity extends Activity {
                             //sign the username and password for authentication
                             data[2] = EncryptionController.sign(keyPair[1].getPrivate(), username, dPassword);
                             // sign the public keys, username, and version so clients can validate
-                            data[3] = EncryptionController.sign(keyPair[1].getPrivate(), username, 1, data[0], data[1]);
+                            String dh = new String(ChatUtils.base64EncodeNowrap(keyPair[0].getPublic().getEncoded()));
+                            String dsa =  new String(ChatUtils.base64EncodeNowrap(keyPair[1].getPublic().getEncoded()));
+                            data[3] = EncryptionController.sign(keyPair[1].getPrivate(), username, 1, dh, dsa);
                             return data;
                         }
 
@@ -325,7 +327,7 @@ public class SignupActivity extends Activity {
 
                             String referrers = Utils.getSharedPrefsString(SignupActivity.this, SurespotConstants.PrefNames.REFERRERS);
 
-                            NetworkManager.getNetworkController(SignupActivity.this, username).createUser2(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
+                            NetworkManager.getNetworkController(SignupActivity.this, username).createUser3(username, dPassword, sPublicDH, sPublicECDSA, authSig, clientSig, referrers, new CookieResponseHandler() {
 
 
                                 @Override
