@@ -1057,7 +1057,7 @@ public class NetworkController {
     public void updateSigs(JSONObject sigs, Callback responseHandler) {
         JSONObject params = new JSONObject();
         try {
-            params.put("sigs", sigs);
+            params.put("sigs2", sigs);
         } catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
             return;

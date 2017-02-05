@@ -88,7 +88,8 @@ public class IdentityController {
                 ccs.login(identity, cookie, password);
             }
             mPasswords.put(identity.getUsername(), password);
-        } else {
+        }
+        else {
             SurespotLog.w(TAG, "getIdentity null");
         }
     }
@@ -121,7 +122,8 @@ public class IdentityController {
         if (internal) {
             filename = identity.getUsername() + IDENTITY_EXTENSION;
             identityDir = FileUtils.getIdentityDir(backupContext);
-        } else {
+        }
+        else {
             filename = caseInsensitivize(identity.getUsername()) + IDENTITY_EXTENSION;
             identityDir = FileUtils.getIdentityExportDir().getAbsolutePath();
         }
@@ -156,9 +158,11 @@ public class IdentityController {
                 // SurespotApplication.mBackupManager.dataChanged();
             }
             return identityFile;
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
         }
         return null;
@@ -188,7 +192,8 @@ public class IdentityController {
 
             byte[] identityBytes = EncryptionController.symmetricEncryptSyncPK(password, json.toString());
             return identityBytes;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "encryptIdentity");
         }
         return null;
@@ -223,7 +228,8 @@ public class IdentityController {
                             public void onResponse(Call call, Response response) throws IOException {
                                 if (response.isSuccessful()) {
                                     callback.handleResponse(encryptIdentity(identity, password + EXPORT_IDENTITY_ID), null);
-                                } else {
+                                }
+                                else {
 
                                     switch (response.code()) {
                                         case 403:
@@ -277,10 +283,12 @@ public class IdentityController {
 
         if (exists && !overwrite) {
             return false;
-        } else {
+        }
+        else {
             if (exists) {
                 return identityFile.isFile() && identityFile.canWrite();
-            } else {
+            }
+            else {
 
                 try {
                     // make sure we'll have the space to write the identity file
@@ -289,7 +297,8 @@ public class IdentityController {
                     fos.close();
                     identityFile.delete();
                     return true;
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     return false;
                 }
             }
@@ -379,7 +388,8 @@ public class IdentityController {
         if (internal) {
             dir = FileUtils.getIdentityDir(context);
             identityFilename = dir + File.separator + username + IDENTITY_EXTENSION;
-        } else {
+        }
+        else {
             dir = FileUtils.getIdentityExportDir().getAbsolutePath();
             identityFilename = dir + File.separator + caseInsensitivize(username) + IDENTITY_EXTENSION;
             checkCase = false;
@@ -417,7 +427,8 @@ public class IdentityController {
                 return decryptIdentity(idBytes, username, password, checkCase);
             }
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "loadIdentity");
         }
 
@@ -460,7 +471,8 @@ public class IdentityController {
             }
 
             return si;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
         }
         return null;
 
@@ -496,11 +508,13 @@ public class IdentityController {
                                     }
                                     callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
                                             true));
-                                } else {
+                                }
+                                else {
                                     callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, finalusername),
                                             false));
                                 }
-                            } else {
+                            }
+                            else {
                                 switch (response.code()) {
                                     case 403:
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.incorrect_password_or_key), false));
@@ -517,7 +531,8 @@ public class IdentityController {
                             }
                         }
                     });
-        } else {
+        }
+        else {
             callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
         }
 
@@ -555,11 +570,13 @@ public class IdentityController {
                                     }
                                     callback.handleResponse(new IdentityOperationResult(context.getString(R.string.identity_imported_successfully, finalusername),
                                             true));
-                                } else {
+                                }
+                                else {
                                     callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username),
                                             false));
                                 }
-                            } else {
+                            }
+                            else {
                                 switch (response.code()) {
                                     case 403:
                                         callback.handleResponse(new IdentityOperationResult(context.getString(R.string.incorrect_password_or_key), false));
@@ -577,7 +594,8 @@ public class IdentityController {
                         }
                     });
 
-        } else {
+        }
+        else {
             callback.handleResponse(new IdentityOperationResult(context.getString(R.string.could_not_restore_identity_name, username), false));
         }
 
@@ -609,7 +627,8 @@ public class IdentityController {
                             if (response.isSuccessful()) {
                                 String path = saveIdentity(null, false, identity, password + EXPORT_IDENTITY_ID);
                                 callback.handleResponse(path == null ? null : context.getString(R.string.backed_up_identity_to_path, finalUsername, path));
-                            } else {
+                            }
+                            else {
                                 switch (response.code()) {
                                     case 403:
                                         callback.handleResponse(context.getString(R.string.incorrect_password_or_key));
@@ -627,7 +646,8 @@ public class IdentityController {
 
 
                     });
-        } else {
+        }
+        else {
             callback.handleResponse(null);
         }
 
@@ -647,7 +667,8 @@ public class IdentityController {
             FileUtils.writeFile(pkFile, keyPair);
 
             return pkFile;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "saveIdentity");
         }
         return null;
@@ -675,7 +696,8 @@ public class IdentityController {
             savePublicKeyPair(context, username, version, json.toString());
             SurespotLog.i(TAG, "loaded public keys from server for username %s", username);
             return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "recreatePublicKeyPair");
         }
 
@@ -693,6 +715,7 @@ public class IdentityController {
         PublicKeys validatedKeys = null;
         int validatedKeyVersion = 0;
         Hashtable<Integer, PublicKey> dsaKeys = new Hashtable<Integer, PublicKey>();
+        Hashtable<Integer, PublicKey> dhKeys = new Hashtable<Integer, PublicKey>();
         Hashtable<Integer, JSONObject> resultKeys = new Hashtable<Integer, JSONObject>();
 
 
@@ -714,7 +737,8 @@ public class IdentityController {
         //if we have the keys for the version we want return them
         if (validatedKeys != null && wantedVersion == validatedKeyVersion) {
             return validatedKeys;
-        } else {
+        }
+        else {
             //get keys from server since the last validated version
             sDownloadedKeys = NetworkManager.getNetworkController(context, ourUsername).getPublicKeysSync(theirUsername, Integer.toString(validatedKeyVersion + 1, 10));
 
@@ -728,8 +752,11 @@ public class IdentityController {
                         JSONObject jsonKeys = json.getJSONObject(i);
                         int readVersion = jsonKeys.getInt("version");
                         String spubECDSA = jsonKeys.getString("dsaPub");
+                        String spubECDH = jsonKeys.getString("dhPub");
                         PublicKey dsaPub = EncryptionController.recreatePublicKey("ECDSA", spubECDSA);
                         dsaKeys.put(readVersion, dsaPub);
+                        PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", spubECDH);
+                        dhKeys.put(readVersion, dhPub);
                         resultKeys.put(readVersion, jsonKeys);
                     }
 
@@ -738,37 +765,38 @@ public class IdentityController {
 
                     JSONObject wantedKey = resultKeys.get(wantedVersion);
 
-                    if (!wantedKey.has("clientSig")) {
-                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v1 code", theirUsername, version);
-                        //TODO need to recheck somehow and eventually get all keys validated using v2 code
-                        return getPublicKeyPair(context, theirUsername, version, wantedKey);
-
-                    } else {
-                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", theirUsername, version);
+                    if (wantedKey.has("clientSig2")) {
+                        SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v3 code", theirUsername, version);
 
                         PublicKey previousDsaKey = null;
                         if (validatedKeys != null) {
                             //if we have a key validated start with that
                             previousDsaKey = validatedKeys.getDSAKey();
-                        } else {
+                        }
+                        else {
                             //otherwise start from ground zero
                             previousDsaKey = dsaKeys.get(1);
                         }
                         //validate in order
+                        PublicKey dhPub = null;
+                        PublicKey dsaPub = null;
+
                         String sDhPub = null;
                         String sDsaPub = null;
 
                         for (int validatingVersion = validatedKeyVersion + 1; validatingVersion <= wantedVersion; validatingVersion++) {
 
-                            JSONObject jsonKey = resultKeys.get(validatingVersion);
-                            sDhPub = jsonKey.getString("dhPub");
-                            sDsaPub = jsonKey.getString("dsaPub");
+                            dhPub = dhKeys.get(validatingVersion);
+                            dsaPub = dsaKeys.get(validatingVersion);
+
+                            sDhPub = new String(ChatUtils.base64EncodeNowrap(dhPub.getEncoded()));
+                            sDsaPub = new String(ChatUtils.base64EncodeNowrap(dsaPub.getEncoded()));
 
 
                             //validate dh and dsa against server sig
                             boolean verified = EncryptionController.verifySig(
                                     EncryptionController.ServerPublicKey,
-                                    resultKeys.get(validatingVersion).getString("serverSig"),
+                                    resultKeys.get(validatingVersion).getString("serverSig2"),
                                     theirUsername,
                                     validatingVersion,
                                     sDhPub,
@@ -783,7 +811,7 @@ public class IdentityController {
                             verified = EncryptionController.verifySig(
 
                                     previousDsaKey,
-                                    resultKeys.get(validatingVersion).getString("clientSig"),
+                                    resultKeys.get(validatingVersion).getString("clientSig2"),
                                     theirUsername,
                                     validatingVersion,
                                     sDhPub,
@@ -794,6 +822,7 @@ public class IdentityController {
                             }
 
                             //save some keys
+                            JSONObject jsonKey = resultKeys.get(validatingVersion);
                             savePublicKeyPair(context, theirUsername, String.valueOf(validatingVersion), jsonKey.toString());
 
                             //get next previous signing key
@@ -801,15 +830,90 @@ public class IdentityController {
 
                         }
 
-                        PublicKey dhPub = EncryptionController.recreatePublicKey("ECDH", sDhPub);
-                        PublicKey dsaPub = dsaKeys.get(wantedVersion);
 
 
                         //savePublicKeyPair(username, version, json.toString());
                         SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", theirUsername);
                         return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
                     }
-                } catch (JSONException e) {
+                    else {
+                        if (wantedKey.has("clientSig")) {
+                            SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v2 code", theirUsername, version);
+
+                            PublicKey previousDsaKey = null;
+                            if (validatedKeys != null) {
+                                //if we have a key validated start with that
+                                previousDsaKey = validatedKeys.getDSAKey();
+                            }
+                            else {
+                                //otherwise start from ground zero
+                                previousDsaKey = dsaKeys.get(1);
+                            }
+                            //validate in order
+                            String sDhPub = null;
+                            String sDsaPub = null;
+
+                            for (int validatingVersion = validatedKeyVersion + 1; validatingVersion <= wantedVersion; validatingVersion++) {
+
+                                JSONObject jsonKey = resultKeys.get(validatingVersion);
+                                sDhPub = jsonKey.getString("dhPub");
+                                sDsaPub = jsonKey.getString("dsaPub");
+
+
+                                //validate dh and dsa against server sig
+                                boolean verified = EncryptionController.verifySig(
+                                        EncryptionController.ServerPublicKey,
+                                        resultKeys.get(validatingVersion).getString("serverSig"),
+                                        theirUsername,
+                                        validatingVersion,
+                                        sDhPub,
+                                        sDsaPub
+                                );
+
+                                if (!verified) {
+                                    return null;
+                                }
+
+                                //client sig
+                                verified = EncryptionController.verifySig(
+
+                                        previousDsaKey,
+                                        resultKeys.get(validatingVersion).getString("clientSig"),
+                                        theirUsername,
+                                        validatingVersion,
+                                        sDhPub,
+                                        sDsaPub);
+
+                                if (!verified) {
+                                    return null;
+                                }
+
+                                //save some keys
+                                savePublicKeyPair(context, theirUsername, String.valueOf(validatingVersion), jsonKey.toString());
+
+                                //get next previous signing key
+                                previousDsaKey = dsaKeys.get(validatingVersion);
+
+                            }
+
+                            PublicKey dhPub = dhKeys.get(wantedVersion);
+                            PublicKey dsaPub = dsaKeys.get(wantedVersion);
+
+
+                            //savePublicKeyPair(username, version, json.toString());
+                            SurespotLog.i(TAG, "loaded and verified public keys from server for username %s", theirUsername);
+                            return new PublicKeys(version, dhPub, dsaPub, new Date().getTime());
+
+                        }
+                        else {
+                            SurespotLog.d(TAG, "Validating username: %s, version: %s, keys using v1 code", theirUsername, version);
+                            //TODO need to recheck somehow and eventually get all keys validated using v2 code
+                            return getPublicKeyPair(context, theirUsername, version, wantedKey);
+                        }
+                    }
+
+                }
+                catch (JSONException e) {
                     SurespotLog.w(TAG, e, "recreatePublicKeyPair");
                 }
             }
@@ -833,7 +937,8 @@ public class IdentityController {
                 // alert alert
                 SurespotLog.w(TAG, new KeyException("Could not verify DH key against server signature."), "could not verify DH key against server signature");
                 return null;
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "DH key successfully verified");
             }
 
@@ -842,12 +947,14 @@ public class IdentityController {
                 // alert alert
                 SurespotLog.w(TAG, new KeyException("Could not verify DSA key against server signature."), "could not verify DSA key against server signature");
                 return null;
-            } else {
+            }
+            else {
                 SurespotLog.i(TAG, "DSA key successfully verified");
             }
 
             return jsonKeypair;
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "recreatePublicIdentity");
         }
         return null;
@@ -962,7 +1069,8 @@ public class IdentityController {
             return new PublicKeys(pkpJSON.getString("version"), EncryptionController.recreatePublicKey("ECDH", pkpJSON.getString("dhPub")),
                     EncryptionController.recreatePublicKey("ECDSA", pkpJSON.getString("dsaPub")), lastModified);
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, "loadPublicKeyPair", e);
         }
         return null;
@@ -1071,7 +1179,8 @@ public class IdentityController {
                 // boot them out
                 launchLoginActivity(context);
             }
-        } else {
+        }
+        else {
             //not us
             CredentialCachingService ccs = SurespotApplication.getCachingService();
             if (ccs != null) {
@@ -1097,7 +1206,8 @@ public class IdentityController {
             if (Character.isUpperCase(c)) {
                 sb.append("_");
                 sb.append(c);
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -1112,7 +1222,8 @@ public class IdentityController {
 
             if (c == '_') {
                 sb.append(Character.toUpperCase(string.charAt(++i)));
-            } else {
+            }
+            else {
                 sb.append(c);
             }
         }
@@ -1142,11 +1253,14 @@ public class IdentityController {
                 if (!USE_PUBLIC_KEYSTORE_M) {
                     mKs = KeyStoreM.getInstance();
                 }
-            } else if (IS_KK) {
+            }
+            else if (IS_KK) {
                 mKs = KeyStoreKk.getInstance();
-            } else if (IS_JB43) {
+            }
+            else if (IS_JB43) {
                 mKs = KeyStoreJb43.getInstance();
-            } else {
+            }
+            else {
                 mKs = KeyStore.getInstance();
             }
         }
@@ -1202,7 +1316,8 @@ public class IdentityController {
 
             try {
                 AndroidMKeystoreController.loadEncryptedPassword(context, username, true);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 // at some point, we may want to use KeyguardManager.createConfirmDeviceCredentialIntent
                 // but for now, we're not setting up the key in the keystore so that it must be manually unlocked by the user
             }
@@ -1219,7 +1334,8 @@ public class IdentityController {
                 // can we do anything about keystore being in uninitialized state?
             }
             return mKs.state() == KeyStore.State.UNLOCKED;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             // fix to #742 - org.nick....KeyStoreKk.state() throwing an exception
             // if we can't access keystore state(), treat it as locked so we don't get an exception
             // higher up the call chain
@@ -1273,7 +1389,8 @@ public class IdentityController {
         if (USE_PUBLIC_KEYSTORE_M) {
             try {
                 return AndroidMKeystoreController.loadEncryptedPassword(context, username, false);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 SurespotLog.d(TAG, "InvalidKeyException loading encrypted password for %s: " + e.getMessage(), username);
                 return null;
             }
@@ -1285,7 +1402,8 @@ public class IdentityController {
                 SurespotLog.d(TAG, "getStoredPasswordForIdentity...found password for %s", username);
                 return new String(secret);
             }
-        } else {
+        }
+        else {
             SurespotLog.d(TAG, "getStoredPasswordForIdentity...keystore locked");
         }
 
@@ -1303,11 +1421,13 @@ public class IdentityController {
 
                 if (USE_PUBLIC_KEYSTORE_M) {
                     AndroidMKeystoreController.saveEncryptedPassword(activity, username, password);
-                } else {
+                }
+                else {
                     return mKs.put(username, password.getBytes());
                 }
             }
-        } else {
+        }
+        else {
             return unlock(activity);
         }
 
@@ -1323,7 +1443,8 @@ public class IdentityController {
                     ks = java.security.KeyStore.getInstance("AndroidKeyStore");
                     ks.load(null);
                     ks.deleteEntry(username);
-                } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+                }
+                catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
                     e.printStackTrace();
                     SurespotLog.d(TAG, "Error clearing stored password: " + e.getMessage());
                     return false;
@@ -1345,7 +1466,8 @@ public class IdentityController {
         if (storedPassword != null) {
             try {
                 storePasswordForIdentity(context, username, password);
-            } catch (InvalidKeyException e) {
+            }
+            catch (InvalidKeyException e) {
                 Intent intent = new Intent(context, SurespotKeystoreActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 context.startActivity(intent);
@@ -1368,47 +1490,24 @@ public class IdentityController {
                 KeyPair dhPair = identity.getKeyPairDH(currentVersion);
                 KeyPair dsaPair = identity.getKeyPairDSA(currentVersion);
 
+                //don't use PEM format as this can be different based on the platform which causes problems
+                //when importing identity between platforms
                 String sDhPub = new String(ChatUtils.base64EncodeNowrap(dhPair.getPublic().getEncoded()));
                 String sDsaPub = new String(ChatUtils.base64EncodeNowrap(dsaPair.getPublic().getEncoded()));
 
-//                BCECPrivateKey dsa = (BCECPrivateKey) dsaPair.getPrivate();
-//                ECDomainParameters domain = new ECDomainParameters(curve.getCurve(), curve.getG(), curve.getN(), curve.getH());
-//                //domain.getG().
-//                ECPoint q =  curve.getG().multiply(dsa.getD());
-//                ECPublicKeyParameters params = new ECPublicKeyParameters(q, domain);
-//                byte[] pub = params.getQ().getEncoded(false);
-//                byte[] pub2 = ((BCECPublicKey) dsaPair.getPublic()).getQ().getEncoded(false);
-//                String p = Hex.toHexString(pub);
-//                String p2 = Hex.toHexString(pub2);
-
-
-
-
-
                 // sign the dh public key, username, and version so clients can validate
-
                 String sig = EncryptionController.sign(previousDSAKey, identity.getUsername(), i, sDhPub, sDsaPub);
-
-                SurespotLog.d(TAG, "signed dh: %s, dsa: %s, sig: %s ", sDhPub, sDsaPub, sig);
-
                 signatures.put(currentVersion, sig);
 
-                boolean verified = EncryptionController.verifySig(
-
-                        dsaPair.getPublic(),
-                        sig,
-                        username,
-                        1,
-                        sDhPub,
-                        sDsaPub);
-
+                //SurespotLog.d(TAG, "signed dh: %s, dsa: %s, sig: %s ", sDhPub, sDsaPub, sig);
 
                 if (i > 1) {
                     previousVersion = Integer.toString(i);
                     previousDSAKey = identity.getKeyPairDSA(previousVersion).getPrivate();
                 }
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.e(TAG, e, "error generating update signatures");
         }
         return signatures;
