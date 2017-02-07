@@ -314,10 +314,13 @@ public class ChatFragment extends Fragment {
 		if (mMessagesLoaded) {
 			// set the current scroll position so we know how many messages to save
 
-			mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
 			// mListView.removeOnScrollListener()):
 
 			if (mListView != null) {
+				if (mChatAdapter != null) {
+					mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
+				}
+
 				ChatController chatController = ChatManager.getChatController(getOurUsername());
 				if (chatController != null && chatController.getFriendAdapter() != null) {
 
