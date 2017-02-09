@@ -87,6 +87,7 @@ public class LoginActivity extends Activity {
 
         setContentView(R.layout.activity_login);
         Utils.configureActionBar(this, "", getString(R.string.surespot), false);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
         CredentialCachingService ccs = SurespotApplication.getCachingService();
         if (ccs == null) {
@@ -96,7 +97,7 @@ public class LoginActivity extends Activity {
         }
 
         Utils.logIntent(TAG, getIntent());
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+
 
 
         mMpd = new MultiProgressDialog(this, getString(R.string.login_progress), 750);

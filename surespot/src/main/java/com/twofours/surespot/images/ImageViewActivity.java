@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 
 import com.twofours.surespot.R;
@@ -37,10 +38,9 @@ public class ImageViewActivity extends Activity {
         UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
 
-        getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-
         setContentView(R.layout.activity_image_view);
         Utils.configureActionBar(this, null, getString(R.string.pan_and_zoom), true);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
         String sjmessage = getIntent().getStringExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE);
         final String ourUsername = getIntent().getStringExtra("ourUsername");

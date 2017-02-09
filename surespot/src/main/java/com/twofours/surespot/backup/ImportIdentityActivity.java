@@ -16,6 +16,7 @@ import android.text.format.DateFormat;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -84,6 +85,7 @@ public class ImportIdentityActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_import_identity);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.restore), true);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
         Intent intent = getIntent();
 

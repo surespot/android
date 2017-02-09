@@ -13,6 +13,7 @@ import android.text.ClipboardManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -44,6 +45,7 @@ public class BillingActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_billing);
 		Utils.configureActionBar(this, getString(R.string.pay), getString(R.string.what_you_like), true);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
 		TextView tvPwyl = (TextView) findViewById(R.id.tvPwyl);
 		UIUtils.setHtml(this, tvPwyl, R.string.pwyl_text);

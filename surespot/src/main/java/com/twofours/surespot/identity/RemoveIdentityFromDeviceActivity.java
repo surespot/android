@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -37,6 +38,7 @@ public class RemoveIdentityFromDeviceActivity extends Activity {
 
 		setContentView(R.layout.activity_remove_identity_from_device);
 		Utils.configureActionBar(this, getString(R.string.identity), "remove", true);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
 		mMpd = new MultiProgressDialog(this, "removing identity from device", 250);
 

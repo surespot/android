@@ -3,6 +3,7 @@ package com.twofours.surespot.activities;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
@@ -20,6 +21,7 @@ public class AboutActivity extends Activity  {
 		setContentView(R.layout.activity_about);
 
 		Utils.configureActionBar(this, getString(R.string.surespot), getString(R.string.about_action_bar_right), true);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
 		// set version
 		((TextView) findViewById(R.id.tvAboutVersion)).setText(getString(R.string.about_version, SurespotApplication.getVersion()));

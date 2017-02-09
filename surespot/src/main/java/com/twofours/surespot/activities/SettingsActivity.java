@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -50,15 +51,19 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         UIUtils.setTheme(this);
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
         // TODO put in fragment0
         final PreferenceManager prefMgr = getPreferenceManager();
         String user = getIntent().getStringExtra("username");
+
+
         if (user != null) {
             prefMgr.setSharedPreferencesName(user);
 
             addPreferencesFromResource(R.xml.preferences);
             Utils.configureActionBar(this, getString(R.string.settings), user, true);
+
             prefMgr.findPreference("pref_help").setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
                 @Override

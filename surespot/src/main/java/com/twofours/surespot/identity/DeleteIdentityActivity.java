@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -43,6 +44,7 @@ public class DeleteIdentityActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_delete_identity);
         Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.delete), true);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
         mMpd = new MultiProgressDialog(this, getString(R.string.delete_identity_progress), 250);
 
