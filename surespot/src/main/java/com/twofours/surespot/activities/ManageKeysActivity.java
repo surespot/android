@@ -13,6 +13,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -55,6 +56,8 @@ public class ManageKeysActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_manage_keys);
 		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.keys), true);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+
 		mMpd = new MultiProgressDialog(this, getString(R.string.generating_keys_progress), 750);
 
 		TextView tvBackupWarning = (TextView) findViewById(R.id.newKeysBackup);
