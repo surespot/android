@@ -221,6 +221,7 @@ public class SettingsActivity extends PreferenceActivity {
                 initializeActionBar((PreferenceScreen) preference);
                 {
                     if (((PreferenceScreen) preference).getDialog() != null) {
+                        ((PreferenceScreen) preference).getDialog().getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
                         ((PreferenceScreen) preference).getDialog().getWindow().getDecorView()
                                 .setBackgroundDrawable(this.getWindow().getDecorView().getBackground().getConstantState().newDrawable());
                     }
