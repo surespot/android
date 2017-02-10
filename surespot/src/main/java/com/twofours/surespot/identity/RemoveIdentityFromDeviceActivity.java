@@ -37,7 +37,7 @@ public class RemoveIdentityFromDeviceActivity extends Activity {
 		savedUsername = getIntent().getStringExtra("selectedUsername");
 
 		setContentView(R.layout.activity_remove_identity_from_device);
-		Utils.configureActionBar(this, getString(R.string.identity), "remove", true);
+		Utils.configureActionBar(this, getString(R.string.identity), getString(R.string.remove_title_right), true);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
 		mMpd = new MultiProgressDialog(this, "removing identity from device", 250);
