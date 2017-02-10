@@ -129,8 +129,8 @@ public class ChatAdapter extends BaseAdapter {
             SurespotMessage updateMessage = mMessages.get(index);
 
             if (updateMessage != null) {
-                SurespotLog.v(TAG, "updating message: %s", updateMessage);
-                SurespotLog.v(TAG, "new message: %s", message);
+        //        SurespotLog.v(TAG, "updating message: %s", updateMessage);
+        //        SurespotLog.v(TAG, "new message: %s", message);
 
                 // don't update unless we have an id
                 if (message.getId() != null) {
@@ -178,7 +178,7 @@ public class ChatAdapter extends BaseAdapter {
                         updateMessage.setErrorStatus(message.getErrorStatus());
                     }
                 }
-                SurespotLog.v(TAG, "updated message: %s", updateMessage);
+              //  SurespotLog.v(TAG, "updated message: %s", updateMessage);
             }
         }
 

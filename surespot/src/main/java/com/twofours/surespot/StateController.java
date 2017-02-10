@@ -192,20 +192,23 @@ public class StateController {
 
     }
 
-    public synchronized void saveMessages(String user, String spot, List<SurespotMessage> messages, int currentScrollPosition) {
+    public synchronized int saveMessages(String user, String spot, List<SurespotMessage> messages, int currentScrollPosition) {
         String filename = getFilename(user, MESSAGES_PREFIX + spot);
+        int returnScrollPosition = currentScrollPosition;
         if (filename != null) {
             if (messages != null) {
                 int messagesSize = messages.size();
-                int saveSize = messagesSize - currentScrollPosition;
-                if (saveSize + SurespotConstants.SAVE_MESSAGE_BUFFER < SurespotConstants.SAVE_MESSAGE_MINIMUM) {
-                    saveSize = SurespotConstants.SAVE_MESSAGE_MINIMUM;
-                } else {
-                    saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
-                }
 
-                SurespotLog.v(TAG, "saving %s messages", saveSize);
-                String sMessages = ChatUtils.chatMessagesToJson(messagesSize <= saveSize ? messages : messages.subList(messagesSize - saveSize, messagesSize), true)
+                int saveSize = messagesSize - currentScrollPosition;
+                int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
+
+                int saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
+                returnScrollPosition = saveCount - saveSize;
+
+
+                SurespotLog.v(TAG, "saving %d messages for spot %s, returnScrollPosition: %d", saveCount, spot, returnScrollPosition);
+                String sMessages = ChatUtils.chatMessagesToJson(
+                        messages.subList(messagesSize - saveCount, messagesSize), true)
                         .toString();
                 try {
                     FileUtils.writeFile(filename, sMessages);
@@ -220,6 +223,7 @@ public class StateController {
                 }
             }
         }
+        return returnScrollPosition;
     }
 
     public synchronized ArrayList<SurespotMessage> loadMessages(String user, String spot) {
@@ -241,7 +245,7 @@ public class StateController {
                     SurespotMessage message = iterator.next();
                     messages.add(message);
                 }
-                SurespotLog.v(TAG, "loaded: %d messages.", messages.size());
+                SurespotLog.v(TAG, "loaded: %d messages for spot %s", messages.size(), spot);
             }
         }
         return messages;

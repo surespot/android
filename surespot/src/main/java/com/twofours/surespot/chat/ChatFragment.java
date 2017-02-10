@@ -29,285 +29,281 @@ import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
 public class ChatFragment extends Fragment {
-	private String TAG = "ChatFragment";
-	private String mTheirUsername;
-	private String mOurUsername;
-	private ListView mListView;
+    private String TAG = "ChatFragment";
+    private String mTheirUsername;
+    private String mOurUsername;
+    private ListView mListView;
 
-	private boolean mLoading;
-	private int mPreviousTotal;
+    private boolean mLoading;
+    private int mPreviousTotal;
 
-	private int mSelectedItem = -1;
-	private int mSelectedTop = 0;
-	private boolean mJustLoaded;
-	private ChatAdapter mChatAdapter;
-	private boolean mHasEarlier = true;
+    private int mSelectedItem = -1;
+    private int mSelectedTop = 0;
+    private boolean mJustLoaded;
+    private ChatAdapter mChatAdapter;
+    private boolean mHasEarlier = true;
 
-	public String getTheirUsername() {
-		if (mTheirUsername == null) {
-			mTheirUsername = getArguments().getString("theirUsername");
-		}
-		return mTheirUsername;
-	}
+    public String getTheirUsername() {
+        if (mTheirUsername == null) {
+            mTheirUsername = getArguments().getString("theirUsername");
+        }
+        return mTheirUsername;
+    }
 
-	public void setOurUsername(String ourUsername) {
-		this.mOurUsername = ourUsername;
-	}
+    public void setOurUsername(String ourUsername) {
+        this.mOurUsername = ourUsername;
+    }
 
-	public String getOurUsername() {
-		if (mOurUsername == null) {
-			mOurUsername = getArguments().getString("ourUsername");
-		}
-		return mOurUsername;
-	}
+    public String getOurUsername() {
+        if (mOurUsername == null) {
+            mOurUsername = getArguments().getString("ourUsername");
+        }
+        return mOurUsername;
+    }
 
-	public void setTheirUsername(String mTheirUsername) {
-		this.mTheirUsername = mTheirUsername;
-	}
-
-
-	public static ChatFragment newInstance(String ourUsername, String theirUsername) {
-		ChatFragment cf = new ChatFragment();
-
-		Bundle bundle = new Bundle();
-		bundle.putString("theirUsername", theirUsername);
-		bundle.putString("ourUsername", ourUsername);
-		cf.setArguments(bundle);
-		return cf;
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setTheirUsername(getArguments().getString("theirUsername"));
-		setOurUsername(getArguments().getString("ourUsername"));
-		TAG = TAG + ":" + getOurUsername() + ":" + getTheirUsername();
-		SurespotLog.d(TAG, "onCreate");
-
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		super.onCreateView(inflater, container, savedInstanceState);
-		SurespotLog.v(TAG, "onCreateView, username: %s", mTheirUsername);
-
-		final View view = inflater.inflate(R.layout.chat_fragment, container, false);
-		mListView = (ListView) view.findViewById(R.id.message_list);
-		mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
-
-		mListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-
-				// pull the message out
-				if (message != null) {
-
-					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-						ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
-						if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
-
-							Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
-							newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject(false).toString());
-							newIntent.putExtra("ourUsername", mOurUsername);
-							ChatFragment.this.getActivity().startActivity(newIntent);
-						}
-					}
-					else {
-						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-							SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
-							VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
-						}
-					}
-				}
-			}
-		});
-
-		mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
-
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-				SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-				if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-
-					DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
-					dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
-					return true;
-				}
-				else {
-					if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-						DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
-						dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
-						return true;
-					}
-					else {
-						if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-							DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername,message);
-							dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
-							return true;
-						}
-					}
-				}
-				return false;
-			}
-		});
+    public void setTheirUsername(String mTheirUsername) {
+        this.mTheirUsername = mTheirUsername;
+    }
 
 
-		return view;
-	}
+    public static ChatFragment newInstance(String ourUsername, String theirUsername) {
+        ChatFragment cf = new ChatFragment();
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		ChatController chatController = ChatManager.getChatController(getOurUsername());
-		if (chatController != null) {
-			mChatAdapter = chatController.getChatAdapter(mTheirUsername);
-			mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
+        Bundle bundle = new Bundle();
+        bundle.putString("theirUsername", theirUsername);
+        bundle.putString("ourUsername", ourUsername);
+        cf.setArguments(bundle);
+        return cf;
+    }
 
-				@Override
-				public void handleResponse(Boolean result) {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setTheirUsername(getArguments().getString("theirUsername"));
+        setOurUsername(getArguments().getString("ourUsername"));
+        TAG = TAG + ":" + getOurUsername() + ":" + getTheirUsername();
+        SurespotLog.d(TAG, "onCreate");
 
-					SurespotLog.v(TAG, "messages completed loading, scrolling to state");
-					scrollToState();
-				}
-			});
-			SurespotLog.v(TAG, "onActivityCreated settingChatAdapter for: " + mTheirUsername);
+    }
 
-			mListView.setAdapter(mChatAdapter);
-			mListView.setDividerHeight(1);
-			mListView.setOnScrollListener(mOnScrollListener);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        SurespotLog.v(TAG, "onCreateView, username: %s", mTheirUsername);
 
-		}
-	}
+        final View view = inflater.inflate(R.layout.chat_fragment, container, false);
+        mListView = (ListView) view.findViewById(R.id.message_list);
+        mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
 
-	private MainActivity getMainActivity() {
-		return (MainActivity) getActivity();
-	}
+        mListView.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-	private OnScrollListener mOnScrollListener = new OnScrollListener() {
+                SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
 
-		@Override
-		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-			// SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
-			// + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+                // pull the message out
+                if (message != null) {
 
-			if (!mLoading) {
-				boolean hint = getUserVisibleHint();
-				// SurespotLog.v(TAG, "hint: " + hint);
-				if (hint) {
-					MainActivity mainActivity = getMainActivity();
-					if (mainActivity == null) {
-						return;
-					}
-					ChatController chatController = ChatManager.getChatController(getOurUsername());
-					if (chatController == null) {
-						return;
-					}
-					boolean hasEarlier = chatController.hasEarlierMessages(mTheirUsername);
-					// SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
-					if (hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+                        ImageView imageView = (ImageView) view.findViewById(R.id.messageImage);
+                        if (!(imageView.getDrawable() instanceof MessageImageDownloader.DownloadedDrawable)) {
 
-						// SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
-						// + ", visibleItemCount: " + visibleItemCount);
+                            Intent newIntent = new Intent(ChatFragment.this.getActivity(), ImageViewActivity.class);
+                            newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            newIntent.putExtra(SurespotConstants.ExtraNames.IMAGE_MESSAGE, message.toJSONObject(false).toString());
+                            newIntent.putExtra("ourUsername", mOurUsername);
+                            ChatFragment.this.getActivity().startActivity(newIntent);
+                        }
+                    } else {
+                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                            SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
+                            VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
+                        }
+                    }
+                }
+            }
+        });
 
-						// immediately after setting the position above, mLoading is false with "firstVisibleItem" set to the pre loading
-						// value for what seems like one call
-						// so handle that here
-						if (mJustLoaded) {
-							mJustLoaded = false;
-							return;
-						}
+        mListView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
-						else {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
-							mLoading = true;
-							mPreviousTotal = mChatAdapter.getCount();
-							// mSelection = firstVisibleItem;
-							// View v = mListView.getChildAt(0);
-							// mTop = (v == null) ? 0 : v.getTop();
+                SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
+                if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-							chatController.loadEarlierMessages(mTheirUsername, new IAsyncCallback<Boolean>() {
-
-								@Override
-								public void handleResponse(Boolean loadedNew) {
-
-									int selection = mListView.getFirstVisiblePosition();
-									// mSelection = firstVisibleItem;
-									View v = mListView.getChildAt(0);
-									int top = (v == null) ? 0 : v.getTop();
-									int totalItemCount = mChatAdapter.getCount();
-									// will have more items if we loaded them
-									if (mLoading && mPreviousTotal > 0 && totalItemCount > mPreviousTotal) {
-										// SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
-
-										// mChatAdapter.notifyDataSetChanged();
-
-										int loaded = totalItemCount - mPreviousTotal;
-										// SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
-										mListView.setSelectionFromTop(selection + loaded, top);
-
-										// mPreviousTotal = totalItemCount;
-										mJustLoaded = true;
-										mLoading = false;
-										return;
-									}
-									else {
-										mJustLoaded = false;
-										mLoading = false;
-
-									}
-
-									if (!loadedNew) {
-										mHasEarlier = false;
-									}
-								}
-							});
-						}
-					}
-				}
-			}
-		}
-
-		@Override
-		public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-		}
-	};
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		SurespotLog.v(TAG, "onResume: " + mTheirUsername);
-
-		ChatController chatController = ChatManager.getChatController(getOurUsername());
-
-		if (chatController != null) {
-			Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
-
-			if (friend != null) {
+                    DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
+                    dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
+                    return true;
+                } else {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+                        DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
+                        dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
+                        return true;
+                    } else {
+                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                            DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
+                            dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
 
 
-				mSelectedItem = friend.getSelectedItem();
-				mSelectedTop = friend.getSelectedTop();
+        return view;
+    }
 
-				SurespotLog.v(TAG, "onResume, selectedItem: " + mSelectedItem);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        ChatController chatController = ChatManager.getChatController(getOurUsername());
+        if (chatController != null) {
+            mChatAdapter = chatController.getChatAdapter(mTheirUsername);
+            mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
 
-				mChatAdapter = chatController.getChatAdapter(mTheirUsername, false);
-				if (mChatAdapter != null && mChatAdapter.isLoaded()) {
-					SurespotLog.v(TAG, "chat adapter loaded already, scrolling, count: %d", mChatAdapter.getCount());
-					scrollToState();
-				}
-			}
-		}
-	}
+                @Override
+                public void handleResponse(Boolean result) {
 
-	@Override
-	public void onPause() {
-		super.onPause();
-		SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d, count: %d", mTheirUsername ,mListView.getFirstVisiblePosition(), mChatAdapter.getCount());
+                    SurespotLog.v(TAG, "messages completed loading, scrolling to state, count: %d", mChatAdapter.getCount());
+                    scrollToState();
+                }
+            });
+            SurespotLog.v(TAG, "onActivityCreated settingChatAdapter for: " + mTheirUsername);
+
+            mListView.setAdapter(mChatAdapter);
+            mListView.setDividerHeight(1);
+            mListView.setOnScrollListener(mOnScrollListener);
+
+        }
+    }
+
+    private MainActivity getMainActivity() {
+        return (MainActivity) getActivity();
+    }
+
+    private OnScrollListener mOnScrollListener = new OnScrollListener() {
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            // SurespotLog.v(TAG, "onScroll, mLoadiNG : " + mLoading + ", totalItemCount: " + totalItemCount + ", firstVisibleItem: "
+            // + firstVisibleItem + ", visibleItemCount: " + visibleItemCount);
+
+            if (!mLoading) {
+                boolean hint = getUserVisibleHint();
+                // SurespotLog.v(TAG, "hint: " + hint);
+                if (hint) {
+                    MainActivity mainActivity = getMainActivity();
+                    if (mainActivity == null) {
+                        return;
+                    }
+                    ChatController chatController = ChatManager.getChatController(getOurUsername());
+                    if (chatController == null) {
+                        return;
+                    }
+                    boolean hasEarlier = chatController.hasEarlierMessages(mTheirUsername);
+                    // SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
+                    if (hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
+
+                        // SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+                        // + ", visibleItemCount: " + visibleItemCount);
+
+                        // immediately after setting the position above, mLoading is false with "firstVisibleItem" set to the pre loading
+                        // value for what seems like one call
+                        // so handle that here
+                        if (mJustLoaded) {
+                            mJustLoaded = false;
+                            return;
+                        } else {
+
+                            mLoading = true;
+                            mPreviousTotal = mChatAdapter.getCount();
+                            // mSelection = firstVisibleItem;
+                            // View v = mListView.getChildAt(0);
+                            // mTop = (v == null) ? 0 : v.getTop();
+
+                            chatController.loadEarlierMessages(mTheirUsername, new IAsyncCallback<Boolean>() {
+
+                                @Override
+                                public void handleResponse(Boolean loadedNew) {
+
+                                    int selection = mListView.getFirstVisiblePosition();
+                                    // mSelection = firstVisibleItem;
+                                    View v = mListView.getChildAt(0);
+                                    int top = (v == null) ? 0 : v.getTop();
+                                    int totalItemCount = mChatAdapter.getCount();
+                                    // will have more items if we loaded them
+                                    if (mLoading && mPreviousTotal > 0 && totalItemCount > mPreviousTotal) {
+                                        // SurespotLog.v(TAG, "mPreviousTotal: " + mPreviousTotal + ", totalItemCount: " + totalItemCount);
+
+                                        // mChatAdapter.notifyDataSetChanged();
+
+                                        int loaded = totalItemCount - mPreviousTotal;
+                                        // SurespotLog.v(TAG, "loaded: " + loaded + ", setting selection: " + (mSelection + loaded));
+                                        mListView.setSelectionFromTop(selection + loaded, top);
+
+                                        // mPreviousTotal = totalItemCount;
+                                        mJustLoaded = true;
+                                        mLoading = false;
+                                        return;
+                                    } else {
+                                        mJustLoaded = false;
+                                        mLoading = false;
+
+                                    }
+
+                                    if (!loadedNew) {
+                                        mHasEarlier = false;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SurespotLog.v(TAG, "onResume: " + mTheirUsername);
+
+        ChatController chatController = ChatManager.getChatController(getOurUsername());
+
+        if (chatController != null) {
+            Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
+
+            if (friend != null) {
+
+
+                SurespotLog.v(TAG, "onResume, selectedItem: " + mSelectedItem);
+                mSelectedTop = friend.getSelectedTop();
+                mChatAdapter = chatController.getChatAdapter(mTheirUsername, false);
+                if (mChatAdapter != null && mChatAdapter.isLoaded()) {
+                    SurespotLog.v(TAG, "chat adapter loaded already, scrolling, count: %d", mChatAdapter.getCount());
+                    mSelectedItem = mChatAdapter.getCurrentScrollPositionId();
+                    scrollToState();
+                } else {
+                    mSelectedItem = friend.getSelectedItem();
+
+
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d, count: %d", mTheirUsername, mListView.getFirstVisiblePosition(), mChatAdapter.getCount());
 
         if (mListView != null) {
             if (mChatAdapter != null) {
@@ -327,11 +323,10 @@ public class ChatFragment extends Fragment {
                     SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);
                     if (lastVisiblePosition == mListView.getCount() - 1) {
                         SurespotLog.v(TAG, "we are scrolled to bottom - saving selected item: %d", -1);
-                        friend.setSelectedItem(-1);
+                        //    friend.setSelectedItem(-1);
                         friend.setSelectedTop(0);
 
-                    }
-                    else {
+                    } else {
 
                         int selection = mListView.getFirstVisiblePosition();
                         View v = mListView.getChildAt(0);
@@ -340,50 +335,50 @@ public class ChatFragment extends Fragment {
 
                         SurespotLog.v(TAG, "saving selected item: %d", selection);
 
-                        friend.setSelectedItem(selection);
+                        int index = mChatAdapter.getCount() - selection;
+                        //    friend.setSelectedItem(0);
                         friend.setSelectedTop(top);
 
                     }
                 }
             }
         }
-	}
+    }
 
-	public void scrollToEnd() {
-		SurespotLog.v(TAG, "scrollToEnd");
-		if (mChatAdapter != null && mListView != null) {
-			mListView.post(new Runnable() {
+    public void scrollToEnd() {
+        SurespotLog.v(TAG, "scrollToEnd");
+        if (mChatAdapter != null && mListView != null) {
+            mListView.post(new Runnable() {
 
-				@Override
-				public void run() {
+                @Override
+                public void run() {
 
-					mListView.setSelection(mChatAdapter.getCount() - 1);
+                    mListView.setSelection(mChatAdapter.getCount() - 1);
 
-				}
-			});
-		}
-	}
+                }
+            });
+        }
+    }
 
-	public void scrollToState() {
-		SurespotLog.v(TAG, "scrollToState, mSelectedItem: " + mSelectedItem);
-		if (mChatAdapter != null && mListView != null) {
+    public void scrollToState() {
+        SurespotLog.v(TAG, "scrollToState, mSelectedItem: " + mSelectedItem);
+        if (mChatAdapter != null && mListView != null) {
 
-			if (mSelectedItem > -1 && mSelectedItem != mListView.getSelectedItemPosition()) {
+            if (mSelectedItem > -1 && mSelectedItem != mListView.getSelectedItemPosition()) {
 
-				mListView.post(new Runnable() {
+                mListView.post(new Runnable() {
 
-					@Override
-					public void run() {
+                    @Override
+                    public void run() {
 
-						mListView.setSelectionFromTop(mSelectedItem, mSelectedTop);
-					}
+                        mListView.setSelectionFromTop(mSelectedItem, mSelectedTop);
+                    }
 
-				});
+                });
 
-			}
-			else {
-				scrollToEnd();
-			}
-		}
-	}
+            } else {
+                scrollToEnd();
+            }
+        }
+    }
 }

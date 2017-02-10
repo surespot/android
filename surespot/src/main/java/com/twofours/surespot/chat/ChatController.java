@@ -2707,8 +2707,8 @@ public class ChatController {
     // saves all data and current state for user, general
     public synchronized void save() {
         SurespotLog.d(TAG, "save");
-        saveFriends();
         saveMessages();
+        saveFriends();
         saveMessageQueue();
 
 
@@ -2781,13 +2781,21 @@ public class ChatController {
 
     private synchronized void saveMessages() {
         // save last 30? messages
-        SurespotLog.d(TAG, "saveMessages");
+        SurespotLog.d(TAG, "saveMessages, mUsername: %s", mUsername);
         if (mUsername != null && mChatAdapters != null) {
             for (Map.Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
                 String them = entry.getKey();
                 String spot = ChatUtils.getSpot(mUsername, them);
-                SurespotApplication.getStateController().saveMessages(mUsername, spot, entry.getValue().getMessages(),
-                        entry.getValue().getCurrentScrollPositionId());
+                ChatAdapter adapter = entry.getValue();
+
+                int newScrollPosition = SurespotApplication.getStateController().saveMessages(mUsername, spot,  adapter.getMessages(),
+                        adapter.getCurrentScrollPositionId());
+                adapter.setCurrentScrollPositionId(newScrollPosition);
+
+                Friend f = mFriendAdapter.getFriend(them);
+                if (f != null) {
+                    f.setSelectedItem(newScrollPosition);
+                }
             }
         }
     }
@@ -2798,8 +2806,13 @@ public class ChatController {
         ChatAdapter chatAdapter = mChatAdapters.get(username);
 
         if (chatAdapter != null) {
-            SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
+            int newScrollPosition = SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
                     chatAdapter.getCurrentScrollPositionId());
+            chatAdapter.setCurrentScrollPositionId(newScrollPosition);
+            Friend f = mFriendAdapter.getFriend(username);
+            if (f != null) {
+                f.setSelectedItem(newScrollPosition);
+            }
         }
     }
 
