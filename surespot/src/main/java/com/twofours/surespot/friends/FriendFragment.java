@@ -1,5 +1,6 @@
 package com.twofours.surespot.friends;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -134,9 +135,16 @@ public class FriendFragment extends Fragment {
                     ;
                 });
 
-                dialog.show(getActivity().getFragmentManager(), "FriendMenuFragment");
+                try {
+                    dialog.show(getActivity().getFragmentManager(), "FriendMenuFragment");
+                } catch (IllegalStateException e) {
+                    //swallow this fucker
+                    //AOSP bug
+                    //https://stackoverflow.com/questions/27329913/dialogfragshow-from-a-fragment-throwing-illegalstateexception-can-not-perfo
+                }
             }
             return true;
+
 
         }
 
@@ -204,8 +212,7 @@ public class FriendFragment extends Fragment {
                                                         if (result) {
                                                             if (cc != null) {
                                                                 cc.deleteFriend(friend);
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 dialogi.cancel();
                                                             }
                                                         } else {
