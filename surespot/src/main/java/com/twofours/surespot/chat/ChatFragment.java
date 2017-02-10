@@ -130,23 +130,29 @@ public class ChatFragment extends Fragment {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
                 SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
-                if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                try {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
 
-                    DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
-                    dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
-                    return true;
-                } else {
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-                        DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
-                        dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
+                        DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
+                        dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
                         return true;
                     } else {
-                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                            DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
-                            dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
+                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
+                            DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
+                            dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
                             return true;
+                        } else {
+                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
+                                DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
+                                dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
+                                return true;
+                            }
                         }
                     }
+                } catch (IllegalStateException e) {
+                    //swallow this fucker
+                    //AOSP bug
+                    //https://stackoverflow.com/questions/27329913/dialogfragshow-from-a-fragment-throwing-illegalstateexception-can-not-perfo
                 }
                 return false;
             }
