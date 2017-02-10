@@ -2642,7 +2642,7 @@ public class ChatController {
                         case 409:
                             SurespotLog.d(TAG, "sendFileMessage received 409");
                             //success
-                            mErrored = false;
+                            clearError();
 
                             //update ui
                             if (newMessage != null) {
@@ -2696,7 +2696,7 @@ public class ChatController {
 
 
                 if (response.isSuccessful()) {
-                    mErrored = false;
+                    clearError();
                     try {
                         JSONObject json = new JSONObject(responseString);
                         JSONArray messages = json.getJSONArray("messageStatus");
@@ -2927,7 +2927,7 @@ public class ChatController {
         setState(STATE_CONNECTED);
 
         //if we reconnected after error
-        mErrored = false;
+        clearError();
 
         stopReconnectionAttempts();
         stopResendTimer();
