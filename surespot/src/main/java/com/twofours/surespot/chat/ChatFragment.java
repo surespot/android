@@ -41,7 +41,6 @@ public class ChatFragment extends Fragment {
 	private int mSelectedTop = 0;
 	private boolean mJustLoaded;
 	private ChatAdapter mChatAdapter;
-	private boolean mMessagesLoaded;
 	private boolean mHasEarlier = true;
 
 	public String getTheirUsername() {
@@ -173,8 +172,6 @@ public class ChatFragment extends Fragment {
 
 					SurespotLog.v(TAG, "messages completed loading, scrolling to state");
 					scrollToState();
-					mMessagesLoaded = true;
-
 				}
 			});
 			SurespotLog.v(TAG, "onActivityCreated settingChatAdapter for: " + mTheirUsername);
@@ -300,7 +297,7 @@ public class ChatFragment extends Fragment {
 
 				mChatAdapter = chatController.getChatAdapter(mTheirUsername, false);
 				if (mChatAdapter != null && mChatAdapter.isLoaded()) {
-					SurespotLog.v(TAG, "chat adapter loaded already, scrolling");
+					SurespotLog.v(TAG, "chat adapter loaded already, scrolling, count: %d", mChatAdapter.getCount());
 					scrollToState();
 				}
 			}
@@ -310,56 +307,46 @@ public class ChatFragment extends Fragment {
 	@Override
 	public void onPause() {
 		super.onPause();
-		SurespotLog.v(TAG, "onPause, mTheirUsername:  " + mTheirUsername + ", currentScrollId: " + mListView.getFirstVisiblePosition());
-		if (mMessagesLoaded) {
-			// set the current scroll position so we know how many messages to save
+		SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d, count: %d", mTheirUsername ,mListView.getFirstVisiblePosition(), mChatAdapter.getCount());
 
-			// mListView.removeOnScrollListener()):
+        if (mListView != null) {
+            if (mChatAdapter != null) {
+                mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
+            }
 
-			if (mListView != null) {
-				if (mChatAdapter != null) {
-					mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
-				}
+            ChatController chatController = ChatManager.getChatController(getOurUsername());
+            if (chatController != null && chatController.getFriendAdapter() != null) {
 
-				ChatController chatController = ChatManager.getChatController(getOurUsername());
-				if (chatController != null && chatController.getFriendAdapter() != null) {
+                Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
 
-					Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
+                if (friend != null) {
 
-					if (friend != null) {
+                    int lastVisiblePosition = mListView.getLastVisiblePosition();
 
-						int lastVisiblePosition = mListView.getLastVisiblePosition();
+                    SurespotLog.v(TAG, "onPause lastVisiblePosition: %d", lastVisiblePosition);
+                    SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);
+                    if (lastVisiblePosition == mListView.getCount() - 1) {
+                        SurespotLog.v(TAG, "we are scrolled to bottom - saving selected item: %d", -1);
+                        friend.setSelectedItem(-1);
+                        friend.setSelectedTop(0);
 
-						SurespotLog.v(TAG, "onPause lastVisiblePosition: %d", lastVisiblePosition);
-						SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);
-						if (lastVisiblePosition == mListView.getCount() - 1) {
-							SurespotLog.v(TAG, "we are scrolled to bottom - saving selected item: %d", -1);
-							friend.setSelectedItem(-1);
-							friend.setSelectedTop(0);
+                    }
+                    else {
 
-						}
-						else {
+                        int selection = mListView.getFirstVisiblePosition();
+                        View v = mListView.getChildAt(0);
 
-							int selection = mListView.getFirstVisiblePosition();
-							View v = mListView.getChildAt(0);
+                        int top = (v == null) ? 0 : v.getTop();
 
-							int top = (v == null) ? 0 : v.getTop();
+                        SurespotLog.v(TAG, "saving selected item: %d", selection);
 
-							SurespotLog.v(TAG, "saving selected item: %d", selection);
+                        friend.setSelectedItem(selection);
+                        friend.setSelectedTop(top);
 
-							friend.setSelectedItem(selection);
-							friend.setSelectedTop(top);
-
-						}
-					}
-				}
-			}
-		}
-		// if the messages weren't loaded don't sav ethe scroll position because it's bogus
-		else {
-			SurespotLog.v(TAG, "%s: messages not loaded,  not saving scroll position", mTheirUsername);
-		}
-
+                    }
+                }
+            }
+        }
 	}
 
 	public void scrollToEnd() {
