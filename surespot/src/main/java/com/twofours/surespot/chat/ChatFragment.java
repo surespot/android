@@ -282,8 +282,6 @@ public class ChatFragment extends Fragment {
             Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
 
             if (friend != null) {
-
-
                 SurespotLog.v(TAG, "onResume, selectedItem: " + mSelectedItem);
                 mSelectedTop = friend.getSelectedTop();
                 mChatAdapter = chatController.getChatAdapter(mTheirUsername, false);
@@ -293,7 +291,7 @@ public class ChatFragment extends Fragment {
                     scrollToState();
                 } else {
                     //if we're creating chat adapter anew, scroll to the bottom
-                    mSelectedItem = -1;//friend.getSelectedItem();
+                    mSelectedItem = -1;
                     mSelectedTop = 0;
                 }
             }
@@ -328,20 +326,12 @@ public class ChatFragment extends Fragment {
                         friend.setSelectedTop(0);
 
                     } else {
-
-                      //  int selection = mListView.getFirstVisiblePosition();
                         View v = mListView.getChildAt(0);
-
                         int top = (v == null) ? 0 : v.getTop();
 
-                        //SurespotLog.v(TAG, "saving selected item: %d", selection);
-
-                        //int index = mChatAdapter.getCount() - selection;
                         //the index is set on save messages now based on how many messages are saved
                         //so just save the top
-                        //    friend.setSelectedItem(0);
                         friend.setSelectedTop(top);
-
                     }
                 }
             }

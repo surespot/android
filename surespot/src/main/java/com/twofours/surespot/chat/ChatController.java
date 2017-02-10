@@ -2790,8 +2790,6 @@ public class ChatController {
 
                 int newScrollPosition = SurespotApplication.getStateController().saveMessages(mUsername, spot,  adapter.getMessages(),
                         adapter.getCurrentScrollPositionId());
-                adapter.setCurrentScrollPositionId(newScrollPosition);
-
                 Friend f = mFriendAdapter.getFriend(them);
                 if (f != null) {
                     f.setSelectedItem(newScrollPosition);
@@ -2808,7 +2806,6 @@ public class ChatController {
         if (chatAdapter != null) {
             int newScrollPosition = SurespotApplication.getStateController().saveMessages(mUsername, ChatUtils.getSpot(mUsername, username), chatAdapter.getMessages(),
                     chatAdapter.getCurrentScrollPositionId());
-            chatAdapter.setCurrentScrollPositionId(newScrollPosition);
             Friend f = mFriendAdapter.getFriend(username);
             if (f != null) {
                 f.setSelectedItem(newScrollPosition);
