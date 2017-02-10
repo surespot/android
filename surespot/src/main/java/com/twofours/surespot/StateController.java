@@ -197,14 +197,16 @@ public class StateController {
         int returnScrollPosition = currentScrollPosition;
         if (filename != null) {
             if (messages != null) {
+                int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messages.size());
                 int messagesSize = messages.size();
 
-                int saveSize = messagesSize - currentScrollPosition;
-                int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
+                if (currentScrollPosition > -1) {
+                    int saveSize = messagesSize - currentScrollPosition;
+                    int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
 
-                int saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
-                returnScrollPosition = saveCount - saveSize;
-
+                    saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
+                    returnScrollPosition = saveCount - saveSize;
+                }
 
                 SurespotLog.v(TAG, "saving %d messages for spot %s, returnScrollPosition: %d", saveCount, spot, returnScrollPosition);
                 String sMessages = ChatUtils.chatMessagesToJson(
