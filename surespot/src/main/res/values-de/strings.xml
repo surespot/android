@@ -30,7 +30,7 @@
   <string name="identity_imported_successfully">Profil %s erfolgreich wiederhergestellt</string>
   <string name="could_not_import_identity">Profil konnte nicht importiert werden</string>
   <string name="could_not_restore_identity_name">Profil %s konnte nicht importiert werden</string>
-  <string name="notifications_title">Push-Benachrichtigungen</string>
+  <string name="notifications_title">Benachrichtigungen</string>
   <string name="notifications_vibration">Vibration</string>
   <string name="notifications_sound">Ton</string>
   <string name="notifications_led">LED</string>
@@ -42,6 +42,7 @@
   <string name="select_image">Bildauswahl</string>
   <string name="capture_image">Foto aufnehmen</string>
   <string name="assign_image">Bild zuordnen</string>
+  <string name="sending_images">Sendevorgang...</string>
   <string name="logout">abmelden</string>
   <string name="settings">Einstellungen</string>
   <string name="welcome_to_surespot" formatted="false"><![CDATA["Willkommen bei surespot!  Daten die mit dieser App versendet werden sind mit einem <a href="https://de.wikipedia.org/wiki/Symmetrisches_Kryptosystem">Symmetrischen Kryptosystem</a> (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">256 bit AES-GCM</a>) <a href="https://de.wikipedia.org/wiki/Ende-zu-Ende-Verschl%C3%BCsselung">Ende-zu-Ende</a>-verschlüsselt, dessen Schlüssel mit 521 bit durch das <a href="https://de.wikipedia.org/wiki/Elliptic_Curve_Diffie-Hellman">Diffie-Hellman-Schlüsselaustausch</a>-Verfahren erzeugt wurden."]]></string>
@@ -88,7 +89,7 @@
   <string name="about_support"><![CDATA["Für Fragen oder Hilfe bitte <a href="https://www.surespot.me/support.html>hier</a> klicken oder eine E-Mail an <a href="mailto:support@surespot.me">support@surespot.me</a> schreiben.]]></string>
   <string name="notification_title">surespot</string>
   <string name="notification_message">%1$s: Neue Nachricht von %2$s.</string>
-  <string name="notification_invite">%1$s: Kontakteinladung von %2$s.</string>
+  <string name="notification_invite">%1$s: Kontaktanfrage von %2$s.</string>
   <string name="notification_invite_accept">%1$s: %2$s hat deine Kontaktanfrage akzeptiert.</string>
   <string name="about_version">Version: %s</string>
   <string name="surespot">surespot</string>
@@ -107,7 +108,7 @@
   <string name="login_progress">Anmeldevorgang läuft</string>
   <string name="login_check_password">Anmeldung fehlgeschlagen, bitte das Passwort nochmal eingeben.</string>
   <string name="login_try_again_later">Fehler bei der Anmeldung, bitte später nochmal versuchen.</string>
-  <string name="login_max_identities_reached">Entschuldigung, die maximale Anzahl unterschiedlicher Profile ist bereits angelegt (%d).\n\nBenutzerprofile können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
+  <string name="login_max_identities_reached">Entschuldigung, die maximale Anzahl unterschiedlicher Identitäten ist bereits angelegt (%d). \n\nIdentitäten können unter Einstellungen nach dem Anmelden gelöscht werden.</string>
   <string name="local_cache_cleared">Lokaler Cache gelöscht</string>
   <string name="qr_pre_username_help">Diesen QR Code zu Einladung verwenden </string>
   <string name="qr_post_username_help">. Falls benötigt, wird surespot aus dem Play Store installiert.</string>
@@ -158,6 +159,7 @@
   <string name="billing_bitcoin_email_body_qr">QR-Code Anzeige: %s</string>
   <string name="could_not_open_bitcoin_wallet">Die Bitcoin Brieftasche konnte nicht geöffnet werden</string>
   <string name="message_sending">versenden ...</string>
+  <string name="error_sending_message">Fehler beim Senden der Nachricht</string>
   <string name="message_loading_and_decrypting">laden und entschlüsseln ...</string>
   <string name="could_not_login_to_server">Server Anmeldung ist fehlgeschlagen</string>
   <string name="could_not_connect_to_server">Verbindung zum Server fehlgeschlagen</string>
@@ -169,6 +171,10 @@
   <string name="could_not_set_message_lock_state">Mittteilungs-Verriegelung gescheitert</string>
   <string name="menu_save_to_gallery">In die Galerie speichern</string>
   <string name="menu_resend_message">Mitteilung erneut versenden</string>
+  <string name="error_sending_messages">Fehler beim Senden der Nachricht(en)</string>
+  <string name="error_sending_detail">Klicken Sie, um surespot zu öffnen und das Senden erneut zu versuchen</string>
+  <string name="prompt_resend_errored_messages">Fehlerbehaftete Nachricht(en) erneut senden</string>
+  <string name="prompt_resend">Erneut senden?</string>
   <string name="menu_lock">verriegeln</string>
   <string name="menu_unlock">entriegeln</string>
   <string name="image_saved_to_gallery">Bild erfolgreich in der Galerie gespeichert</string>
@@ -250,6 +256,10 @@
   <string name="pref_title_message_debug_mode">Mitteilung im Debug Modus</string>
   <string name="pref_title_debug">Entwickler-Optionen</string>
   <string name="pref_title_options">Profileinstellungen</string>
+  <string name="pref_title_enter_to_send">Enter sendet die Nachricht</string>
+  <string name="pref_title_notification_color">Benachrichtigungs-LED-Farbe</string>
+  <string name="pref_summary_notification_color">LED-Farbe für surespot-Benachrichtigungen</string>
+  <string name="pref_summary_enter_to_send">Drücken von Enter sender eine Nachricht</string>
   <string name="pref_summary_delete_message">Bestätigung bevor eine Mitteilung gelöscht wird</string>
   <string name="pref_summary_delete_all_messages">Bestätigung bevor alle Mitteilungen gelöscht werden</string>
   <string name="pref_summary_export_identity">Des Profil sollte auf dem Lokalen Datenträger oder Google Drive gesichert werden.</string>
@@ -326,7 +336,7 @@
   <string name="pref_stop_cache_logout_title">Lösche Zwischenspeicher nach dem Logout</string>
   <string name="pref_stop_cache_logout_summary">Beendet den Zwischenspeicher-Dienst beim Logout</string>
   <string name="could_not_load_public_keys">Öffentliche Schlüssel konnten nicht geladen werden</string>
-  <string name="keystore_not_supported">Funktion \"Schlüsselbund\" wird nicht unterstützt</string>
+  <string name="keystore_not_supported">Schlüsselspeicher nicht unterstützt</string>
   <string name="keystore_not_unlocked">Der Schlüsselspeicher ist nicht entsperrt.</string>
   <string name="pref_title_global_options">Allgemeine Optionen</string>
   <string name="store_password_in_keychain">Passwort im Schlüsselbund speichern</string>
@@ -338,11 +348,23 @@
   <string name="menu_remove_friend_alias">Benutzername entfernen</string>
   <string name="could_not_remove_friend_image">Konnte Kontaktbild nicht entfernen</string>
   <string name="could_not_remove_friend_alias">Konnte Benutzername nicht entfernen</string>
-  <string name="disable_keystore_message">Deaktivierung des Schlüsselbundes löscht alle gespeicherten Passworte. Bist Du sicher, dass Du den Schlüsselbund deaktivieren möchtest?</string>
-  <string name="disable_keystore_title">Schlüsselbund deaktivieren?</string>
-  <string name="pref_title_enable_keystore">Schlüsselbund aktiviert.</string>
-  <string name="pref_summary_enable_keystore">Passworte werden beim Anmelden gespeichert, wenn Du dies mit dieser Auswahl aktivierst.</string>
+  <string name="disable_keystore_message">Deaktivieren des Schlüsselspeichers löscht alle gespeicherten Passwörter. Bist du sicher?</string>
+  <string name="disable_keystore_title">Schlüsselspeicher deaktivieren?</string>
+  <string name="pref_title_enable_keystore">Schlüsselspeicher aktiviert</string>
+  <string name="pref_summary_enable_keystore">Aktivieren, um Passwörter auf dem Anmeldebildschirm zu speichern</string>
   <string name="notification_message_no_from">%s: Neue Nachricht empfangen.</string>
   <string name="notification_invite_no_from">%s: Kontaktanfrage erhalten.</string>
   <string name="notification_invite_accept_no_from">%s: Kontaktanfrage akzeptiert.</string>
+  <string name="pref_disable_voice_title">Sprache deaktivieren</string>
+  <string name="pref_disable_voice">Sprachnachrichten deaktivieren</string>
+  <string name="need_storage_permission">surespot kann ohne Speicherberechtigung keine Identitäten auf dem Gerät verwalten.</string>
+  <string name="enable_storage_permission">Bitte aktivieren Sie die Speicherberechtigung für surespot in den App-Berechtigungseinstellungen des Geräts.</string>
+  <string name="black_theme">schwarzes Thema</string>
+  <string name="unknown_message_mime_type">unbekannter Nachrichten-MIME-Typ</string>
+  <string name="could_not_select_image">Bild konnte nicht ausgewählt werden</string>
+  <string name="did_not_send_x_images">surespot konnte %1$d der %2$d ausgewählten Bilder nicht senden.</string>
+  <string name="active_identity">AKTIVE IDENTITÄT</string>
+  <string name="pref_confirm_logout">Abmelden bestätigen</string>
+  <string name="confirm_logout_message">Beim Abmelden wird auch das Passwort vergessen, wenn es gespeichert ist. Sind Sie sicher?</string>
+  <string name="confirm_logout_title">Abmelden?</string>
 </resources>
