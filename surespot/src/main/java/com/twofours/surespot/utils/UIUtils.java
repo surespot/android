@@ -144,42 +144,6 @@ public class UIUtils {
 
     }
 
-    public static int getResumePosition(int currentPos, int currentSize) {
-        // if we have less messages total than the minimum, just return the current position
-        if (currentSize <= SurespotConstants.SAVE_MESSAGE_MINIMUM) {
-            return currentPos;
-        }
-
-        // more messages than minimum meaning we've loaded some
-        if (currentPos < SurespotConstants.SAVE_MESSAGE_BUFFER) {
-            return currentPos;
-        } else {
-            return SurespotConstants.SAVE_MESSAGE_BUFFER;
-        }
-        // saveSize += SurespotConstants.SAVE_MESSAGE_BUFFER;
-        // int newPos = currentSize - saveSize - SurespotConstants.SAVE_MESSAGE_BUFFER;
-        // if (newPos < 0) {
-        // newPos = currentPos;
-        // }
-        // return newPos;
-
-        //
-        //
-        // int posFromEnd = currentSize - currentPos;
-        //
-        // // if the relative position is not within minumum messages of the last message
-        // if (currentPos > SurespotConstants.SAVE_MESSAGE_BUFFER) {
-        //
-        // // we'll save messages buffer messages past it (if we can) so come back to this point
-        // return currentPos < SurespotConstants.SAVE_MESSAGE_BUFFER ? currentPos : SurespotConstants.SAVE_MESSAGE_BUFFER;
-        // }
-        // else {
-        // // we're inside the minimum so we'll only be saving minimum messages, so reset the position relative to the minumum that will be
-        // // loaded
-        // return currentPos;
-        // }
-    }
-
     public static void launchMainActivityDeleted(Context context) {
         Intent finalIntent = new Intent(context, MainActivity.class);
         finalIntent.putExtra("deleted", true);
@@ -515,19 +479,19 @@ public class UIUtils {
                 if (width > height) {
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 } else {
-                    activity.setRequestedOrientation(9/* reversePortait */);
+                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
                 }
                 break;
             case Surface.ROTATION_180:
                 if (height > width) {
-                    activity.setRequestedOrientation(9/* reversePortait */);
+                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
                 } else {
-                    activity.setRequestedOrientation(8/* reverseLandscape */);
+                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
                 }
                 break;
             case Surface.ROTATION_270:
                 if (width > height) {
-                    activity.setRequestedOrientation(8/* reverseLandscape */);
+                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
                 } else {
                     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 }

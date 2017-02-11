@@ -49,8 +49,7 @@ public class SurespotConstants {
 
 	public final static int MAX_USERNAME_LENGTH = 20;
 	public final static int MAX_PASSWORD_LENGTH = 256;
-	public final static int SAVE_MESSAGE_BUFFER = 25;
-	public final static int SAVE_MESSAGE_MINIMUM = 50;
+	public final static int SAVE_MESSAGE_MINIMUM = 100;
 	public final static int MAX_MESSAGE_LENGTH = 1024;
 	
 	public final static String DRIVE_IDENTITY_FOLDER = "surespot identity backups";
