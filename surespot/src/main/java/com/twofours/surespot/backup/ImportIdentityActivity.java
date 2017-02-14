@@ -626,6 +626,7 @@ public class ImportIdentityActivity extends Activity {
 
                     @Override
                     public void run() {
+                        mSpdLoadIdentities.hide();
                         Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_list_identities_from_google_drive));
                     }
                 });
@@ -708,6 +709,7 @@ public class ImportIdentityActivity extends Activity {
 
                 @Override
                 public void run() {
+                    mSpdLoadIdentities.hide();
                     Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_list_identities_from_google_drive));
                 }
             });
@@ -727,6 +729,7 @@ public class ImportIdentityActivity extends Activity {
 
                 @Override
                 public void run() {
+                    mSpdLoadIdentities.hide();
                     Utils.makeLongToast(ImportIdentityActivity.this, getString(R.string.re_add_google_account));
 
                 }
