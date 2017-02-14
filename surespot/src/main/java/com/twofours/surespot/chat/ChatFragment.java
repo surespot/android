@@ -307,7 +307,7 @@ public class ChatFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d, count: %d", mTheirUsername, mListView.getFirstVisiblePosition(), mChatAdapter.getCount());
+        SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d", mTheirUsername, mListView.getFirstVisiblePosition());
 
         if (mListView != null) {
             if (mChatAdapter != null) {
@@ -328,7 +328,9 @@ public class ChatFragment extends Fragment {
                     if (lastVisiblePosition == mListView.getCount() - 1) {
                         SurespotLog.v(TAG, "we are scrolled to bottom - saving selected item: %d", -1);
                         friend.setSelectedItem(-1);
-                        mChatAdapter.setCurrentScrollPositionId(-1);
+                        if (mChatAdapter != null) {
+                            mChatAdapter.setCurrentScrollPositionId(-1);
+                        }
                         friend.setSelectedTop(0);
 
                     } else {
