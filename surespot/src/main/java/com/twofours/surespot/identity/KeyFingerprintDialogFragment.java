@@ -123,7 +123,7 @@ public class KeyFingerprintDialogFragment extends DialogFragment {
 				if (maxVersion > 0) {
 					for (int ver = maxVersion; ver > 0; ver--) {
 						String sVer = String.valueOf(ver);
-						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(getActivity(), mOurUsername, mTheirUsername, sVer);
+						PublicKeys pubkeys = IdentityController.getPublicKeyPair2(activity, mOurUsername, mTheirUsername, sVer);
 
 						if (pubkeys == null) {
 							return null;

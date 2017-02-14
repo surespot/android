@@ -705,6 +705,9 @@ public class IdentityController {
     }
 
     public static PublicKeys getPublicKeyPair2(Context context, String ourUsername, String theirUsername, String version) {
+        if (context == null) {
+            return null;
+        }
 
         int currentVersion = Integer.parseInt(version, 10);
         int wantedVersion = currentVersion;
