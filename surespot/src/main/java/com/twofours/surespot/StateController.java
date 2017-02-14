@@ -70,9 +70,11 @@ public class StateController {
 
                 sFriendsJson = new String(FileUtils.readFile(filename));
 
-            } catch (FileNotFoundException f) {
+            }
+            catch (FileNotFoundException f) {
                 SurespotLog.v(TAG, "loadFriends, no friends file found");
-            } catch (IOException e1) {
+            }
+            catch (IOException e1) {
                 SurespotLog.w(TAG, e1, "loadFriends");
             }
 
@@ -94,7 +96,8 @@ public class StateController {
                     friendState.friends = friends;
                     return friendState;
 
-                } catch (JSONException e) {
+                }
+                catch (JSONException e) {
                     SurespotLog.w(TAG, e, "loadFriends");
                 }
             }
@@ -123,13 +126,16 @@ public class StateController {
                         String sFriends = jsonFriendState.toString();
                         FileUtils.writeFile(filename, sFriends);
                         SurespotLog.v(TAG, "Saved friends: %s", sFriends);
-                    } catch (JSONException e) {
+                    }
+                    catch (JSONException e) {
                         SurespotLog.w(TAG, e, "saveFriends");
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         SurespotLog.w(TAG, e, "saveFriends");
                     }
                 }
-            } else {
+            }
+            else {
                 new File(filename).delete();
             }
         }
@@ -145,20 +151,25 @@ public class StateController {
 
                     try {
                         FileUtils.writeFile(filename, messageString);
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         SurespotLog.w(TAG, e, "saveMessageQueue");
                     }
-                } else {
+                }
+                else {
                     try {
                         new File(filename).delete();
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         SurespotLog.w(TAG, ex, "saveMessageQueue");
                     }
                 }
-            } else {
+            }
+            else {
                 try {
                     new File(filename).delete();
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     SurespotLog.w(TAG, ex, "saveMessageQueue");
                 }
             }
@@ -174,9 +185,11 @@ public class StateController {
 
             try {
                 sUnsentMessages = new String(FileUtils.readFile(filename));
-            } catch (FileNotFoundException f) {
+            }
+            catch (FileNotFoundException f) {
                 SurespotLog.v(TAG, "loadUnsentMessages, no unsent messages file found");
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 SurespotLog.w(TAG, e, "loadUnsentMessages");
             }
             if (sUnsentMessages != null) {
@@ -197,30 +210,37 @@ public class StateController {
         int returnScrollPosition = currentScrollPosition;
         if (filename != null) {
             if (messages != null) {
-                int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messages.size());
-                int messagesSize = messages.size();
+                synchronized (messages) {
+                    int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messages.size());
+                    int messagesSize = messages.size();
 
-                if (currentScrollPosition > -1) {
-                    int saveSize = messagesSize - currentScrollPosition;
-                    int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
+                    if (currentScrollPosition > -1) {
+                        int saveSize = messagesSize - currentScrollPosition;
+                        int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
 
-                    saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
-                    returnScrollPosition = saveCount - saveSize;
+                        saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
+                        returnScrollPosition = saveCount - saveSize;
+                    }
+
+                    SurespotLog.v(TAG, "saving %d messages for spot %s, returnScrollPosition: %d", saveCount, spot, returnScrollPosition);
+
+                    String sMessages = ChatUtils.chatMessagesToJson(
+                            messages.subList(messagesSize - saveCount, messagesSize), true)
+                            .toString();
+
+                    try {
+                        FileUtils.writeFile(filename, sMessages);
+                    }
+                    catch (IOException e) {
+                        SurespotLog.w(TAG, e, "saveMessages");
+                    }
                 }
-
-                SurespotLog.v(TAG, "saving %d messages for spot %s, returnScrollPosition: %d", saveCount, spot, returnScrollPosition);
-                String sMessages = ChatUtils.chatMessagesToJson(
-                        messages.subList(messagesSize - saveCount, messagesSize), true)
-                        .toString();
-                try {
-                    FileUtils.writeFile(filename, sMessages);
-                } catch (IOException e) {
-                    SurespotLog.w(TAG, e, "saveMessages");
-                }
-            } else {
+            }
+            else {
                 try {
                     new File(filename).delete();
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     SurespotLog.w(TAG, ex, "saveMessages");
                 }
             }
@@ -236,9 +256,11 @@ public class StateController {
 
             try {
                 sMessages = new String(FileUtils.readFile(filename));
-            } catch (FileNotFoundException f) {
+            }
+            catch (FileNotFoundException f) {
                 SurespotLog.v(TAG, "loadMessages, no messages file found for: %s", spot);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 SurespotLog.w(TAG, e, "loadMessages");
             }
             if (sMessages != null) {
@@ -332,7 +354,8 @@ public class StateController {
         try {
             File file = new File(messageFile);
             file.delete();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             SurespotLog.w(TAG, ex, "wipeUserState");
         }
 
@@ -376,7 +399,8 @@ public class StateController {
                     fos.close();
 
                     SurespotLog.d(TAG, "saved shared secrets for: %s", username);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     SurespotLog.e(TAG, e, "error saving shared secrets for %s", username);
                 }
 
@@ -413,10 +437,12 @@ public class StateController {
             ObjectInputStream ois = new ObjectInputStream(bais);
             loadedMap = (Map<String, byte[]>) ois.readObject();
             ois.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.e(TAG, e, "error loading shared secrets for %s", username);
             return null;
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             SurespotLog.e(TAG, e, "error loading shared secrets for %s", username);
             return null;
         }
@@ -468,11 +494,14 @@ public class StateController {
             if (cookie != null) {
                 return cookie;
             }
-        } catch (ClassCastException e) {
+        }
+        catch (ClassCastException e) {
             SurespotLog.e(TAG, e, "error loading cookie for %s", username);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.e(TAG, e, "error loading cookie for %s", username);
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             SurespotLog.e(TAG, e, "error loading cookie for %s", username);
         }
         return null;
@@ -500,7 +529,8 @@ public class StateController {
                     fos.write(encryptedCookie);
                     fos.close();
                     SurespotLog.d(TAG, "saved cookie for username: %s, cookie: %s", username, cookie);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     SurespotLog.e(TAG, e, "error saving cookie for %s", username);
                 }
                 return null;
