@@ -299,6 +299,7 @@ public class ChatFragment extends Fragment {
                     //if we're creating chat adapter anew, scroll to the bottom
                     mSelectedItem = -1;
                     mSelectedTop = 0;
+
                 }
             }
         }

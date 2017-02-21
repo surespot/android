@@ -1410,7 +1410,9 @@ public class ChatController {
 
     ChatAdapter getChatAdapter(String username, boolean create) {
 
+
         ChatAdapter chatAdapter = mChatAdapters.get(username);
+
         if (chatAdapter == null && create) {
 
             chatAdapter = new ChatAdapter(mContext, mUsername);
@@ -1420,10 +1422,13 @@ public class ChatController {
                 if (friend.isDeleted()) {
                     chatAdapter.userDeleted();
                 }
+                //set the scroll position
+                chatAdapter.setCurrentScrollPositionId(friend.getSelectedItem());
             }
 
             SurespotLog.d(TAG, "getChatAdapter created chat adapter for: %s", username);
             mChatAdapters.put(username, chatAdapter);
+
 
             // load savedmessages
             loadMessages(username, true);
@@ -1437,6 +1442,9 @@ public class ChatController {
 
             // get latest messages from server
             getLatestMessagesAndControls(username, false);
+        }
+        else {
+            SurespotLog.d(TAG, "getChatAdapter adapter already created for: %s", username);
         }
 
         return chatAdapter;
@@ -2862,6 +2870,7 @@ public class ChatController {
                 if (f != null) {
                     f.setSelectedItem(newScrollPosition);
                 }
+                adapter.setCurrentScrollPositionId(newScrollPosition);
             }
         }
     }
@@ -2878,6 +2887,7 @@ public class ChatController {
             if (f != null) {
                 f.setSelectedItem(newScrollPosition);
             }
+            chatAdapter.setCurrentScrollPositionId(newScrollPosition);
         }
     }
 
