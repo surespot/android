@@ -348,7 +348,7 @@ public class ChatFragment extends Fragment {
     }
 
     public void scrollToEnd() {
-        SurespotLog.v(TAG, "scrollToEnd");
+        SurespotLog.d(TAG, "scrollToEnd: %s", mTheirUsername);
         if (mChatAdapter != null && mListView != null) {
             mListView.post(new Runnable() {
 

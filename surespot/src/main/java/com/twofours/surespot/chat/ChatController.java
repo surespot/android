@@ -318,7 +318,9 @@ public class ChatController {
                 protected void onPostExecute(Void result) {
 
                     boolean added = applyControlMessages(chatAdapter, message, false, true, true);
-                    scrollToEnd(otherUser);
+                    if (added) {
+                        scrollToEnd(otherUser);
+                    }
 
                     Friend friend = mFriendAdapter.getFriend(otherUser);
                     if (friend != null) {
@@ -1260,7 +1262,9 @@ public class ChatController {
                 mFriendAdapter.sort();
                 mFriendAdapter.notifyDataSetChanged();
 
-                scrollToEnd(username);
+                if (sentByMeCount != delta) {
+                    scrollToEnd(username);
+                }
             }
         }
 
@@ -1513,7 +1517,7 @@ public class ChatController {
     private ChatFragment getChatFragment(String username) {
         String fragmentTag = Utils.makePagerFragmentName(mViewPager.getId(), username.hashCode());
         SurespotLog.d(TAG, "looking for fragment: %s", fragmentTag);
-        ChatFragment chatFragment = null;//(ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
+        ChatFragment chatFragment = (ChatFragment) mFragmentManager.findFragmentByTag(fragmentTag);
         SurespotLog.d(TAG, "fragment: %s", chatFragment);
         return chatFragment;
     }
@@ -1983,6 +1987,7 @@ public class ChatController {
     }
 
     public void scrollToEnd(String to) {
+        SurespotLog.d(TAG, "scrollToEnd %s", to);
         ChatFragment chatFragment = getChatFragment(to);
         if (chatFragment != null) {
             chatFragment.scrollToEnd();
