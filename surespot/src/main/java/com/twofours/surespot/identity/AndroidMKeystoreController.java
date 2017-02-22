@@ -1,7 +1,9 @@
 package com.twofours.surespot.identity;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.Base64;
@@ -10,14 +12,10 @@ import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.encryption.EncryptedBytesAndIv;
 import com.twofours.surespot.encryption.KeyStoreEncryptionController;
 
-import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -31,6 +29,7 @@ public class AndroidMKeystoreController {
     private static final int AUTHENTICATION_DURATION_SECONDS = 900;
 
     // generates a new secret AES/GCM 256-bit key
+    @TargetApi(Build.VERSION_CODES.M)
     public static SecretKey getSecretKey(String userName) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         if (IdentityController.USE_PUBLIC_KEYSTORE_M) {
             // key generation
@@ -110,7 +109,7 @@ public class AndroidMKeystoreController {
                     return password;
                 }
             }
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException | UnrecoverableEntryException e) {
+        } catch (Exception e) {
             SurespotLog.d(TAG, "Error loading encrypted password: " + e.getMessage());
         }
         return null;
@@ -143,7 +142,7 @@ public class AndroidMKeystoreController {
             } else {
                 SurespotLog.d(TAG, "Unable to save encrypted password to keystore - encryption failed");
             }
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableEntryException | InvalidAlgorithmParameterException | NoSuchProviderException e) {
+        } catch (Exception e) {
             SurespotLog.d(TAG, "Error saving encrypted password: " + e.getMessage());
         }
     }
@@ -170,7 +169,7 @@ public class AndroidMKeystoreController {
             for (String s : aliases) {
                 ks.deleteEntry(s);
             }
-        } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
+        } catch (Exception e) {
             SurespotLog.d(TAG, "Error destroying keystore: " + e.getMessage());
         }
     }
