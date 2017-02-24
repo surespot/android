@@ -162,13 +162,9 @@ public class ChatManager {
                                 if (activeNetwork != null) {
                                     SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
                                 }
-                                //disconnect if we're connected and we just connected to wifi
-//                                if ( networkInfo2.getType() == ConnectivityManager.TYPE_WIFI || networkInfo2.getType() == ConnectivityManager.TYPE_WIMAX) {
-//                                    cc.disconnect();
-//                                }
-//                                cc.clearError();
-//                                cc.connect();
-//                                cc.processNextMessage();
+                                cc.clearError();
+                                cc.connect();
+                                cc.processNextMessage();
                             }
                             return;
                         }
@@ -179,10 +175,10 @@ public class ChatManager {
                             if (activeNetwork != null) {
                                 SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
                             }
-//                            synchronized (this) {
-//                                cc.disconnect();
-//                                cc.processNextMessage();
-//                            }
+                            synchronized (this) {
+                                cc.disconnect();
+                                cc.processNextMessage();
+                            }
                         }
                     }
                 }

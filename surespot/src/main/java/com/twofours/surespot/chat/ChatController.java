@@ -3229,6 +3229,7 @@ public class ChatController {
         @Override
         public void call(Object... args) {
             SurespotLog.d(TAG, "mSocket.io connection established");
+            mCurrentSendIv = null;
             onConnected();
         }
     };
