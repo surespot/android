@@ -17,7 +17,6 @@
 package com.twofours.surespot.gifs;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -270,38 +269,6 @@ public class GifSearchDownloader {
             }
 
         }
-    }
-
-    /**
-     * A fake Drawable that will be attached to the imageView while the download is in progress.
-     * <p/>
-     * <p>
-     * Contains a reference to the actual download task, so that a download task can be stopped if a new binding is required, and makes sure that only the last
-     * started download process can bind its result, independently of the download finish order.
-     * </p>
-     */
-    public static class DownloadedDrawable extends ColorDrawable {
-        private final WeakReference<GifDownloaderTask> GifDownloaderTaskReference;
-        private int mHeight;
-
-        public DownloadedDrawable(GifDownloaderTask GifDownloaderTask, int height) {
-            mHeight = height;
-            GifDownloaderTaskReference = new WeakReference<GifDownloaderTask>(GifDownloaderTask);
-        }
-
-        public GifDownloaderTask getGifDownloaderTask() {
-            return GifDownloaderTaskReference.get();
-        }
-
-        /**
-         * Force ImageView to be a certain height
-         */
-        @Override
-        public int getIntrinsicHeight() {
-
-            return mHeight;
-        }
-
     }
 
     class DecryptionTaskWrapper {

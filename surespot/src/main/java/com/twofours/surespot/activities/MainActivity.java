@@ -1939,9 +1939,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             fm.popBackStack();
         }
         else {
+            final ChatController cc = ChatManager.getChatController(mUser);
+            if (cc == null) {
+                //TODO handle
+                return;
+            }
+
+            final String currentChat = cc.getCurrentChat();
+            if (currentChat == null) {
+           //TODO handle
+                return;
+            }
 
             FragmentTransaction ft = fm.beginTransaction();
-            GifSearchFragment f = GifSearchFragment.newInstance(mUser, null);
+            GifSearchFragment f = GifSearchFragment.newInstance(mUser, currentChat);
             ft.addToBackStack(null).add(R.id.content_frame, f);
             ft.commit();
         }

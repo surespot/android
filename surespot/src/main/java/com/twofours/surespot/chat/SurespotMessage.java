@@ -271,7 +271,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             message.put("fromVersion", this.getFromVersion());
             message.put("iv", this.getIv());
             message.put("data", this.getData());
-            message.put("hashed", this.isHashed());
+            message.put("mimeType", this.getMimeType());
 
             return message;
         }
@@ -468,7 +468,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         sb.append("\tdatetime: " + getDateTime() + "\n");
         sb.append("\tgcm: " + isGcm() + "\n");
         sb.append("\tvoicePlayed: " + isVoicePlayed() + "\n");
-        sb.append("\thashed: " + isHashed() + "\n");
+        //sb.append("\thashed: " + isHashed() + "\n");
 
         return sb.toString();
     }

@@ -2360,6 +2360,7 @@ public class ChatController {
 
                 switch (nextMessage.getMimeType()) {
                     case SurespotConstants.MimeTypes.TEXT:
+                    case SurespotConstants.MimeTypes.GIF:
                         prepAndSendTextMessage(nextMessage);
                         break;
                     case SurespotConstants.MimeTypes.IMAGE:
@@ -2589,6 +2590,7 @@ public class ChatController {
             sendFileMessage(message);
         }
     }
+
 
 
     private void sendFileMessage(final SurespotMessage message) {

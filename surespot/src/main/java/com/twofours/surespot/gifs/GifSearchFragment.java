@@ -86,7 +86,7 @@ public class GifSearchFragment extends Fragment {
 
 
         List<String> gifUrls = searchGifs();
-        mGifsAdapter = new GifsAdapter(this.getActivity(),mOurUsername, gifUrls);
+        mGifsAdapter = new GifsAdapter(this.getActivity(),mOurUsername, mTheirUsername, gifUrls);
         mRecyclerView.setAdapter(mGifsAdapter);
         return view;
     }
