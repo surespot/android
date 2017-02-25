@@ -6,16 +6,9 @@ public class SurespotConstants {
 			+ "Rm+6ucIp56cXPgYvBwKDxT30z/HU84HPm2T8lnKQjFGMTUKHnIW+vqKFZicAokkW\n" + "J/GoFMDGz5tEDGEQrHk/tswEysri5V++kzwlORA+kAxAasdx7Hezl0QfvkPScr3N\n"
 			+ "5ifR7m1J+RFNqK0bulQ=\n" + "-----END PUBLIC KEY-----";
 
-	private static final String SERVER_PUBLIC_KEY_STAGE = "-----BEGIN PUBLIC KEY-----\n" + "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAaNTBqro6W7uAgKnFKru0Smmm3FvF\n"
-			+ "irsMfgqikhchwLuORnt+NzeSx92Y6lS0MIzqI59Frk/0dg0TSQemrUWll00AGubW\n" + "fdiIiltWrSXszni8tgtZf0y7DRcgSfBTrPIxCF0BJBw6UFA6CxzP7J0gQ53lKMay\n"
-			+ "k+DvLYOcsi7RY2WLVfY=\n" + "-----END PUBLIC KEY-----";
-
 	private static final String SERVER_PUBLIC_KEY_PROD = "-----BEGIN PUBLIC KEY-----\n" + "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQA/mqxm0092ovWqQluMYWJXc7iE+0v\n"
 			+ "mrA8vJNUo1bAEe9dWY9FucDnZIbNNNGKh8soA9Ej7gyW9Yc6D7llh52LhscBpGd6\n" + "bX+FNZEROhIDJP2KgTTKVX+ASB0WtPT3V9AbyoAAxEse8IP5Wec5ZGQG1B/mOlGm\n"
 			+ "Z/aaRkB1bwl9eCNojpw=\n" + "-----END PUBLIC KEY-----";
-
-	// PROD
-	public static final String SERVER_PUBLIC_KEY = SERVER_PUBLIC_KEY_PROD;
 
 	public class IntentFilters {
 		public static final String INVITE_REQUEST = "invite_request_intent";
@@ -55,14 +48,14 @@ public class SurespotConstants {
 	public final static String DRIVE_IDENTITY_FOLDER = "surespot identity backups";
 
 
+	public final static boolean PRODUCTION = false;
+
 	// PROD set to 3
-	public final static int MAX_IDENTITIES = 3;
+	public final static int MAX_IDENTITIES = PRODUCTION ? 3 : 30;
 
-	// PROD false for production
-	public final static boolean LOGGING = false;
-
-	// PROD true for production
-	public final static boolean SSL_STRICT = true;
+	public final static boolean LOGGING = !PRODUCTION;
+	public final static boolean SSL_STRICT = PRODUCTION;
+	public static final String SERVER_PUBLIC_KEY = PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";
@@ -80,6 +73,7 @@ public class SurespotConstants {
 	public class MimeTypes {
 		public final static String TEXT = "text/plain";
 		public final static String IMAGE = "image/";
+		public final static String GIF = "image/gif";
 		public final static String M4A = "audio/mp4";
 		public final static String DRIVE_FOLDER = "application/vnd.google-apps.folder";
 		public final static String DRIVE_FILE = "application/vnd.google-apps.file";

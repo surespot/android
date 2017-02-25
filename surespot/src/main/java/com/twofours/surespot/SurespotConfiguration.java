@@ -34,7 +34,7 @@ public class SurespotConfiguration {
 			properties.load(rawResource);
 			mConfigProperties = properties;
 			mStrictSsl = SurespotConstants.SSL_STRICT;
-			mBaseUrl = (String) properties.get("baseUrl");
+			mBaseUrl = SurespotConstants.PRODUCTION ? (String) properties.get("baseUrlProd") : (String) properties.get("baseUrlLocal");
 			mGoogleApiLicenseKey = (String) properties.get("googleApiLicenseKey");
 			mGoogleApiKey = (String) properties.get("googleApiKey");
 
