@@ -3084,7 +3084,7 @@ public class ChatController {
 //            unregisterReceiver(mConnectivityReceiver);
 //        }
 //        catch (IllegalArgumentException e) {
-//            if (e.getMessage().contains("Receiver not registered")) {
+//            if (e.getUrl().contains("Receiver not registered")) {
 //                // Ignore this exception. This is exactly what is desired
 //            }
 //            else {

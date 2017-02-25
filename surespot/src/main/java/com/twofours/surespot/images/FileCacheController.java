@@ -27,7 +27,7 @@ public class FileCacheController {
     public FileCacheController(Context context) throws IOException {
         mCacheDir = FileUtils.getFileCacheDir(context);
         SurespotLog.v(TAG, "file cache dir: %s", mCacheDir);
-        mCache = DiskLruCache.open(mCacheDir, 100, 1, 10*1024*1024);
+        mCache = DiskLruCache.open(mCacheDir, 100, 1, 50*1024*1024);
     }
 
 
@@ -55,10 +55,19 @@ public class FileCacheController {
 
     public void putEntry(String key, InputStream inputStream) throws IOException {
         try {
-            SurespotLog.d(TAG, "putting file cache entry, key: " + key);
-            String gKey = generateKey(key);
-            DiskLruCache.Editor edit = mCache.edit(gKey);
 
+            String gKey = generateKey(key);
+
+            InputStream existing = getEntry(key);
+            if (existing != null) {
+                SurespotLog.d(TAG, "putEntry: cache entry already exists for key: " + key);
+                existing.close();
+                inputStream.close();
+                return;
+            }
+
+            SurespotLog.d(TAG, "putEntry: putting file cache entry, key: " + key);
+            DiskLruCache.Editor edit = mCache.edit(gKey);
             if (edit != null) {
                 OutputStream outputStream = edit.newOutputStream(0);
                 ByteStreams.copy(inputStream, outputStream);

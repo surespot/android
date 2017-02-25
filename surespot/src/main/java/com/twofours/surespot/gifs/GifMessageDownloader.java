@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.twofours.surespot.images;
+package com.twofours.surespot.gifs;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
@@ -29,15 +29,16 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.SurespotConfiguration;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.images.BitmapCache;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -57,7 +58,7 @@ import java.lang.ref.WeakReference;
  * <p/>
  * A local cache of downloaded images is maintained internally to improve performance.
  */
-public class MessageImageDownloader {
+public class GifMessageDownloader {
     private static final String TAG = "MessageImageDownloader";
     private static BitmapCache mBitmapCache = new BitmapCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
@@ -65,7 +66,7 @@ public class MessageImageDownloader {
     private String mUsername;
 
 
-    public MessageImageDownloader(String username, ChatAdapter chatAdapter) {
+    public GifMessageDownloader(String username, ChatAdapter chatAdapter) {
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
@@ -295,11 +296,11 @@ public class MessageImageDownloader {
                             if (finalBitmap != null) {
 
                                 if (!TextUtils.isEmpty(messageData)) {
-                                    MessageImageDownloader.addBitmapToCache(messageData, finalBitmap);
+                                    GifMessageDownloader.addBitmapToCache(messageData, finalBitmap);
                                 }
 
                                 if (!TextUtils.isEmpty(finalMessageString)) {
-                                    MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
+                                    GifMessageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
                                 }
 
 
