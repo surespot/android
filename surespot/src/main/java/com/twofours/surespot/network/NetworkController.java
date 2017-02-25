@@ -72,7 +72,6 @@ public class NetworkController {
         mBaseUrl = SurespotConfiguration.getBaseUrl();
         mCookieStore = new SurespotCookieJar();
 
-
         if (mUsername != null) {
             Cookie cookie = IdentityController.getCookieForUser(mUsername);
             if (cookie != null) {
@@ -84,13 +83,6 @@ public class NetworkController {
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
         Cache cache = new Cache(FileUtils.getHttpCacheDir(mContext), cacheSize);
 
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            @Override
-            public void log(String message) {
-                SurespotLog.d("okhttp", message);
-            }
-        });
-        logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
         //handle 401
         okhttp3.Authenticator authenticator = new okhttp3.Authenticator() {
@@ -140,13 +132,23 @@ public class NetworkController {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .cache(cache)
                 .cookieJar(mCookieStore)
-                .addInterceptor(logging)
                 .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
-                .authenticator(authenticator);
+                .authenticator(authenticator);;
+
+        if (SurespotConstants.LOGGING) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override
+                public void log(String message) {
+                    SurespotLog.d("okhttp", message);
+                }
+            });
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+            builder = builder.addInterceptor(logging);
+        }
+
 
         if (SurespotConfiguration.isSslCheckingStrict()) {
-
-
             mClient = builder.build();
         } else {
             try {
