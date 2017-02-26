@@ -280,18 +280,24 @@ public class ChatController {
                 @Override
                 protected Void doInBackground(Void... params) {
                     SurespotLog.d(TAG, "ChatAdapter open for user: %s", otherUser);
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF) ) {
 
                         // decrypt it before adding
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
                                 message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
-                        // substitute emoji
+
                         if (plainText != null) {
                             // set plaintext in message so we don't have to decrypt again
-                            SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
-                            EmojiconHandler.addEmojis(mContext, builder, 30);
-                            message.setPlainData(builder.toString());
+                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                                // substitute emoji
+                                SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
+                                EmojiconHandler.addEmojis(mContext, builder, 30);
+                                message.setPlainData(builder.toString());
+                            }
+                            else {
+                                message.setPlainData(plainText);
+                            }
                         }
                         else {
                             // error decrypting
