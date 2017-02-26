@@ -100,6 +100,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             }
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
             boolean sameUser = ChatManager.isChatControllerAttached(to);
+            boolean chatControllerConnected = false;
 
             //if current chat controller is for to user
             boolean tabOpenToUser = false;
@@ -110,16 +111,22 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     if (from.equals(chatController.getCurrentChat())) {
                         tabOpenToUser = true;
                     }
+
+                    chatControllerConnected = chatController.isConnected();
+
+
                 }
             }
 
             boolean uiAttached = ChatManager.isUIAttached();
 
-            SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b", isScreenOn, uiAttached, hasLoggedInUser,
-                    sameUser, tabOpenToUser);
+            //TODO check chat controller connected for user
 
-            if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && uiAttached) {
-                SurespotLog.d(TAG, "not displaying gcm notification because the tab is open for it.");
+            SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b, connected: %b", isScreenOn, uiAttached, hasLoggedInUser,
+                    sameUser, tabOpenToUser, chatControllerConnected);
+
+            if (hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && uiAttached && chatControllerConnected) {
+                SurespotLog.d(TAG, "not displaying gcm notification because the tab is open for it and the chat controller is connected.");
                 return;
             }
 
