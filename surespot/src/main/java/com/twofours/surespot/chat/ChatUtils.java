@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
@@ -189,6 +190,7 @@ public class ChatUtils {
 
                         String iv = EncryptionController.getStringIv();
                         MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
+
                         SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.IMAGE, localImageUri, iv);
                         final SurespotMessage finalMessage = message;
 
@@ -500,6 +502,17 @@ public class ChatUtils {
             SurespotLog.e(TAG, e, "Error checking exif");
         }
         return 0;
+    }
+
+    public static void setImageViewLayout(ImageView imageView, int width, int height) {
+     //   double widthRatio = (double) SurespotConfiguration.getImageDisplayHeight() / height;
+//        double heightRatio = (double) SurespotConfiguration.getImageDisplayWidth() - widthOffset / width
+        //SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,message.getIv());
+
+
+        imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+   //     imageView.getLayoutParams().width = height > width ? width : SurespotConfiguration.getImageDisplaWidth();
+
     }
 
     @android.annotation.SuppressLint("NewApi")

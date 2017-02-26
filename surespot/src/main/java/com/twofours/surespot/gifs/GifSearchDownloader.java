@@ -74,7 +74,7 @@ public class GifSearchDownloader {
         else {
             SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
             cancelPotentialDownload(imageView, uri);
-            imageView.clearAnimation();
+         //   imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
 
             //      UIUtils.updateDateAndSize(mChatAdapter.getContext(), message, (View) imageView.getParent());

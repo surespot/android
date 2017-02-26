@@ -86,14 +86,10 @@ public class MessageImageDownloader {
         else {
             SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
             cancelPotentialDownload(imageView, message);
-            imageView.clearAnimation();
+       //     imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
 
-            double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / bitmap.getHeight();
-            SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,message.getIv());
-            imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-            imageView.getLayoutParams().width = (int) (bitmap.getWidth() * widthMultiplier);
-
+            ChatUtils.setImageViewLayout(imageView, bitmap.getWidth(), bitmap.getHeight());
             message.setLoaded(true);
             message.setLoading(false);
 
@@ -314,18 +310,11 @@ public class MessageImageDownloader {
 
                                     imageView.clearAnimation();
                                     Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
-                                    // AlphaAnimation(0,
-                                    // 1);
                                     imageView.startAnimation(fadeIn);
                                 }
 
                                 imageView.setImageBitmap(finalBitmap);
-
-                                double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalBitmap.getHeight();
-                                SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,getMessage().getIv());
-                                imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-                                imageView.getLayoutParams().width = (int) (finalBitmap.getWidth() * widthMultiplier);
-
+                                ChatUtils.setImageViewLayout(imageView, finalBitmap.getWidth(), finalBitmap.getHeight());
                                 UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 mChatAdapter.checkLoaded();
                             }

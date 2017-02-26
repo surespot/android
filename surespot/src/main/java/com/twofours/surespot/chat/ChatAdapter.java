@@ -385,10 +385,10 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.imageView.setVisibility(View.GONE);
-                chatMessageViewHolder.imageView.clearAnimation();
+              //  chatMessageViewHolder.imageView.clearAnimation();
                 chatMessageViewHolder.imageView.setImageBitmap(null);
                 if (item.getPlainData() != null) {
-                    chatMessageViewHolder.tvText.clearAnimation();
+                    //chatMessageViewHolder.tvText.clearAnimation();
                     chatMessageViewHolder.tvText.setText(item.getPlainData());
                 }
                 else {
@@ -402,7 +402,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
-                chatMessageViewHolder.tvText.clearAnimation();
+                //chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");
                 if (!TextUtils.isEmpty(item.getData()) || !TextUtils.isEmpty(item.getPlainData())) {
@@ -442,8 +442,8 @@ public class ChatAdapter extends BaseAdapter {
                     }
                 }
                 chatMessageViewHolder.voiceStop.setVisibility(View.GONE);
-                chatMessageViewHolder.tvText.clearAnimation();
-                chatMessageViewHolder.imageView.clearAnimation();
+                //chatMessageViewHolder.tvText.clearAnimation();
+                //chatMessageViewHolder.imageView.clearAnimation();
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");
                 chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
@@ -458,7 +458,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
-                chatMessageViewHolder.tvText.clearAnimation();
+                //chatMessageViewHolder.tvText.clearAnimation();
 
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");

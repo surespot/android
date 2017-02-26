@@ -25,9 +25,9 @@ import android.view.animation.AnimationUtils;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.images.FileCacheController;
@@ -81,12 +81,9 @@ public class GifMessageDownloader {
             SurespotLog.d(TAG, "loading gif from memory cache for iv: %s",message.getIv());
 
             cancelPotentialDownload(imageView, message);
-            imageView.clearAnimation();
+            //imageView.clearAnimation();
             imageView.setImageDrawable(gifDrawable);
-            double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / gifDrawable.getIntrinsicHeight();
-            SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier, message.getIv());
-            imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-            imageView.getLayoutParams().width = (int) (gifDrawable.getIntrinsicWidth() * widthMultiplier);
+            ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
             message.setLoaded(true);
             message.setLoading(false);
 
@@ -248,14 +245,11 @@ public class GifMessageDownloader {
                                     @Override
                                     public void run() {
 
-                                        double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalGifDrawable.getIntrinsicHeight();
-                                        SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier, getMessage().getIv());
                                         imageView.clearAnimation();
                                         Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
                                         imageView.startAnimation(fadeIn);
                                         imageView.setImageDrawable(finalGifDrawable);
-                                        imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-                                        imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth() * widthMultiplier);
+                                        ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
                                         UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                         mChatAdapter.checkLoaded();
                                     }

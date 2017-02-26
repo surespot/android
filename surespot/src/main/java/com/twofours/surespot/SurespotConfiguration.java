@@ -21,6 +21,7 @@ public class SurespotConfiguration {
 	private static String mGoogleApiLicenseKey;
 	private static String mGoogleApiKey;
 
+	private static int mImageDisplayWidth;
 	private static int mImageDisplayHeight;
 	private static int mQRDisplaySize;
 	
@@ -45,9 +46,11 @@ public class SurespotConfiguration {
 
 			// if (metrics.densityDpi == DisplayMetrics.DENSITY_XXHIGH) {
 			mImageDisplayHeight = (int) (metrics.density * IMAGE_DISPLAY_HEIGHT_MULT);
+			//mwx image width - 25% of screen
+			mImageDisplayWidth =  (int) (metrics.widthPixels -  metrics.density * 100);
 			mQRDisplaySize = (int) (metrics.density * IMAGE_DISPLAY_HEIGHT_MULT);
 			//
-			SurespotLog.v(TAG, "density: %f, densityDpi: %d, imageHeight: %d", metrics.density, metrics.densityDpi, mImageDisplayHeight);
+			SurespotLog.v(TAG, "density: %f, densityDpi: %d, imageHeight: %d, imageWidth: %d,", metrics.density, metrics.densityDpi, mImageDisplayHeight, mImageDisplayWidth);
 
 			SurespotLog.v(TAG, "ssl_strict: %b", SurespotConfiguration.isSslCheckingStrict());
 			SurespotLog.v(TAG, "baseUrl: %s", SurespotConfiguration.getBaseUrl());
@@ -73,6 +76,11 @@ public class SurespotConfiguration {
 		return mImageDisplayHeight;
 
 	}
+
+	public static int getImageDisplaWidth() {
+		return mImageDisplayWidth;
+	}
+
 
 	public static int getQRDisplaySize() {
 		return mQRDisplaySize;
