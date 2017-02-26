@@ -185,7 +185,7 @@ public class MessageImageDownloader {
             String messageString = null;
             if (!TextUtils.isEmpty(messageData)) {
 
-                SurespotLog.d(TAG, "GifDownloaderTask getting %s,", messageData);
+                SurespotLog.d(TAG, "MessageImageDownloaderTask getting %s,", messageData);
 
                 InputStream encryptedImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(messageData);
 

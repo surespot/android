@@ -459,9 +459,6 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.clearAnimation();
-                chatMessageViewHolder.imageView.clearAnimation();
-          //      chatMessageViewHolder.imageView.setImageBitmap(null);
-
 
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");

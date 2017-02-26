@@ -1,0 +1,54 @@
+package com.twofours.surespot.gifs;
+
+import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.Utils;
+
+import pl.droidsonroids.gif.GifDrawable;
+
+public class GifCache {
+	private GifLruCache mMemoryCache;
+	private final static String TAG = "GifCache";
+
+	public GifCache() {
+
+		// Get max available VM memory, exceeding this amount will throw an
+		// OutOfMemory exception. Stored in kilobytes as LruCache takes an
+		// int in its constructor.
+		// final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+		// Use 1/8th of the available memory for this memory cache.
+		// final int cacheSize = maxMemory / 2;
+
+		mMemoryCache = new GifLruCache(30);
+		// {
+		//
+		// @Override
+		// protected int sizeOf(String key, Bitmap bitmap) {
+		// // The cache size will be measured in kilobytes rather than
+		// // number of items.
+		// return (bitmap.getRowBytes() * bitmap.getHeight()) / 1024;
+		// }
+		// };
+
+	}
+
+	public void addGifDrawableToMemoryCache(String key, GifDrawable drawable) {
+		String md5Key = Utils.md5(key);
+		mMemoryCache.put(md5Key, drawable);
+	}
+
+	public GifDrawable getGifDrawableFromMemCache(String key) {
+		String md5Key = Utils.md5(key);
+		return mMemoryCache.get(md5Key);
+	}
+
+	public void evictAll() {
+		SurespotLog.v(TAG, "evicting bitmap cache");
+		mMemoryCache.evictAll();
+	}
+
+	public void remove(String key) {
+		String md5Key = Utils.md5(key);
+		mMemoryCache.remove(md5Key);
+	}
+}

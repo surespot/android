@@ -16,7 +16,6 @@
 
 package com.twofours.surespot.gifs;
 
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -29,7 +28,6 @@ import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.images.BitmapCache;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.UIUtils;
@@ -55,7 +53,7 @@ import pl.droidsonroids.gif.GifImageView;
  */
 public class GifMessageDownloader {
     private static final String TAG = "GifSearchDownloader";
-    private static BitmapCache mBitmapCache = new BitmapCache();
+    private static GifCache mGifCache = new GifCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
@@ -71,7 +69,27 @@ public class GifMessageDownloader {
             return;
         }
 
-        forceDownload(imageView, message);
+        String uri = TextUtils.isEmpty(message.getPlainData()) ? null : message.getPlainData().toString();
+
+        //cache per IV so we have a drawable per message, not one per url
+        GifDrawable gifDrawable = getGifDrawableFromCache(message.getIv());
+        if (gifDrawable == null) {
+            SurespotLog.d(TAG, "gif not in memory cache for iv: %s, url: %s",message.getIv(), uri);
+            forceDownload(imageView, message);
+        }
+        else {
+            SurespotLog.d(TAG, "loading gif from memory cache for iv: %s, url: %s",message.getIv(), uri);
+            cancelPotentialDownload(imageView, message);
+            imageView.clearAnimation();
+            imageView.setImageDrawable(gifDrawable);
+            double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / gifDrawable.getIntrinsicHeight();
+            imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+            imageView.getLayoutParams().width = (int) (gifDrawable.getIntrinsicWidth() * widthMultiplier);
+            message.setLoaded(true);
+            message.setLoading(false);
+
+            UIUtils.updateDateAndSize(mChatAdapter.getContext(), message, (View) imageView.getParent());
+        }
     }
 
 	/*
@@ -87,6 +105,8 @@ public class GifMessageDownloader {
             GifDownloaderTask task = new GifDownloaderTask(imageView, message);
             DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
             imageView.setTag(R.id.tagGifDownloader, decryptionTaskWrapper);
+            message.setLoaded(false);
+            message.setLoading(true);
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
         }
     }
@@ -210,27 +230,30 @@ public class GifMessageDownloader {
                     }
 
 
-                    final GifImageView imageView = imageViewReference.get();
-                    if (imageView != null && gifDrawable != null) {
-                        final GifDownloaderTask gifDownloaderTask = getGifDownloaderTask(imageView);
+                    if (gifDrawable != null) {
+                        addGifDrawableToCache(getMessage().getIv(), gifDrawable);
+                        final GifImageView imageView = imageViewReference.get();
+                        if (imageView != null) {
+                            final GifDownloaderTask gifDownloaderTask = getGifDownloaderTask(imageView);
 
-                        // Change bitmap only if this process is still associated with it
-                        // Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-                        if ((GifDownloaderTask.this == gifDownloaderTask)) {
-                            final GifDrawable finalGifDrawable = gifDrawable;
-                            mHandler.post(new Runnable() {
 
-                                @Override
-                                public void run() {
+                            // Change bitmap only if this process is still associated with it
+                            // Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+                            if ((GifDownloaderTask.this == gifDownloaderTask)) {
+                                final GifDrawable finalGifDrawable = gifDrawable;
+                                mHandler.post(new Runnable() {
 
-                                double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalGifDrawable.getIntrinsicHeight();
-                                SurespotLog.d(TAG, "widthMultiplier %f", widthMultiplier);
-                                imageView.setImageDrawable(finalGifDrawable);
-                                imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-                                imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth() * widthMultiplier);
-                                UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
+                                    @Override
+                                    public void run() {
 
-                                }
+                                        double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalGifDrawable.getIntrinsicHeight();
+                                        SurespotLog.d(TAG, "widthMultiplier %f", widthMultiplier);
+                                        imageView.setImageDrawable(finalGifDrawable);
+                                        imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+                                        imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth() * widthMultiplier);
+                                        UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
+
+                                    }
 //
 //                            else
 //
@@ -239,7 +262,8 @@ public class GifMessageDownloader {
 //                                imageView.setImageDrawable(null);
 //                            }
 
-                            });
+                                });
+                            }
                         }
                     }
                 }
@@ -265,27 +289,17 @@ public class GifMessageDownloader {
      *
      * @param bitmap The newly downloaded bitmap.
      */
-    public static void addBitmapToCache(String key, Bitmap bitmap) {
+    public static void addGifDrawableToCache(String key, GifDrawable bitmap) {
         if (key != null && bitmap != null) {
-            mBitmapCache.addBitmapToMemoryCache(key, bitmap);
+            mGifCache.addGifDrawableToMemoryCache(key, bitmap);
         }
     }
 
-    private static Bitmap getBitmapFromCache(String key) {
+    private static GifDrawable getGifDrawableFromCache(String key) {
         if (key != null) {
-            return mBitmapCache.getBitmapFromMemCache(key);
+            return mGifCache.getGifDrawableFromMemCache(key);
         }
 
         return null;
-    }
-
-    public static void moveCacheEntry(String sourceKey, String destKey) {
-        if (sourceKey != null && destKey != null) {
-            Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
-            if (bitmap != null) {
-                mBitmapCache.remove(sourceKey);
-                mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
-            }
-        }
     }
 }
