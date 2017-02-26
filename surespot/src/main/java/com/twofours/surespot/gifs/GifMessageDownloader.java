@@ -67,26 +67,11 @@ public class GifMessageDownloader {
     }
 
     public void download(GifImageView imageView, SurespotMessage message) {
-
         if (message == null) {
             return;
         }
-//        Bitmap bitmap = getBitmapFromCache(uri);
-//
-//
-//        if (bitmap == null) {
-        //SurespotLog.d(TAG, "bitmap not in memory cache: " + uri);
+
         forceDownload(imageView, message);
-//        }
-//        else {
-//            SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
-//            cancelPotentialDownload(imageView, uri);
-//            imageView.clearAnimation();
-//            imageView.setImageBitmap(bitmap);
-//
-//            //      UIUtils.updateDateAndSize(mChatAdapter.getContext(), message, (View) imageView.getParent());
-//
-//        }
     }
 
 	/*
@@ -100,13 +85,8 @@ public class GifMessageDownloader {
     private void forceDownload(GifImageView imageView, SurespotMessage message) {
         if (cancelPotentialDownload(imageView, message)) {
             GifDownloaderTask task = new GifDownloaderTask(imageView, message);
-            //          DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task, SurespotConfiguration.getImageDisplayHeight());
-//            imageView.setImageDrawable(downloadedDrawable);
-
             DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
-
             imageView.setTag(R.id.tagGifDownloader, decryptionTaskWrapper);
-
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
         }
     }
@@ -137,8 +117,6 @@ public class GifMessageDownloader {
      */
     public GifDownloaderTask getGifDownloaderTask(GifImageView imageView) {
         if (imageView != null) {
-
-
             Object oDecryptionTaskWrapper = imageView.getTag(R.id.tagGifDownloader);
             if (oDecryptionTaskWrapper instanceof DecryptionTaskWrapper) {
                 DecryptionTaskWrapper decryptionTaskWrapper = (DecryptionTaskWrapper) oDecryptionTaskWrapper;
@@ -178,7 +156,7 @@ public class GifMessageDownloader {
 
             //decrypt the url
             if (TextUtils.isEmpty(mMessage.getPlainData())) {
-                final CharSequence plainText = EncryptionController.symmetricDecrypt(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
+                CharSequence plainText = EncryptionController.symmetricDecrypt(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
                         mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
                 mMessage.setPlainData(plainText);
             }
@@ -188,13 +166,16 @@ public class GifMessageDownloader {
                 SurespotLog.d(TAG, "could not decrypt message");
                 String plainData = mChatAdapter.getContext().getString(R.string.message_error_decrypting_message);
                 mMessage.setPlainData(plainData);
+                return;
             }
 
             //if we have unencrypted url
-            if (!TextUtils.isEmpty(mMessage.getPlainData())) {
-
-                String url = mMessage.getPlainData().toString();
-
+            String url = mMessage.getPlainData().toString();
+            if (!TextUtils.isEmpty(url)) {
+                if (!url.startsWith("https")) {
+                    SurespotLog.w(TAG, "GifDownloaderTask url does not start with https: %s,", url);
+                    return;
+                }
 
                 SurespotLog.d(TAG, "GifDownloaderTask getting %s,", url);
 
