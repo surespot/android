@@ -313,6 +313,7 @@ public class ChatAdapter extends BaseAdapter {
             chatMessageViewHolder.voicePlayed = (ImageView) convertView.findViewById(R.id.voicePlayed);
             chatMessageViewHolder.voiceStop = (ImageView) convertView.findViewById(R.id.voiceStop);
             chatMessageViewHolder.gifView = (GifImageView) convertView.findViewById(R.id.messageGif);
+            chatMessageViewHolder.gifView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
 
             chatMessageViewHolder.tvToVersion = (TextView) convertView.findViewById(R.id.messageToVersion);
             chatMessageViewHolder.tvFromVersion = (TextView) convertView.findViewById(R.id.messageFromVersion);
@@ -388,6 +389,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.gifView.setVisibility(View.GONE);
                 chatMessageViewHolder.imageView.clearAnimation();
                 chatMessageViewHolder.gifView.clearAnimation();
+      //          chatMessageViewHolder.gifView.setImageDrawable(null);
                 chatMessageViewHolder.imageView.setImageBitmap(null);
                 if (item.getPlainData() != null) {
                     chatMessageViewHolder.tvText.clearAnimation();
@@ -404,6 +406,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.gifView.setVisibility(View.GONE);
+        //        chatMessageViewHolder.gifView.setImageDrawable(null);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.gifView.clearAnimation();
@@ -449,6 +452,8 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.voiceStop.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.imageView.clearAnimation();
+        //        chatMessageViewHolder.gifView.setImageDrawable(null);
+          //      chatMessageViewHolder.imageView.setImageBitmap(null);
                 chatMessageViewHolder.gifView.clearAnimation();
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");
@@ -458,6 +463,7 @@ public class ChatAdapter extends BaseAdapter {
                 mMessageVoiceDownloader.download(convertView, item);
                 chatMessageViewHolder.voiceSeekBar.setTag(R.id.tagMessage, new WeakReference<SurespotMessage>(item));
                 VoiceController.attach(chatMessageViewHolder.voiceSeekBar);
+                break;
 
             case SurespotConstants.MimeTypes.GIF:
                 chatMessageViewHolder.gifView.setVisibility(View.VISIBLE);
@@ -466,6 +472,8 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.clearAnimation();
                 chatMessageViewHolder.imageView.clearAnimation();
+          //      chatMessageViewHolder.imageView.setImageBitmap(null);
+
 
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.tvText.setText("");

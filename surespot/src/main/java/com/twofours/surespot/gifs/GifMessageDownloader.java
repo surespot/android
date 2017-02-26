@@ -24,6 +24,7 @@ import android.view.View;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
@@ -278,6 +279,8 @@ public class GifMessageDownloader {
 
 
                                     imageView.setImageDrawable(finalGifDrawable);
+                                    imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+                                    imageView.getLayoutParams().width =  ((View) imageView.getParent()).getWidth()-20;
                                     UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 }
 //

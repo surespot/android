@@ -12,8 +12,8 @@ import java.util.List;
 
 import pl.droidsonroids.gif.GifImageView;
 
-public class GifsAdapter extends RecyclerView.Adapter<GifsAdapter.GifViewHolder> {
-    private final static String TAG = "GifsAdapter";
+public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifViewHolder> {
+    private final static String TAG = "GifSearchAdapter";
     private List<String> mGifs;
     private GifSearchDownloader mGifSearchDownloader;
     private Context mContext;
@@ -22,7 +22,7 @@ public class GifsAdapter extends RecyclerView.Adapter<GifsAdapter.GifViewHolder>
     private String mOurUsername;
     private String mTheirUsername;
 
-    public GifsAdapter(Context context, String ourUsername, String theirUsername, List<String> gifUrls) {
+    public GifSearchAdapter(Context context, String ourUsername, String theirUsername, List<String> gifUrls) {
         SurespotLog.d(TAG, "Constructor, ourUsername: %s, theirUsername: %s", ourUsername, theirUsername);
 
         mContext = context;

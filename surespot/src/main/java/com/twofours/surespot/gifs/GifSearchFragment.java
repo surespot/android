@@ -41,7 +41,7 @@ public class GifSearchFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
-    private GifsAdapter mGifsAdapter;
+    private GifSearchAdapter mGifsAdapter;
 
     public GifSearchFragment() {
         // Required empty public constructor
@@ -86,7 +86,7 @@ public class GifSearchFragment extends Fragment {
 
 
         List<String> gifUrls = searchGifs();
-        mGifsAdapter = new GifsAdapter(this.getActivity(),mOurUsername, mTheirUsername, gifUrls);
+        mGifsAdapter = new GifSearchAdapter(this.getActivity(),mOurUsername, mTheirUsername, gifUrls);
         mRecyclerView.setAdapter(mGifsAdapter);
         return view;
     }
@@ -139,7 +139,7 @@ public class GifSearchFragment extends Fragment {
             JSONArray data = json.getJSONArray("data");
             ArrayList<String> gifURLs = new ArrayList<>(data.length());
             for (int i=0;i<data.length();i++) {
-                JSONObject orig = data.getJSONObject(i).getJSONObject("images").getJSONObject("original");
+                JSONObject orig = data.getJSONObject(i).getJSONObject("images").getJSONObject("fixed_height");
                 String url =  orig.getString("url");
                 if (url.toLowerCase().startsWith("https")) {
                     SurespotLog.d("adding gif url: %s", url);

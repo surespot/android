@@ -58,13 +58,13 @@ public class FileCacheController {
 
             String gKey = generateKey(key);
 
-            InputStream existing = getEntry(key);
-            if (existing != null) {
-                SurespotLog.d(TAG, "putEntry: cache entry already exists for key: " + key);
-                existing.close();
-                inputStream.close();
-                return;
-            }
+//            InputStream existing = getEntry(key);
+//            if (existing != null) {
+//                SurespotLog.d(TAG, "putEntry: cache entry already exists for key: " + key);
+//                existing.close();
+//                inputStream.close();
+//                return;
+//            }
 
             SurespotLog.d(TAG, "putEntry: putting file cache entry, key: " + key);
             DiskLruCache.Editor edit = mCache.edit(gKey);
@@ -104,10 +104,7 @@ public class FileCacheController {
     }
 
     /**
-     * Removes all disk cache entries from the given directory. This should not be called directly, call {@link DiskLruCache#clearCache(Context, String)} or
-     * {@link DiskLruCache#clearCache()} instead.
-     *
-     * @param cacheDir The directory to remove the cache files from
+     * Removes all disk cache entries from the given directory.
      */
     private synchronized void clearCache(File cacheDir) {
         final File[] files = cacheDir.listFiles();

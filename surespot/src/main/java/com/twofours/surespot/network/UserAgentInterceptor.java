@@ -26,7 +26,7 @@ public class UserAgentInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request originalRequest = chain.request();
         SurespotLog.v(TAG,"user agent for request host: %s", originalRequest.url().host());
-        //if request is going to external URL don't rewrite user agent
+       //if request is going to external URL don't rewrite user agent
         if (originalRequest.url().host().equals(new URL(SurespotConfiguration.getBaseUrl()).getHost())) {
 
             Request requestWithUserAgent = originalRequest.newBuilder()

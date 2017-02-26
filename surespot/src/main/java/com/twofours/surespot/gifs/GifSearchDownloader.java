@@ -50,11 +50,11 @@ public class GifSearchDownloader {
     private static final String TAG = "GifSearchDownloader";
     private static BitmapCache mBitmapCache = new BitmapCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
-    private GifsAdapter mChatAdapter;
+    private GifSearchAdapter mChatAdapter;
     private String mUsername;
 
 
-    public GifSearchDownloader(String username, GifsAdapter chatAdapter) {
+    public GifSearchDownloader(String username, GifSearchAdapter chatAdapter) {
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
