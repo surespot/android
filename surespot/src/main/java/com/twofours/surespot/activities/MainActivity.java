@@ -1580,10 +1580,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         SurespotLog.d(TAG, "backButtonPressed");
 
-        if (getFragmentManager().getBackStackEntryCount() > 0) {
-            getFragmentManager().popBackStack();
-            return true;
-        }
+
 
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -1593,6 +1590,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         //returning false will cause the keyboard to be hidden
         if (mActivityLayout.isKeyboardVisible()) {
             return false;
+        }
+
+        if (mGifShowing) {
+            hideGifDrawer(false);
+            return true;
         }
 
         if (isEmojiVisible()) {
@@ -2064,102 +2066,40 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mButtons.setVisibility(View.GONE);
             mEditTexts.setVisibility(View.GONE);
 
+            final EditText etGifSearch = (EditText) bottomFrame.findViewById(R.id.etGifSearch);
+      //      etGifSearch.setText("Search GIFs");
+            etGifSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+//                    if (hasFocus) {
+//                        etGifSearch.setText("");
+//                    }
+//                    else {
+//                        etGifSearch.setText("Search GIFs");
+//                    }
+                }
+            });
+
+            View closeView = bottomFrame.findViewById(R.id.ivGifClose);
+            closeView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                  hideGifDrawer(false);
+                }
+            });
 
             bottomFrame.post(new Runnable() {
                 @Override
                 public void run() {
-                    currentMainView.setPadding(0,0,0, bottomFrame.getHeight());
+                    currentMainView.setPadding(0,0,0, bottomFrame.getHeight() + 20);
                 }
             });
 
         }
-        else {
-            mContentFrame.removeView(mGifView);
-            mSendButton.setVisibility(View.VISIBLE);
-            mButtons.setVisibility(View.VISIBLE);
-            mEditTexts.setVisibility(View.VISIBLE);
-
-            mGifView = null;
-            mGifShowing = false;
-            currentMainView.setPadding(0,0,0, 0);
-        }
-    }
-
-    private void showGifSearch() {
-        int keyboardHeight = mActivityLayout.getKeyboardHeight();
-
-
-        SurespotLog.d(TAG, "showGifDrawer height: %d", keyboardHeight);
-        mGifShowing = true;
-        final ChatController cc = ChatManager.getChatController(mUser);
-        if (cc == null) {
-            //TODO handle
-            return;
-        }
-
-        final String currentChat = cc.getCurrentChat();
-        if (currentChat == null) {
-            //TODO handle
-            return;
-        }
-
-        if (mGifView == null) {
-            mGifView = (GifSearchFragment) LayoutInflater
-                    .from(this).inflate(R.layout.fragment_gifsearch, null, false);
-
-
-            mGifView.setCallback(new IAsyncCallback<String>() {
-                @Override
-                public void handleResponse(String result) {
-                    if (result != null) {
-                        ChatUtils.sendGifMessage(mUser, currentChat, result);
-                    }
-                }
-            });
-            mWindowLayoutParams = new WindowManager.LayoutParams();
-            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
-            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
-            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-        }
-
-        mWindowLayoutParams.height = keyboardHeight;
-        mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
-
-        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
-
-        try {
-            if (mGifView.getParent() != null) {
-                wm.removeViewImmediate(mGifView);
-            }
-        }
-        catch (Exception e) {
-            SurespotLog.e(TAG, e, "error removing emoji view");
-        }
-
-        try {
-            wm.addView(mGifView, mWindowLayoutParams);
-        }
-        catch (Exception e) {
-            SurespotLog.e(TAG, e, "error adding emoji view");
-            mGifShowing = false;
-            return;
-        }
-
-
-        if (!mActivityLayout.isKeyboardVisible()) {
-            SurespotLog.d(TAG, "setting padding");
-            mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
-        }
-
-        setButtonText();
 
     }
 
-    private void hideGifDrawer() {
-        hideGifDrawer(true);
-    }
+
 
     public void hideGifDrawer(boolean showKeyboard) {
         if (showKeyboard) {
@@ -2168,16 +2108,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             input.showSoftInput(mEtMessage, 0);
         }
 
-        if (mGifView != null && mGifView.getParent() != null) {
-            WindowManager wm = (WindowManager) mContext
-                    .getSystemService(Context.WINDOW_SERVICE);
-            wm.removeViewImmediate(mGifView);
-        }
+        mContentFrame.removeView(mGifView);
+        mSendButton.setVisibility(View.VISIBLE);
+        mButtons.setVisibility(View.VISIBLE);
+        mEditTexts.setVisibility(View.VISIBLE);
 
-        //mEmojiButton.setImageResource(R.drawable.smiley);
-        mActivityLayout.setPadding(0, 0, 0, 0);
+        mGifView = null;
         mGifShowing = false;
-        setButtonText();
+        View currentMainView = mContentFrame.getChildAt(0);
+        currentMainView.setPadding(0,0,0,0);
     }
 
     @Override

@@ -280,7 +280,7 @@ public class ChatController {
                 @Override
                 protected Void doInBackground(Void... params) {
                     SurespotLog.d(TAG, "ChatAdapter open for user: %s", otherUser);
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF) ) {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) ) {
 
                         // decrypt it before adding
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
@@ -2366,7 +2366,7 @@ public class ChatController {
 
                 switch (nextMessage.getMimeType()) {
                     case SurespotConstants.MimeTypes.TEXT:
-                    case SurespotConstants.MimeTypes.GIF:
+                    case SurespotConstants.MimeTypes.GIF_LINK:
                         prepAndSendTextMessage(nextMessage);
                         break;
                     case SurespotConstants.MimeTypes.IMAGE:

@@ -96,7 +96,7 @@ public class ChatUtils {
         if (!TextUtils.isEmpty(url)) {
             ChatController cc = ChatManager.getChatController(ourUsername);
             if (cc != null) {
-                cc.sendMessage(theirUsername, url, SurespotConstants.MimeTypes.GIF);
+                cc.sendMessage(theirUsername, url, SurespotConstants.MimeTypes.GIF_LINK);
                 return true;
             }
         }

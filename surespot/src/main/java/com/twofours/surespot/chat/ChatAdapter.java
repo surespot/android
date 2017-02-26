@@ -454,7 +454,7 @@ public class ChatAdapter extends BaseAdapter {
                 VoiceController.attach(chatMessageViewHolder.voiceSeekBar);
                 break;
 
-            case SurespotConstants.MimeTypes.GIF:
+            case SurespotConstants.MimeTypes.GIF_LINK:
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);

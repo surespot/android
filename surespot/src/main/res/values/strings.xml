@@ -373,4 +373,6 @@
     <string name="could_not_record_audio">Could not record audio, is the microphone permission enabled?</string>
     <string name="remove_title_right">Remove</string>
     <string name="could_not_send_gif_link">surespot could not send GIF link.</string>
+    <string name="powered_by_giphy">POWERED BY GIPHY</string>
+    <string name="search_gifs">Search GIFs</string>
 </resources>
