@@ -58,13 +58,13 @@ public class FileCacheController {
 
             String gKey = generateKey(key);
 
-//            InputStream existing = getEntry(key);
-//            if (existing != null) {
-//                SurespotLog.d(TAG, "putEntry: cache entry already exists for key: " + key);
-//                existing.close();
-//                inputStream.close();
-//                return;
-//            }
+            InputStream existing = getEntry(key);
+            if (existing != null) {
+                SurespotLog.d(TAG, "putEntry: cache entry already exists for key: " + key);
+                existing.close();
+                inputStream.close();
+                return;
+            }
 
             SurespotLog.d(TAG, "putEntry: putting file cache entry, key: " + key);
             DiskLruCache.Editor edit = mCache.edit(gKey);
