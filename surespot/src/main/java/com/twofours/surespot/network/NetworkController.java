@@ -132,8 +132,11 @@ public class NetworkController {
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .cache(cache)
                 .cookieJar(mCookieStore)
-                .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
-                .authenticator(authenticator);;
+                .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()));
+
+
+
+
 
         if (SurespotConstants.LOGGING) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -146,6 +149,8 @@ public class NetworkController {
 
             builder = builder.addInterceptor(logging);
         }
+
+        builder = builder.authenticator(authenticator);;
 
 
         if (SurespotConfiguration.isSslCheckingStrict()) {
