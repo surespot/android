@@ -199,7 +199,6 @@ public class GifMessageDownloader {
                 SurespotLog.d(TAG, "GifDownloaderTask getting %s,", url);
 
                 InputStream gifImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(url);
-                GifDrawable gifDrawable = null;
                 if (mCancelled) {
                     try {
                         if (gifImageStream != null) {
@@ -212,6 +211,7 @@ public class GifMessageDownloader {
                     return;
                 }
 
+                GifDrawable gifDrawable = null;
                 if (!mCancelled && gifImageStream != null) {
 
                     try {
@@ -225,33 +225,8 @@ public class GifMessageDownloader {
                         gifDrawable = new GifDrawableBuilder().from(bytes).build();
                     }
                     catch (Exception ioe) {
-
                         SurespotLog.w(TAG, ioe, "MessageImage exception");
-
                     }
-//                catch (IOException e) {
-//                    SurespotLog.w(TAG, e, "MessageImage e");
-//                }
-                    //         finally {
-
-//                        try {
-//                            if (encryptedImageStream != null) {
-//                                encryptedImageStream.close();
-//                            }
-//                        }
-//                        catch (IOException e) {
-//                            SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-//                        }
-
-//                    try {
-//                        if (gifInputStream != null) {
-//                            gifInputStream.close();
-//                        }
-//                    }
-//                    catch (IOException e) {
-//                        SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-//                    }
-                    //     }
 
 
                     final GifImageView imageView = imageViewReference.get();
@@ -267,24 +242,13 @@ public class GifMessageDownloader {
                                 @Override
                                 public void run() {
 
-                                    //   if (finalGifDrawable != null) {
-//
-//                                if (!TextUtils.isEmpty(messageData)) {
-//                                    GifSearchDownloader.addBitmapToCache(messageData, finalBitmap);
-//                                }
-//
-//                                if (!TextUtils.isEmpty(finalMessageString)) {
-//                                    GifSearchDownloader.addBitmapToCache(finalMessageString, finalBitmap);
-//                                }
+                                double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalGifDrawable.getIntrinsicHeight();
+                                SurespotLog.d(TAG, "widthMultiplier %f", widthMultiplier);
+                                imageView.setImageDrawable(finalGifDrawable);
+                                imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+                                imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth() * widthMultiplier);
+                                UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
 
-
-
-                                    double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight()/finalGifDrawable.getIntrinsicHeight();
-                                    SurespotLog.d(TAG, "widthMultiplier %f",widthMultiplier);
-                                    imageView.setImageDrawable(finalGifDrawable);
-                                    imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-                                    imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth()*widthMultiplier);
-                                    UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 }
 //
 //                            else
@@ -296,11 +260,9 @@ public class GifMessageDownloader {
 
                             });
                         }
-
                     }
                 }
             }
-
         }
     }
 
