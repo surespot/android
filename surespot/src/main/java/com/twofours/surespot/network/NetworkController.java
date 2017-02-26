@@ -83,6 +83,13 @@ public class NetworkController {
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
         Cache cache = new Cache(FileUtils.getHttpCacheDir(mContext), cacheSize);
 
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                SurespotLog.d("okhttp", message);
+            }
+        });
+        logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
         //handle 401
         okhttp3.Authenticator authenticator = new okhttp3.Authenticator() {
@@ -132,21 +139,9 @@ public class NetworkController {
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .cache(cache)
-                .cookieJar(mCookieStore);
-        if (SurespotConstants.LOGGING) {
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                @Override
-                public void log(String message) {
-                    SurespotLog.d("okhttp", message);
-                }
-            });
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-            builder.addInterceptor(logging);
-        }
-
-
-        builder.addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
+                .cookieJar(mCookieStore)
+                .addInterceptor(logging)
+                .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
                 .authenticator(authenticator);
 
 
