@@ -88,6 +88,12 @@ public class MessageImageDownloader {
             cancelPotentialDownload(imageView, message);
             imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
+
+            double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / bitmap.getHeight();
+            SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,message.getIv());
+            imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+            imageView.getLayoutParams().width = (int) (bitmap.getWidth() * widthMultiplier);
+
             message.setLoaded(true);
             message.setLoading(false);
 
@@ -314,7 +320,11 @@ public class MessageImageDownloader {
                                 }
 
                                 imageView.setImageBitmap(finalBitmap);
+
+                                double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalBitmap.getHeight();
+                                SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,getMessage().getIv());
                                 imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+                                imageView.getLayoutParams().width = (int) (finalBitmap.getWidth() * widthMultiplier);
 
                                 UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 mChatAdapter.checkLoaded();

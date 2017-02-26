@@ -20,6 +20,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -69,20 +71,20 @@ public class GifMessageDownloader {
             return;
         }
 
-        String uri = TextUtils.isEmpty(message.getPlainData()) ? null : message.getPlainData().toString();
-
-        //cache per IV so we have a drawable per message, not one per url
+        //cache per IV as well so we have a drawable per message
         GifDrawable gifDrawable = getGifDrawableFromCache(message.getIv());
         if (gifDrawable == null) {
-            SurespotLog.d(TAG, "gif not in memory cache for iv: %s, url: %s",message.getIv(), uri);
+            SurespotLog.d(TAG, "gif not in memory cache for iv: %s",message.getIv());
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.d(TAG, "loading gif from memory cache for iv: %s, url: %s",message.getIv(), uri);
+            SurespotLog.d(TAG, "loading gif from memory cache for iv: %s",message.getIv());
+
             cancelPotentialDownload(imageView, message);
             imageView.clearAnimation();
             imageView.setImageDrawable(gifDrawable);
             double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / gifDrawable.getIntrinsicHeight();
+            SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier, message.getIv());
             imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
             imageView.getLayoutParams().width = (int) (gifDrawable.getIntrinsicWidth() * widthMultiplier);
             message.setLoaded(true);
@@ -247,12 +249,15 @@ public class GifMessageDownloader {
                                     public void run() {
 
                                         double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight() / finalGifDrawable.getIntrinsicHeight();
-                                        SurespotLog.d(TAG, "widthMultiplier %f", widthMultiplier);
+                                        SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier, getMessage().getIv());
+                                        imageView.clearAnimation();
+                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+                                        imageView.startAnimation(fadeIn);
                                         imageView.setImageDrawable(finalGifDrawable);
                                         imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
                                         imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth() * widthMultiplier);
                                         UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
-
+                                        mChatAdapter.checkLoaded();
                                     }
 //
 //                            else
@@ -301,5 +306,15 @@ public class GifMessageDownloader {
         }
 
         return null;
+    }
+
+    public static void moveCacheEntry(String sourceKey, String destKey) {
+        if (sourceKey != null && destKey != null) {
+            GifDrawable bitmap = mGifCache.getGifDrawableFromMemCache(sourceKey);
+            if (bitmap != null) {
+                mGifCache.remove(sourceKey);
+                mGifCache.addGifDrawableToMemoryCache(destKey, bitmap);
+            }
+        }
     }
 }
