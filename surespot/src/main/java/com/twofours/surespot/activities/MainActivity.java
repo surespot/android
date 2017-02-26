@@ -526,7 +526,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         handled = true;
                     }
 
-                    if (mEnterToSend == true && actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (mEnterToSend == true && actionId == EditorInfo.IME_NULL && event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
                         sendMessage(friend.getName());
                         handled = true;
                     }
@@ -536,7 +536,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         });
 
         TextWatcher tw = new ChatTextWatcher();
-        mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH)});
+        mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
         OnTouchListener editTouchListener = new OnTouchListener() {
@@ -554,7 +554,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtMessage.setOnTouchListener(editTouchListener);
 
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
-        mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
+        mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
         //mEtInvite.setOnTouchListener(editTouchListener);
 
         mEtInvite.setOnEditorActionListener(new OnEditorActionListener() {
@@ -998,6 +998,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
+        }
+
+        if (mGifShowing) {
+            hideGifDrawer(false);
         }
 
         ChatManager.pause(mUser, this.hashCode());

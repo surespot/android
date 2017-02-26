@@ -4,9 +4,12 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
+import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.UIUtils;
 
 import java.util.List;
 
@@ -14,13 +17,12 @@ import pl.droidsonroids.gif.GifImageView;
 
 public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifViewHolder> {
     private final static String TAG = "GifSearchAdapter";
-    private List<String> mGifs;
+    private List<GifDetails> mGifs;
     private GifSearchDownloader mGifSearchDownloader;
     private Context mContext;
-
     private IAsyncCallback<String> mCallback;
 
-    public GifSearchAdapter(Context context, List<String> gifUrls, IAsyncCallback<String> callback) {
+    public GifSearchAdapter(Context context, List<GifDetails> gifUrls, IAsyncCallback<String> callback) {
         mContext = context;
         mCallback = callback;
         mGifSearchDownloader = new GifSearchDownloader(this);
@@ -30,23 +32,43 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        GifImageView v = new GifImageView(mContext);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.setMargins(2, 0, 2, 0); //substitute parameters for left, top, right, bottom
-        v.setLayoutParams(params);
+        GifImageView v = (GifImageView) parent.inflate(getContext(), R.layout.gif_search_item, null);
         GifViewHolder vh = new GifViewHolder(v);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(final GifViewHolder holder, final int position) {
-        mGifSearchDownloader.download(holder.imageView, mGifs.get(position));
+        GifDetails details = mGifs.get(position);
+        SurespotLog.d("TAG", "onBindViewHolder url: %s, width %d, height %d", details.getUrl(), details.getWidth(), details.getHeight());
+
+
+        mGifSearchDownloader.download(holder.imageView, details.getUrl());
+        double scale = (double) SurespotConfiguration.GIF_SEARCH_RESULT_HEIGHT_DP / details.getHeight();
+
+        int height = (int) (scale * UIUtils.pxFromDp(getContext(), details.getHeight()));
+        int width = (int) (scale * UIUtils.pxFromDp(getContext(), details.getWidth()));
+
+        holder.imageView.setMinimumHeight(height);
+        holder.imageView.setMinimumWidth(width);
+
+        SurespotLog.d(TAG, "onBindViewHolder url: %s, scale: %f, setting width to %d, setting height to %d", details.getUrl(), scale, width, height);
+        ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
+        if (params == null) {
+            params = new ViewGroup.LayoutParams(width, height);
+        }
+        params.height = height;
+        params.width = width;
+        SurespotLog.d(TAG, "onBindViewHolder params post url: %s, scale: %f, width to %d, height to %d", details.getUrl(), scale, params.width, params.height);
+        holder.imageView.setLayoutParams(params);
+
+
         holder.imageView.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 if (mCallback != null) {
-                    String url = mGifs.get(holder.getAdapterPosition());
+                    String url = mGifs.get(holder.getAdapterPosition()).getUrl();
                     mCallback.handleResponse(url);
                 }
             }
@@ -67,7 +89,7 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
         return mContext;
     }
 
-    public void setGifs(List<String> gifUrls) {
+    public void setGifs(List<GifDetails> gifUrls) {
         mGifs = gifUrls;
         notifyDataSetChanged();
     }

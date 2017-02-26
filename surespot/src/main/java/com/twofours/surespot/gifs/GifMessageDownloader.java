@@ -20,14 +20,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.images.FileCacheController;
@@ -54,7 +51,7 @@ import pl.droidsonroids.gif.GifImageView;
  * A local cache of downloaded images is maintained internally to improve performance.
  */
 public class GifMessageDownloader {
-    private static final String TAG = "GifSearchDownloader";
+    private static final String TAG = "GifMessageDownloader";
     private static GifCache mGifCache = new GifCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
@@ -74,16 +71,16 @@ public class GifMessageDownloader {
         //cache per IV as well so we have a drawable per message
         GifDrawable gifDrawable = getGifDrawableFromCache(message.getIv());
         if (gifDrawable == null) {
-            SurespotLog.d(TAG, "gif not in memory cache for iv: %s",message.getIv());
+            SurespotLog.v(TAG, "gif not in memory cache for iv: %s",message.getIv());
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.d(TAG, "loading gif from memory cache for iv: %s",message.getIv());
+            SurespotLog.v(TAG, "loading gif from memory cache for iv: %s",message.getIv());
 
             cancelPotentialDownload(imageView, message);
             //imageView.clearAnimation();
             imageView.setImageDrawable(gifDrawable);
-            ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
+            //ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
             message.setLoaded(true);
             message.setLoading(false);
 
@@ -196,7 +193,7 @@ public class GifMessageDownloader {
                     return;
                 }
 
-                SurespotLog.d(TAG, "GifDownloaderTask getting %s,", url);
+                SurespotLog.v(TAG, "GifDownloaderTask getting %s,", url);
 
                 InputStream gifImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(url);
                 if (mCancelled) {
@@ -245,11 +242,11 @@ public class GifMessageDownloader {
                                     @Override
                                     public void run() {
 
-                                        imageView.clearAnimation();
-                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
-                                        imageView.startAnimation(fadeIn);
+//                                        imageView.clearAnimation();
+//                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+//                                        imageView.startAnimation(fadeIn);
                                         imageView.setImageDrawable(finalGifDrawable);
-                                        ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
+                                        //ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
                                         UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                         mChatAdapter.checkLoaded();
                                     }

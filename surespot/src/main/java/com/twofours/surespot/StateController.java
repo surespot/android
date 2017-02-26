@@ -211,12 +211,12 @@ public class StateController {
         if (filename != null) {
             if (messages != null) {
                 synchronized (messages) {
-                    int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messages.size());
+                    int saveCount = Math.min(SurespotConfiguration.SAVE_MESSAGE_MINIMUM, messages.size());
                     int messagesSize = messages.size();
 
                     if (currentScrollPosition > -1) {
                         int saveSize = messagesSize - currentScrollPosition;
-                        int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
+                        int saveSizePlusBuffer = saveSize + SurespotConfiguration.SAVE_MESSAGE_MINIMUM;
 
                         saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
                         returnScrollPosition = saveCount - saveSize;

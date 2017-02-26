@@ -361,7 +361,12 @@ public class ChatAdapter extends BaseAdapter {
             }
             else {
                 if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
-                    chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
+                    if (item.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK)) {
+                        chatMessageViewHolder.tvTime.setText(R.string.loading);
+                    }
+                    else {
+                        chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
+                    }
                 }
                 else {
 

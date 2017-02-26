@@ -33,6 +33,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.backup.ImportIdentityActivity;
@@ -113,7 +114,7 @@ public class LoginActivity extends Activity {
         });
 
         mEtPassword = (EditText) findViewById(R.id.etPassword);
-        mEtPassword.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        mEtPassword.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
         mEtPassword.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

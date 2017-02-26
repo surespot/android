@@ -84,7 +84,7 @@ public class UIUtils {
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
 
         alert.setPositiveButton(R.string.ok, new OnClickListener() {
 
@@ -527,7 +527,7 @@ public class UIUtils {
         editText.setInputType(InputType.TYPE_CLASS_TEXT);
         editText.setText(name);
         editText.setSelection(name.length(), name.length());
-        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitOrSpaceInputFilter()});
+        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_USERNAME_LENGTH), new LetterOrDigitOrSpaceInputFilter()});
 
         alert.setPositiveButton(R.string.ok, new OnClickListener() {
 
@@ -573,5 +573,23 @@ public class UIUtils {
         }
 
         return displaySize;
+    }
+
+    private static double mDensity = 0.0;
+    public static double dpFromPx(final Context context, final float px) {
+        //cache the density
+        if (mDensity == 0) {
+            mDensity = context.getResources().getDisplayMetrics().density;
+        }
+
+        return px/mDensity;
+    }
+
+    public static double pxFromDp(final Context context, final float dp) {
+        //cache the density
+        if (mDensity == 0) {
+            mDensity = context.getResources().getDisplayMetrics().density;
+        }
+        return dp * mDensity;
     }
 }

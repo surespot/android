@@ -36,6 +36,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.backup.ImportIdentityActivity;
@@ -106,7 +107,7 @@ public class SignupActivity extends Activity {
         mMpdCheck = new MultiProgressDialog(this, getString(R.string.user_exists_progress), 500);
 
         EditText editText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
-        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
+        editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
         editText.setOnFocusChangeListener(new OnFocusChangeListener() {
 
             @Override
@@ -127,10 +128,10 @@ public class SignupActivity extends Activity {
         });
 
         final EditText pwText = (EditText) findViewById(R.id.etSignupPassword);
-        pwText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        pwText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
 
         final EditText pwConfirmText = (EditText) findViewById(R.id.etSignupPasswordConfirm);
-        pwConfirmText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        pwConfirmText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
         pwConfirmText.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

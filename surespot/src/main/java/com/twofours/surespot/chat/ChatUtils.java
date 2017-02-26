@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -144,7 +145,7 @@ public class ChatUtils {
                     //scale to file
                     if (scale) {
                         SurespotLog.d(TAG, "scalingImage");
-                        bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConstants.MESSAGE_IMAGE_DIMENSION);
+                        bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConfiguration.MESSAGE_IMAGE_DIMENSION);
 
                         if (bitmap != null) {
                             final Bitmap finalBitmap = bitmap;
@@ -510,7 +511,10 @@ public class ChatUtils {
         //SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,message.getIv());
 
 
-        imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
+        ViewGroup.LayoutParams params = imageView.getLayoutParams();
+        if (params != null) {
+            params.height = SurespotConfiguration.getImageDisplayHeight();
+        }
    //     imageView.getLayoutParams().width = height > width ? width : SurespotConfiguration.getImageDisplaWidth();
 
     }

@@ -24,20 +24,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.SurespotConfiguration;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -304,14 +302,13 @@ public class MessageImageDownloader {
                                     MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
                                 }
 
+                                //    Drawable drawable = imageView.getDrawable();
+                         //       if (drawable instanceof DownloadedDrawable) {
 
-                                Drawable drawable = imageView.getDrawable();
-                                if (drawable instanceof DownloadedDrawable) {
-
-                                    imageView.clearAnimation();
-                                    Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
-                                    imageView.startAnimation(fadeIn);
-                                }
+                                 //   imageView.clearAnimation();
+                                 //   Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+                                   // imageView.startAnimation(fadeIn);
+                         //       }
 
                                 imageView.setImageBitmap(finalBitmap);
                                 ChatUtils.setImageViewLayout(imageView, finalBitmap.getWidth(), finalBitmap.getHeight());

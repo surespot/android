@@ -86,7 +86,7 @@ public class NetworkController {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(String message) {
-                SurespotLog.d("okhttp", message);
+                SurespotLog.v("okhttp", message);
             }
         });
         logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -923,7 +923,7 @@ public class NetworkController {
         try {
             InputStream encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(url);
             if (encryptedImageStream != null) {
-                SurespotLog.d(TAG, "getFileStream: returning cached file entry for: %s,", url);
+                SurespotLog.v(TAG, "getFileStream: returning cached file entry for: %s,", url);
                 return encryptedImageStream;
             }
         }

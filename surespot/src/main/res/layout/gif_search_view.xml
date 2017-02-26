@@ -26,46 +26,65 @@
                 android:layout_alignParentRight="true"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"/>
 
-            <TextView
+            <!--<TextView-->
 
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignBottom="@id/ivGifClose"
-                android:layout_alignTop="@id/ivGifClose"
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_alignBottom="@id/ivGifClose"-->
+            <!--android:layout_alignTop="@id/ivGifClose"-->
 
-                android:gravity="center"
-                android:text="@string/powered_by_giphy"/>
+            <!--android:gravity="center"-->
+            <!--android:text="@string/powered_by_giphy"/>-->
 
 
         </RelativeLayout>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rvGifs"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:background="?android:attr/colorBackground"
-            android:orientation="horizontal"
-            />
+        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                     android:layout_width="match_parent"
+                     android:layout_height="150dp">
+
+            <ProgressBar
+                android:id="@+id/gif_progress_bar"
+                style="?android:progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="150dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvGifs"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@android:color/holo_green_light"
+                android:orientation="horizontal"
+
+                />
+
+
+        </FrameLayout>
+
 
         <android.support.v7.widget.RecyclerView
-            android:layout_margin="20dp"
             android:id="@+id/rvGifKeywords"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_margin="20dp"
+            android:layout_weight="1"
             android:background="?android:attr/colorBackground"
             android:orientation="horizontal"
             />
 
         <EditText
             android:id="@+id/etGifSearch"
-            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_margin="10dp"
             android:background="?android:attr/colorBackground"
+            android:gravity="center"
+            android:hint="@string/search_gifs"
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:inputType="text"
-            android:hint="@string/search_gifs"
 
             android:lines="0"/>
 

@@ -16,14 +16,13 @@
 
 package com.twofours.surespot.gifs;
 
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.images.BitmapCache;
 import com.twofours.surespot.images.FileCacheController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.Utils;
@@ -48,36 +47,32 @@ import pl.droidsonroids.gif.GifImageView;
  */
 public class GifSearchDownloader {
     private static final String TAG = "GifSearchDownloader";
-    private static BitmapCache mBitmapCache = new BitmapCache();
+    private static GifCache mGifCache = new GifCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private GifSearchAdapter mChatAdapter;
-    private String mUsername;
-
 
     public GifSearchDownloader(GifSearchAdapter chatAdapter) {
         mChatAdapter = chatAdapter;
     }
 
-    public void download(GifImageView imageView, String uri) {
-
-        if (uri == null) {
+    public void download(GifImageView imageView, String message) {
+        if (message == null) {
             return;
         }
-        Bitmap bitmap = getBitmapFromCache(uri);
 
-
-        if (bitmap == null) {
-            SurespotLog.d(TAG, "bitmap not in memory cache: " + uri);
-            forceDownload(imageView, uri);
+        //cache per IV as well so we have a drawable per message
+        GifDrawable gifDrawable = getGifDrawableFromCache(message);
+        if (gifDrawable == null) {
+            SurespotLog.v(TAG, "gif not in memory cache for url: %s",message);
+            forceDownload(imageView, message);
         }
         else {
-            SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
-            cancelPotentialDownload(imageView, uri);
-         //   imageView.clearAnimation();
-            imageView.setImageBitmap(bitmap);
+            SurespotLog.v(TAG, "loading gif from memory cache for url: %s",message);
 
-            //      UIUtils.updateDateAndSize(mChatAdapter.getContext(), message, (View) imageView.getParent());
-
+            cancelPotentialDownload(imageView, message);
+            //imageView.clearAnimation();
+            imageView.setImageDrawable(gifDrawable);
+         //   ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
         }
     }
 
@@ -89,16 +84,11 @@ public class GifSearchDownloader {
     /**
      * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
      */
-    private void forceDownload(GifImageView imageView, String uri) {
-        if (cancelPotentialDownload(imageView, uri)) {
-            GifDownloaderTask task = new GifDownloaderTask(imageView, uri);
-            //          DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task, SurespotConfiguration.getImageDisplayHeight());
-//            imageView.setImageDrawable(downloadedDrawable);
-
+    private void forceDownload(GifImageView imageView, String message) {
+        if (cancelPotentialDownload(imageView, message)) {
+            GifDownloaderTask task = new GifDownloaderTask(imageView, message);
             DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
-
             imageView.setTag(R.id.tagGifDownloader, decryptionTaskWrapper);
-
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
         }
     }
@@ -107,12 +97,12 @@ public class GifSearchDownloader {
      * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
      * progress deals with the same url. The download is not stopped in that case.
      */
-    private boolean cancelPotentialDownload(GifImageView imageView, String url) {
+    private boolean cancelPotentialDownload(GifImageView imageView, String message) {
         GifDownloaderTask GifDownloaderTask = getGifDownloaderTask(imageView);
 
         if (GifDownloaderTask != null) {
             String taskMessage = GifDownloaderTask.getUrl();
-            if ((taskMessage == null) || (!taskMessage.equals(url))) {
+            if ((taskMessage == null) || (!taskMessage.equals(message))) {
                 GifDownloaderTask.cancel();
             }
             else {
@@ -129,8 +119,6 @@ public class GifSearchDownloader {
      */
     public GifDownloaderTask getGifDownloaderTask(GifImageView imageView) {
         if (imageView != null) {
-
-
             Object oDecryptionTaskWrapper = imageView.getTag(R.id.tagGifDownloader);
             if (oDecryptionTaskWrapper instanceof DecryptionTaskWrapper) {
                 DecryptionTaskWrapper decryptionTaskWrapper = (DecryptionTaskWrapper) oDecryptionTaskWrapper;
@@ -144,17 +132,17 @@ public class GifSearchDownloader {
      * The actual AsyncTask that will asynchronously download the image.
      */
     class GifDownloaderTask implements Runnable {
-        private String mUrl;
+        private String mMessage;
         private boolean mCancelled;
 
         public String getUrl() {
-            return mUrl;
+            return mMessage;
         }
 
         private final WeakReference<GifImageView> imageViewReference;
 
         public GifDownloaderTask(GifImageView imageView, String message) {
-            mUrl = message;
+            mMessage = message;
             imageViewReference = new WeakReference<GifImageView>(imageView);
         }
 
@@ -169,90 +157,69 @@ public class GifSearchDownloader {
             }
 
 
-            SurespotLog.d(TAG, "GifDownloaderTask getting %s,", mUrl);
+            //if we have unencrypted url
+            String url = mMessage;
+            if (!TextUtils.isEmpty(url)) {
+                if (!url.startsWith("https")) {
+                    SurespotLog.w(TAG, "GifDownloaderTask url does not start with https: %s,", url);
+                    return;
+                }
 
-            InputStream gifImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext()).getFileStream(getUrl());
-            GifDrawable gifDrawable = null;
-            if (mCancelled) {
-                try {
-                    if (gifImageStream != null) {
-                        gifImageStream.close();
+                SurespotLog.v(TAG, "GifDownloaderTask getting %s,", url);
+
+                InputStream gifImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext()).getFileStream(url);
+                if (mCancelled) {
+                    try {
+                        if (gifImageStream != null) {
+                            gifImageStream.close();
+                        }
                     }
-                }
-                catch (IOException e) {
-                    SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-                }
-                return;
-            }
-
-            if (!mCancelled && gifImageStream != null) {
-
-                try {
-                    byte[] bytes = Utils.inputStreamToBytes(gifImageStream);
-                    //save in file cache
-                    //add encrypted local file to file cache
-                    FileCacheController fcc = SurespotApplication.getFileCacheController();
-                    if (fcc != null) {
-                        fcc.putEntry(getUrl(), new ByteArrayInputStream(bytes));
+                    catch (IOException e) {
+                        SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
                     }
-                    gifDrawable = new GifDrawableBuilder().from(bytes).build();
+                    return;
                 }
-                catch (Exception ioe) {
 
-                    SurespotLog.w(TAG, ioe, "MessageImage exception");
+                GifDrawable gifDrawable = null;
+                if (!mCancelled && gifImageStream != null) {
 
-                }
-//                catch (IOException e) {
-//                    SurespotLog.w(TAG, e, "MessageImage e");
-//                }
-                //         finally {
-
-//                        try {
-//                            if (encryptedImageStream != null) {
-//                                encryptedImageStream.close();
-//                            }
-//                        }
-//                        catch (IOException e) {
-//                            SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-//                        }
-
-//                    try {
-//                        if (gifInputStream != null) {
-//                            gifInputStream.close();
-//                        }
-//                    }
-//                    catch (IOException e) {
-//                        SurespotLog.w(TAG, e, "MessageImage DownloaderTask");
-//                    }
-                //     }
+                    try {
+                        byte[] bytes = Utils.inputStreamToBytes(gifImageStream);
+                        //save in file cache
+                        //add encrypted local file to file cache
+                        FileCacheController fcc = SurespotApplication.getFileCacheController();
+                        if (fcc != null) {
+                            fcc.putEntry(url, new ByteArrayInputStream(bytes));
+                        }
+                        gifDrawable = new GifDrawableBuilder().from(bytes).build();
+                    }
+                    catch (Exception ioe) {
+                        SurespotLog.w(TAG, ioe, "MessageImage exception");
+                    }
 
 
-                final GifImageView imageView = imageViewReference.get();
-                if (imageView != null && gifDrawable != null) {
-                    final GifDownloaderTask gifDownloaderTask = getGifDownloaderTask(imageView);
-
-                    // Change bitmap only if this process is still associated with it
-                    // Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
-                    if ((GifDownloaderTask.this == gifDownloaderTask)) {
-                        final GifDrawable finalGifDrawable = gifDrawable;
-                        mHandler.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                //   if (finalGifDrawable != null) {
-//
-//                                if (!TextUtils.isEmpty(messageData)) {
-//                                    GifSearchDownloader.addBitmapToCache(messageData, finalBitmap);
-//                                }
-//
-//                                if (!TextUtils.isEmpty(finalMessageString)) {
-//                                    GifSearchDownloader.addBitmapToCache(finalMessageString, finalBitmap);
-//                                }
+                    if (gifDrawable != null) {
+                        addGifDrawableToCache(getUrl(), gifDrawable);
+                        final GifImageView imageView = imageViewReference.get();
+                        if (imageView != null) {
+                            final GifDownloaderTask gifDownloaderTask = getGifDownloaderTask(imageView);
 
 
-                                imageView.setImageDrawable(finalGifDrawable);
-                            }
+                            // Change bitmap only if this process is still associated with it
+                            // Or if we don't use any bitmap to task association (NO_DOWNLOADED_DRAWABLE mode)
+                            if ((GifDownloaderTask.this == gifDownloaderTask)) {
+                                final GifDrawable finalGifDrawable = gifDrawable;
+                                mHandler.post(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+
+//                                        imageView.clearAnimation();
+//                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+//                                        imageView.startAnimation(fadeIn);
+                                        imageView.setImageDrawable(finalGifDrawable);
+                                    //    ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
+                                    }
 //
 //                            else
 //
@@ -261,12 +228,12 @@ public class GifSearchDownloader {
 //                                imageView.setImageDrawable(null);
 //                            }
 
-                        });
+                                });
+                            }
+                        }
                     }
-
                 }
             }
-
         }
     }
 
@@ -288,15 +255,15 @@ public class GifSearchDownloader {
      *
      * @param bitmap The newly downloaded bitmap.
      */
-    public static void addBitmapToCache(String key, Bitmap bitmap) {
+    public static void addGifDrawableToCache(String key, GifDrawable bitmap) {
         if (key != null && bitmap != null) {
-            mBitmapCache.addBitmapToMemoryCache(key, bitmap);
+            mGifCache.addGifDrawableToMemoryCache(key, bitmap);
         }
     }
 
-    private static Bitmap getBitmapFromCache(String key) {
+    private static GifDrawable getGifDrawableFromCache(String key) {
         if (key != null) {
-            return mBitmapCache.getBitmapFromMemCache(key);
+            return mGifCache.getGifDrawableFromMemCache(key);
         }
 
         return null;
@@ -304,10 +271,10 @@ public class GifSearchDownloader {
 
     public static void moveCacheEntry(String sourceKey, String destKey) {
         if (sourceKey != null && destKey != null) {
-            Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
+            GifDrawable bitmap = mGifCache.getGifDrawableFromMemCache(sourceKey);
             if (bitmap != null) {
-                mBitmapCache.remove(sourceKey);
-                mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+                mGifCache.remove(sourceKey);
+                mGifCache.addGifDrawableToMemoryCache(destKey, bitmap);
             }
         }
     }

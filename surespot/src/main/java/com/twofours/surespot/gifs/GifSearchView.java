@@ -5,10 +5,19 @@ import android.content.Context;
 import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputFilter;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
@@ -24,12 +33,15 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
+import static android.content.ContentValues.TAG;
+
 public class GifSearchView extends RelativeLayout {
 
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private GifSearchAdapter mGifsAdapter;
     private IAsyncCallback<String> mCallback;
+    private ProgressBar mProgressBar;
 
 
     public GifSearchView(Context context) {
@@ -59,6 +71,7 @@ public class GifSearchView extends RelativeLayout {
         mRecyclerView = (RecyclerView) findViewById(R.id.rvGifs);
         mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
+        mProgressBar = (ProgressBar) findViewById(R.id.gif_progress_bar);
 
         RecyclerView keywordView = (RecyclerView) findViewById(R.id.rvGifKeywords);
         keywordView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -113,33 +126,57 @@ public class GifSearchView extends RelativeLayout {
         keywordView.setAdapter(new GifKeywordAdapter(this.getContext(), keywords, new IAsyncCallback<String>() {
             @Override
             public void handleResponse(String result) {
-                if (mGifsAdapter != null) {
-                    mGifsAdapter.clearGifs();
-                }
-                NetworkManager.getNetworkController(GifSearchView.this.getContext()).searchGiphy(result, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response, String responseString) throws IOException {
-                        if (mGifsAdapter == null) {
-                            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), getGifUrls(responseString), mCallback);
-                            mRecyclerView.setAdapter(mGifsAdapter);
-                        }
-                        else {
-                            mGifsAdapter.setGifs(getGifUrls(responseString));
-                        }
-
-
-                    }
-                }));
-
+                searchGifs(result);
             }
         }));
 
+        EditText etGifSearch = (EditText) findViewById(R.id.etGifSearch);
+        etGifSearch.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_SEARCH_LENGTH)});
+        etGifSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
 
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    searchGifs(v.getText().toString());
+                }
+
+                return handled;
+            }
+        });
+    }
+
+    private void searchGifs(String terms) {
+        mRecyclerView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.VISIBLE);
+
+        if (mGifsAdapter != null) {
+            mGifsAdapter.clearGifs();
+        }
+
+        NetworkManager.getNetworkController(GifSearchView.this.getContext()).searchGiphy(terms, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                mRecyclerView.setVisibility(View.VISIBLE);
+                mProgressBar.setVisibility(View.GONE);
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response, String responseString) throws IOException {
+                if (mGifsAdapter == null) {
+                    mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), getGifUrls(responseString), mCallback);
+                    mRecyclerView.setAdapter(mGifsAdapter);
+                    mGifsAdapter.notifyDataSetChanged();
+                }
+                else {
+                    mGifsAdapter.setGifs(getGifUrls(responseString));
+                }
+                mRecyclerView.setVisibility(View.VISIBLE);
+                mProgressBar.setVisibility(View.GONE);
+
+            }
+        }));
     }
 
     public void setCallback(IAsyncCallback<String> callback) {
@@ -148,8 +185,8 @@ public class GifSearchView extends RelativeLayout {
 
     }
 
-    private List<String> getGifUrls(String result) {
-        ArrayList<String> gifURLs = new ArrayList<>();
+    private List<GifDetails> getGifUrls(String result) {
+        ArrayList<GifDetails> gifURLs = new ArrayList<>();
         try {
 
             JSONObject json = new JSONObject(result);
@@ -159,12 +196,15 @@ public class GifSearchView extends RelativeLayout {
                 JSONObject orig = data.getJSONObject(i).getJSONObject("images").getJSONObject("fixed_height");
                 String url = orig.getString("url");
                 if (url.toLowerCase().startsWith("https")) {
-                    gifURLs.add(url);
+                    int height = orig.getInt("height");
+                    int width = orig.getInt("width");
+
+                    gifURLs.add(new GifDetails(url, width, height));
                 }
             }
         }
         catch (JSONException e) {
-            e.printStackTrace();
+            SurespotLog.e(TAG, e, "getGifUrls JSON error");
         }
         return gifURLs;
     }
