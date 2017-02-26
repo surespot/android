@@ -76,7 +76,7 @@ import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
-import com.twofours.surespot.gifs.GifSearchFragment;
+import com.twofours.surespot.gifs.GifSearchView;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
@@ -154,7 +154,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private FrameLayout mContentFrame;
     private DrawerLayout mDrawerLayout;
     private LayoutParams mWindowLayoutParams;
-    private GifSearchFragment mGifView;
+    private GifSearchView mGifView;
     private boolean mGifShowing;
     private View mEditTexts;
     private View mButtons;
@@ -730,6 +730,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                    else {
                     if (isEmojiVisible()) {
                         hideEmojiDrawer(false);
+                    }
+
+                    if (mGifShowing) {
+                        hideGifDrawer(false);
                     }
                     //   }
                     //hideSoftKeyboard();
@@ -1581,7 +1585,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.d(TAG, "backButtonPressed");
 
 
-
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
             return true;
@@ -1682,38 +1685,38 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mIvHome.setVisibility(View.GONE);
             mIvSend.setVisibility(View.GONE);
         }
+        else {
+            if (mCurrentFriend.isDeleted()) {
+                mIvInvite.setVisibility(View.GONE);
+                mIvVoice.setVisibility(View.GONE);
+                mIvHome.setVisibility(View.VISIBLE);
+                mIvSend.setVisibility(View.GONE);
+
+            }
             else {
-                if (mCurrentFriend.isDeleted()) {
+                if (mEtMessage.getText().length() > 0) {
                     mIvInvite.setVisibility(View.GONE);
                     mIvVoice.setVisibility(View.GONE);
-                    mIvHome.setVisibility(View.VISIBLE);
-                    mIvSend.setVisibility(View.GONE);
-
+                    mIvHome.setVisibility(View.GONE);
+                    mIvSend.setVisibility(View.VISIBLE);
                 }
                 else {
-                    if (mEtMessage.getText().length() > 0) {
-                        mIvInvite.setVisibility(View.GONE);
+                    mIvInvite.setVisibility(View.GONE);
+                    SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
+                    boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
+
+                    if (disableVoice) {
                         mIvVoice.setVisibility(View.GONE);
-                        mIvHome.setVisibility(View.GONE);
-                        mIvSend.setVisibility(View.VISIBLE);
+                        mIvHome.setVisibility(View.VISIBLE);
                     }
                     else {
-                        mIvInvite.setVisibility(View.GONE);
-                        SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
-                        boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
-
-                        if (disableVoice) {
-                            mIvVoice.setVisibility(View.GONE);
-                            mIvHome.setVisibility(View.VISIBLE);
-                        }
-                        else {
-                            mIvVoice.setVisibility(View.VISIBLE);
-                            mIvHome.setVisibility(View.GONE);
-                        }
-
-                        mIvSend.setVisibility(View.GONE);
+                        mIvVoice.setVisibility(View.VISIBLE);
+                        mIvHome.setVisibility(View.GONE);
                     }
+
+                    mIvSend.setVisibility(View.GONE);
                 }
+            }
 
         }
     }
@@ -2027,7 +2030,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         int keyboardHeight = mActivityLayout.getKeyboardHeight();
 
 
-
         SurespotLog.d(TAG, "showGifDrawer height: %d", keyboardHeight);
         mGifShowing = true;
         final ChatController cc = ChatManager.getChatController(mUser);
@@ -2044,8 +2046,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         final View currentMainView = mContentFrame.getChildAt(0);
         if (mGifView == null) {
-            mGifView = (GifSearchFragment) LayoutInflater
-                    .from(this).inflate(R.layout.fragment_gifsearch, null, false);
+            mGifView = (GifSearchView) LayoutInflater
+                    .from(this).inflate(R.layout.gif_search_view, null, false);
 
 
             mGifView.setCallback(new IAsyncCallback<String>() {
@@ -2060,14 +2062,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             final View bottomFrame = mGifView.findViewById(R.id.bottomFrame);
 
 
-
             mContentFrame.addView(mGifView);
             mSendButton.setVisibility(View.GONE);
             mButtons.setVisibility(View.GONE);
             mEditTexts.setVisibility(View.GONE);
 
+
             final EditText etGifSearch = (EditText) bottomFrame.findViewById(R.id.etGifSearch);
-      //      etGifSearch.setText("Search GIFs");
+            //      etGifSearch.setText("Search GIFs");
             etGifSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
@@ -2084,21 +2086,21 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             closeView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                  hideGifDrawer(false);
+                    hideGifDrawer(false);
                 }
             });
 
             bottomFrame.post(new Runnable() {
                 @Override
                 public void run() {
-                    currentMainView.setPadding(0,0,0, bottomFrame.getHeight() + 20);
+                    currentMainView.setPadding(0, 0, 0, bottomFrame.getHeight() + 20);
+                    getActionBar().hide();
                 }
             });
 
         }
 
     }
-
 
 
     public void hideGifDrawer(boolean showKeyboard) {
@@ -2108,15 +2110,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             input.showSoftInput(mEtMessage, 0);
         }
 
-        mContentFrame.removeView(mGifView);
+
         mSendButton.setVisibility(View.VISIBLE);
         mButtons.setVisibility(View.VISIBLE);
         mEditTexts.setVisibility(View.VISIBLE);
 
+
+        View currentMainView = mContentFrame.getChildAt(0);
+        currentMainView.setPadding(0, 0, 0, 0);
+        getActionBar().show();
+        mContentFrame.removeView(mGifView);
+
         mGifView = null;
         mGifShowing = false;
-        View currentMainView = mContentFrame.getChildAt(0);
-        currentMainView.setPadding(0,0,0,0);
+
     }
 
     @Override

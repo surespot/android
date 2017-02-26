@@ -65,6 +65,5 @@ dependencies {
     compile 'ch.acra:acra:4.8.5'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
     compile 'com.android.support:recyclerview-v7:25.2.0'
-    compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.android.support:support-v4:25.2.0'
 }

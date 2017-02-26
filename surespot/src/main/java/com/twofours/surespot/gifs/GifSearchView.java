@@ -24,7 +24,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-public class GifSearchFragment extends RelativeLayout {
+public class GifSearchView extends RelativeLayout {
 
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -32,21 +32,21 @@ public class GifSearchFragment extends RelativeLayout {
     private IAsyncCallback<String> mCallback;
 
 
-    public GifSearchFragment(Context context) {
+    public GifSearchView(Context context) {
         super(context);
     }
 
-    public GifSearchFragment(Context context, AttributeSet attrs) {
+    public GifSearchView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public GifSearchFragment(Context context, AttributeSet attrs, int defStyleAttr) {
+    public GifSearchView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public GifSearchFragment(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public GifSearchView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
@@ -116,7 +116,7 @@ public class GifSearchFragment extends RelativeLayout {
                 if (mGifsAdapter != null) {
                     mGifsAdapter.clearGifs();
                 }
-                NetworkManager.getNetworkController(GifSearchFragment.this.getContext()).searchGiphy(result, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+                NetworkManager.getNetworkController(GifSearchView.this.getContext()).searchGiphy(result, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
 
@@ -125,7 +125,7 @@ public class GifSearchFragment extends RelativeLayout {
                     @Override
                     public void onResponse(Call call, Response response, String responseString) throws IOException {
                         if (mGifsAdapter == null) {
-                            mGifsAdapter = new GifSearchAdapter(GifSearchFragment.this.getContext(), getGifUrls(responseString), mCallback);
+                            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), getGifUrls(responseString), mCallback);
                             mRecyclerView.setAdapter(mGifsAdapter);
                         }
                         else {

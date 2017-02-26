@@ -20,19 +20,11 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
 
     private IAsyncCallback<String> mCallback;
 
-    private String mOurUsername;
-    private String mTheirUsername;
-
     public GifSearchAdapter(Context context, List<String> gifUrls, IAsyncCallback<String> callback) {
-        //SurespotLog.d(TAG, "Constructor, ourUsername: %s, theirUsername: %s", ourUsername, theirUsername);
-
         mContext = context;
         mCallback = callback;
         mGifSearchDownloader = new GifSearchDownloader(this);
-        //      mOurUsername = ourUsername;
-        //    mTheirUsername = theirUsername;
         mGifs = gifUrls;
-
     }
 
 
@@ -48,7 +40,6 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
 
     @Override
     public void onBindViewHolder(final GifViewHolder holder, final int position) {
-        //Picasso.with(mContext).load(mGifs.get(position)).into(holder.imageView);
         mGifSearchDownloader.download(holder.imageView, mGifs.get(position));
         holder.imageView.setOnClickListener(new View.OnClickListener() {
 
