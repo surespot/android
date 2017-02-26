@@ -1,156 +1,171 @@
 package com.twofours.surespot.gifs;
 
-import android.app.Fragment;
+import android.annotation.TargetApi;
 import android.content.Context;
-import android.net.Uri;
-import android.os.Bundle;
+import android.os.Build;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.util.AttributeSet;
+import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.network.MainThreadCallbackWrapper;
+import com.twofours.surespot.network.NetworkManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link GifSearchFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link GifSearchFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class GifSearchFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String OUR_USERNAME = "ourUsername";
-    private static final String THEIR_USERNAME = "theirUsername";
+import okhttp3.Call;
+import okhttp3.Response;
 
-    // TODO: Rename and change types of parameters
-    private String mOurUsername;
-    private String mTheirUsername;
+public class GifSearchFragment extends RelativeLayout {
 
-    private OnFragmentInteractionListener mListener;
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private GifSearchAdapter mGifsAdapter;
+    private IAsyncCallback<String> mCallback;
 
-    public GifSearchFragment() {
-        // Required empty public constructor
+
+    public GifSearchFragment(Context context) {
+        super(context);
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment GifSearchFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static GifSearchFragment newInstance(String ourUsername, String theirUsername) {
-        GifSearchFragment fragment = new GifSearchFragment();
-        Bundle args = new Bundle();
-        args.putString(OUR_USERNAME, ourUsername);
-        args.putString(THEIR_USERNAME, theirUsername);
-        fragment.setArguments(args);
-        return fragment;
+    public GifSearchFragment(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public GifSearchFragment(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public GifSearchFragment(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+    }
+
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mOurUsername = getArguments().getString(OUR_USERNAME);
-            mTheirUsername = getArguments().getString(THEIR_USERNAME);
-        }
+    protected void onFinishInflate() {
+        super.onFinishInflate();
 
-        //get images (TODO use search) hardcoded for now
 
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_gifsearch, container, false);
-
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.rvGifs);
-        mLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        mRecyclerView = (RecyclerView) findViewById(R.id.rvGifs);
+        mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
+        RecyclerView keywordView = (RecyclerView) findViewById(R.id.rvGifKeywords);
+        keywordView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false));
+        ArrayList<String> keywords = new ArrayList<>();
+        keywords.add("HIGH FIVE");
+        keywords.add("CLAPPING");
+        keywords.add("THUMBS UP");
+        keywords.add("NO");
+        keywords.add("YES");
+        keywords.add("SHRUG");
+        keywords.add("MIC DROP");
+        keywords.add("SORRY");
+        keywords.add("CHEERS");
+        keywords.add("THANK YOU");
+        keywords.add("WINK");
+        keywords.add("ANGRY");
+        keywords.add("NERVOUS");
+        keywords.add("DUH");
+        keywords.add("OOPS");
+        keywords.add("HUNGRY");
+        keywords.add("HUGS");
+        keywords.add("WOW");
+        keywords.add("BORED");
+        keywords.add("GOODNIGHT");
+        keywords.add("AWKWARD");
+        keywords.add("AWW");
+        keywords.add("PLEASE");
+        keywords.add("YIKES");
+        keywords.add("OMG");
+        keywords.add("BYE");
+        keywords.add("WAITING");
+        keywords.add("EYEROLL");
+        keywords.add("IDK");
+        keywords.add("KITTIES");
+        keywords.add("PUPPIES");
+        keywords.add("LOSER");
+        keywords.add("COLD");
+        keywords.add("PARTY");
+        keywords.add("AGREE");
+        keywords.add("DANCE");
+        keywords.add("EXCUSE ME");
+        keywords.add("WHAT");
+        keywords.add("STOP");
+        keywords.add("SLEEPY");
+        keywords.add("CREEP");
+        keywords.add("JK");
+        keywords.add("SCARED");
+        keywords.add("CHILL OUT");
+        keywords.add("MISS YOU");
+        keywords.add("DONE");
 
-        List<String> gifUrls = searchGifs();
-        mGifsAdapter = new GifSearchAdapter(this.getActivity(),mOurUsername, mTheirUsername, gifUrls);
-        mRecyclerView.setAdapter(mGifsAdapter);
-        return view;
+        keywordView.setAdapter(new GifKeywordAdapter(this.getContext(), keywords, new IAsyncCallback<String>() {
+            @Override
+            public void handleResponse(String result) {
+                if (mGifsAdapter != null) {
+                    mGifsAdapter.clearGifs();
+                }
+                NetworkManager.getNetworkController(GifSearchFragment.this.getContext()).searchGiphy(result, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response, String responseString) throws IOException {
+                        if (mGifsAdapter == null) {
+                            mGifsAdapter = new GifSearchAdapter(GifSearchFragment.this.getContext(), getGifUrls(responseString), mCallback);
+                            mRecyclerView.setAdapter(mGifsAdapter);
+                        }
+                        else {
+                            mGifsAdapter.setGifs(getGifUrls(responseString));
+                        }
+
+
+                    }
+                }));
+
+            }
+        }));
+
+
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    public void setCallback(IAsyncCallback<String> callback) {
+        mCallback = callback;
+
+
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        }
-//        else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
-
-    private List<String> searchGifs() {
-        String result = "{\"data\":[{\"type\":\"gif\",\"id\":\"11XMEd3ncDtLVK\",\"slug\":\"popcorn-11XMEd3ncDtLVK\",\"url\":\"https:\\/\\/giphy.com\\/gifs\\/popcorn-11XMEd3ncDtLVK\",\"bitly_gif_url\":\"http:\\/\\/gph.is\\/2cUg4Dk\",\"bitly_url\":\"http:\\/\\/gph.is\\/2cUg4Dk\",\"embed_url\":\"https:\\/\\/giphy.com\\/embed\\/11XMEd3ncDtLVK\",\"username\":\"\",\"source\":\"http:\\/\\/bbs.boingboing.net\\/t\\/eating-popcorn-for-fun-and-profit\\/62429?page=3\",\"rating\":\"g\",\"content_url\":\"\",\"source_tld\":\"bbs.boingboing.net\",\"source_post_url\":\"http:\\/\\/bbs.boingboing.net\\/t\\/eating-popcorn-for-fun-and-profit\\/62429?page=3\",\"is_indexable\":0,\"import_datetime\":\"2016-09-18 07:02:04\",\"trending_datetime\":\"2017-02-25 17:00:01\",\"images\":{\"fixed_height\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200.gif\",\"width\":\"300\",\"height\":\"200\",\"size\":\"2173416\",\"mp4\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200.mp4\",\"mp4_size\":\"11600\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200.webp\",\"webp_size\":\"360608\"},\"fixed_height_still\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200_s.gif\",\"width\":\"300\",\"height\":\"200\"},\"fixed_height_downsampled\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200_d.gif\",\"width\":\"300\",\"height\":\"200\",\"size\":\"225861\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200_d.webp\",\"webp_size\":\"40784\"},\"fixed_width\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200w.gif\",\"width\":\"200\",\"height\":\"133\",\"size\":\"922321\",\"mp4\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200w.mp4\",\"mp4_size\":\"7158\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200w.webp\",\"webp_size\":\"199222\"},\"fixed_width_still\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200w_s.gif\",\"width\":\"200\",\"height\":\"133\"},\"fixed_width_downsampled\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200w_d.gif\",\"width\":\"200\",\"height\":\"133\",\"size\":\"97683\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/200w_d.webp\",\"webp_size\":\"21560\"},\"fixed_height_small\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100.gif\",\"width\":\"150\",\"height\":\"100\",\"size\":\"545929\",\"mp4\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100.mp4\",\"mp4_size\":\"5199\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100.webp\",\"webp_size\":\"133654\"},\"fixed_height_small_still\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100_s.gif\",\"width\":\"150\",\"height\":\"100\"},\"fixed_width_small\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100w.gif\",\"width\":\"100\",\"height\":\"67\",\"size\":\"246368\",\"mp4\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100w.mp4\",\"mp4_size\":\"3934\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100w.webp\",\"webp_size\":\"79030\"},\"fixed_width_small_still\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/100w_s.gif\",\"width\":\"100\",\"height\":\"67\"},\"downsized\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-downsized.gif\",\"width\":\"250\",\"height\":\"166\",\"size\":\"1476770\"},\"downsized_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-downsized_s.gif\",\"width\":\"250\",\"height\":\"166\",\"size\":\"25974\"},\"downsized_large\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy.gif\",\"width\":\"455\",\"height\":\"303\",\"size\":\"5366780\"},\"downsized_medium\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-downsized-medium.gif\",\"width\":\"364\",\"height\":\"242\",\"size\":\"3270548\"},\"original\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy.gif\",\"width\":\"455\",\"height\":\"303\",\"size\":\"5366780\",\"frames\":\"58\",\"mp4\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy.mp4\",\"mp4_size\":\"20699\",\"webp\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy.webp\",\"webp_size\":\"952186\"},\"original_still\":{\"url\":\"https:\\/\\/media2.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy_s.gif\",\"width\":\"455\",\"height\":\"303\"},\"looping\":{\"mp4\":\"https:\\/\\/media.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-loop.mp4\"},\"preview\":{\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-preview.mp4\",\"mp4_size\":\"23665\",\"width\":\"454\",\"height\":\"302\"},\"downsized_small\":{\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-downsized-small.mp4\",\"mp4_size\":\"23665\"},\"preview_gif\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/11XMEd3ncDtLVK\\/giphy-preview.gif\",\"width\":\"125\",\"height\":\"83\",\"size\":\"48461\"}}},{\"type\":\"gif\",\"id\":\"zYF1qV1AbOrpC\",\"slug\":\"molly-ringwald-pretty-in-pink-zYF1qV1AbOrpC\",\"url\":\"https:\\/\\/giphy.com\\/gifs\\/molly-ringwald-pretty-in-pink-zYF1qV1AbOrpC\",\"bitly_gif_url\":\"http:\\/\\/gph.is\\/12eFuPx\",\"bitly_url\":\"http:\\/\\/gph.is\\/12eFuPx\",\"embed_url\":\"https:\\/\\/giphy.com\\/embed\\/zYF1qV1AbOrpC\",\"username\":\"\",\"source\":\"http:\\/\\/reactiongifs.com\",\"rating\":\"g\",\"content_url\":\"\",\"source_tld\":\"reactiongifs.com\",\"source_post_url\":\"http:\\/\\/reactiongifs.com\",\"is_indexable\":0,\"import_datetime\":\"2013-06-10 06:22:45\",\"trending_datetime\":\"2017-02-25 16:45:01\",\"images\":{\"fixed_height\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200.gif\",\"width\":\"245\",\"height\":\"200\",\"size\":\"1084137\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200.mp4\",\"mp4_size\":\"62257\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200.webp\",\"webp_size\":\"496460\"},\"fixed_height_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200_s.gif\",\"width\":\"245\",\"height\":\"200\"},\"fixed_height_downsampled\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200_d.gif\",\"width\":\"245\",\"height\":\"200\",\"size\":\"249139\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200_d.webp\",\"webp_size\":\"107560\"},\"fixed_width\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200w.gif\",\"width\":\"200\",\"height\":\"163\",\"size\":\"689673\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200w.mp4\",\"mp4_size\":\"48199\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200w.webp\",\"webp_size\":\"307344\"},\"fixed_width_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200w_s.gif\",\"width\":\"200\",\"height\":\"163\"},\"fixed_width_downsampled\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200w_d.gif\",\"width\":\"200\",\"height\":\"163\",\"size\":\"159472\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/200w_d.webp\",\"webp_size\":\"66758\"},\"fixed_height_small\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100.gif\",\"width\":\"123\",\"height\":\"100\",\"size\":\"268357\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100.mp4\",\"mp4_size\":\"23381\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100.webp\",\"webp_size\":\"138358\"},\"fixed_height_small_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100_s.gif\",\"width\":\"123\",\"height\":\"100\"},\"fixed_width_small\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100w.gif\",\"width\":\"100\",\"height\":\"82\",\"size\":\"181036\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100w.mp4\",\"mp4_size\":\"18579\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100w.webp\",\"webp_size\":\"100120\"},\"fixed_width_small_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/100w_s.gif\",\"width\":\"100\",\"height\":\"82\"},\"downsized\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy.gif\",\"width\":\"245\",\"height\":\"200\",\"size\":\"1051752\"},\"downsized_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy_s.gif\",\"width\":\"245\",\"height\":\"200\"},\"downsized_large\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy.gif\",\"width\":\"245\",\"height\":\"200\",\"size\":\"1051752\"},\"downsized_medium\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy.gif\",\"width\":\"245\",\"height\":\"200\",\"size\":\"1051752\"},\"original\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy.gif\",\"width\":\"245\",\"height\":\"200\",\"size\":\"1051752\",\"frames\":\"28\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy.mp4\",\"mp4_size\":\"235939\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy.webp\",\"webp_size\":\"496460\"},\"original_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy_s.gif\",\"width\":\"245\",\"height\":\"200\"},\"looping\":{\"mp4\":\"https:\\/\\/media.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy-loop.mp4\"},\"preview\":{\"mp4\":\"https:\\/\\/media0.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy-preview.mp4\",\"mp4_size\":\"49188\",\"width\":\"194\",\"height\":\"158\"},\"downsized_small\":{\"mp4\":\"https:\\/\\/media0.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy-downsized-small.mp4\",\"mp4_size\":\"110450\"},\"preview_gif\":{\"url\":\"https:\\/\\/media0.giphy.com\\/media\\/zYF1qV1AbOrpC\\/giphy-preview.gif\",\"width\":\"98\",\"height\":\"80\",\"size\":\"47915\"}}},{\"type\":\"gif\",\"id\":\"jhpOJ9ANMk1tS\",\"slug\":\"drew-jhpOJ9ANMk1tS\",\"url\":\"https:\\/\\/giphy.com\\/gifs\\/drew-jhpOJ9ANMk1tS\",\"bitly_gif_url\":\"http:\\/\\/gph.is\\/2cwtu2G\",\"bitly_url\":\"http:\\/\\/gph.is\\/2cwtu2G\",\"embed_url\":\"https:\\/\\/giphy.com\\/embed\\/jhpOJ9ANMk1tS\",\"username\":\"\",\"source\":\"http:\\/\\/www.giantbomb.com\\/forums\\/general-discussion-30\\/giant-bomb-s-2014-mvp-drew-scanlon-1759199\\/?page=2\",\"rating\":\"g\",\"content_url\":\"\",\"source_tld\":\"www.giantbomb.com\",\"source_post_url\":\"http:\\/\\/www.giantbomb.com\\/forums\\/general-discussion-30\\/giant-bomb-s-2014-mvp-drew-scanlon-1759199\\/?page=2\",\"is_indexable\":0,\"import_datetime\":\"2016-09-26 15:32:15\",\"trending_datetime\":\"2017-02-25 16:30:01\",\"images\":{\"fixed_height\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200.gif\",\"width\":\"369\",\"height\":\"200\",\"size\":\"2658226\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200.mp4\",\"mp4_size\":\"28858\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200.webp\",\"webp_size\":\"986822\"},\"fixed_height_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200_s.gif\",\"width\":\"369\",\"height\":\"200\",\"size\":\"42107\"},\"fixed_height_downsampled\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200_d.gif\",\"width\":\"369\",\"height\":\"200\",\"size\":\"294765\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200_d.webp\",\"webp_size\":\"105222\"},\"fixed_width\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200w.gif\",\"width\":\"200\",\"height\":\"108\",\"size\":\"794962\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200w.mp4\",\"mp4_size\":\"12409\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200w.webp\",\"webp_size\":\"407630\"},\"fixed_width_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200w_s.gif\",\"width\":\"200\",\"height\":\"108\",\"size\":\"14549\"},\"fixed_width_downsampled\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200w_d.gif\",\"width\":\"200\",\"height\":\"108\",\"size\":\"92975\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/200w_d.webp\",\"webp_size\":\"37740\"},\"fixed_height_small\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100.gif\",\"width\":\"185\",\"height\":\"100\",\"size\":\"729220\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100.mp4\",\"mp4_size\":\"10768\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100.webp\",\"webp_size\":\"360262\"},\"fixed_height_small_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100_s.gif\",\"width\":\"185\",\"height\":\"100\",\"size\":\"12945\"},\"fixed_width_small\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100w.gif\",\"width\":\"100\",\"height\":\"54\",\"size\":\"249759\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100w.mp4\",\"mp4_size\":\"5982\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100w.webp\",\"webp_size\":\"161192\"},\"fixed_width_small_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/100w_s.gif\",\"width\":\"100\",\"height\":\"54\",\"size\":\"5082\"},\"downsized\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy-downsized.gif\",\"width\":\"250\",\"height\":\"135\",\"size\":\"987853\"},\"downsized_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy-downsized_s.gif\",\"width\":\"250\",\"height\":\"135\",\"size\":\"27046\"},\"downsized_large\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy.gif\",\"width\":\"647\",\"height\":\"350\",\"size\":\"7141597\"},\"downsized_medium\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy.gif\",\"width\":\"480\",\"height\":\"260\",\"size\":\"4489908\"},\"original\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy.gif\",\"width\":\"480\",\"height\":\"260\",\"size\":\"4489908\",\"frames\":\"80\",\"mp4\":\"https:\\/\\/media2.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy.mp4\",\"mp4_size\":\"57383\",\"webp\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy.webp\",\"webp_size\":\"1583508\",\"hash\":\"efb6d46825449199ba0c60daf84b14c3\"},\"original_still\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy_s.gif\",\"width\":\"480\",\"height\":\"260\",\"size\":\"69865\"},\"looping\":{\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy-loop.mp4\",\"mp4_size\":\"424974\"},\"original_mp4\":{\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy.mp4\",\"mp4_size\":\"57383\",\"width\":\"480\",\"height\":\"260\"},\"preview\":{\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy-preview.mp4\",\"mp4_size\":\"17231\",\"width\":\"494\",\"height\":\"266\"},\"downsized_small\":{\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy-downsized-small.mp4\",\"mp4_size\":\"113037\"},\"preview_gif\":{\"url\":\"https:\\/\\/media1.giphy.com\\/media\\/jhpOJ9ANMk1tS\\/giphy-preview.gif\",\"width\":\"144\",\"height\":\"78\",\"size\":\"47821\"}}},{\"type\":\"gif\",\"id\":\"l0ExqtZUpC2LwmpzO\",\"slug\":\"studiosoriginals-l0ExqtZUpC2LwmpzO\",\"url\":\"https:\\/\\/giphy.com\\/gifs\\/studiosoriginals-l0ExqtZUpC2LwmpzO\",\"bitly_gif_url\":\"http:\\/\\/gph.is\\/2l66UCC\",\"bitly_url\":\"http:\\/\\/gph.is\\/2l66UCC\",\"embed_url\":\"https:\\/\\/giphy.com\\/embed\\/l0ExqtZUpC2LwmpzO\",\"username\":\"studiosoriginals\",\"source\":\"\",\"rating\":\"g\",\"content_url\":\"\",\"user\":{\"avatar_url\":\"https:\\/\\/media0.giphy.com\\/avatars\\/studiosoriginals\\/j3JBzK5twdv8.jpg\",\"banner_url\":\"https:\\/\\/media0.giphy.com\\/headers\\/studiosoriginals\\/fHmcHCHkISg3.gif\",\"profile_url\":\"https:\\/\\/giphy.com\\/studiosoriginals\\/\",\"username\":\"studiosoriginals\",\"display_name\":\"GIPHY Studios Originals\"},\"source_tld\":\"\",\"source_post_url\":\"\",\"is_indexable\":0,\"import_datetime\":\"2017-02-03 19:59:00\",\"trending_datetime\":\"2017-02-25 16:15:01\",\"images\":{\"fixed_height\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200.gif\",\"width\":\"356\",\"height\":\"200\",\"size\":\"157418\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200.mp4\",\"mp4_size\":\"53532\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200.webp\",\"webp_size\":\"145858\"},\"fixed_height_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200_s.gif\",\"width\":\"356\",\"height\":\"200\",\"size\":\"13510\"},\"fixed_height_downsampled\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200_d.gif\",\"width\":\"356\",\"height\":\"200\",\"size\":\"37833\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200_d.webp\",\"webp_size\":\"30784\"},\"fixed_width\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200w.gif\",\"width\":\"200\",\"height\":\"113\",\"size\":\"57387\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200w.mp4\",\"mp4_size\":\"22360\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200w.webp\",\"webp_size\":\"65556\"},\"fixed_width_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200w_s.gif\",\"width\":\"200\",\"height\":\"113\",\"size\":\"5635\"},\"fixed_width_downsampled\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200w_d.gif\",\"width\":\"200\",\"height\":\"113\",\"size\":\"14493\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/200w_d.webp\",\"webp_size\":\"13628\"},\"fixed_height_small\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100.gif\",\"width\":\"178\",\"height\":\"100\",\"size\":\"47659\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100.mp4\",\"mp4_size\":\"18236\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100.webp\",\"webp_size\":\"55324\"},\"fixed_height_small_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100_s.gif\",\"width\":\"178\",\"height\":\"100\",\"size\":\"4890\"},\"fixed_width_small\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100w.gif\",\"width\":\"100\",\"height\":\"57\",\"size\":\"19029\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100w.mp4\",\"mp4_size\":\"7954\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100w.webp\",\"webp_size\":\"26204\"},\"fixed_width_small_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/100w_s.gif\",\"width\":\"100\",\"height\":\"57\",\"size\":\"2861\"},\"downsized\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy-downsized.gif\",\"width\":\"480\",\"height\":\"270\",\"size\":\"357640\"},\"downsized_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy-downsized_s.gif\",\"width\":\"480\",\"height\":\"270\",\"size\":\"22489\"},\"downsized_large\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy.gif\",\"width\":\"480\",\"height\":\"270\",\"size\":\"357640\"},\"downsized_medium\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy.gif\",\"width\":\"480\",\"height\":\"270\",\"size\":\"357640\"},\"original\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy.gif\",\"width\":\"480\",\"height\":\"270\",\"size\":\"357640\",\"frames\":\"31\",\"mp4\":\"https:\\/\\/media1.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy.mp4\",\"mp4_size\":\"102607\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy.webp\",\"webp_size\":\"261888\",\"hash\":\"a3ad79f0717903cbfcd160e266651f58\"},\"original_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy_s.gif\",\"width\":\"480\",\"height\":\"270\",\"size\":\"22489\"},\"looping\":{\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy-loop.mp4\",\"mp4_size\":\"468066\"},\"original_mp4\":{\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy.mp4\",\"mp4_size\":\"102607\",\"width\":\"480\",\"height\":\"270\"},\"preview\":{\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy-preview.mp4\",\"mp4_size\":\"31997\",\"width\":\"384\",\"height\":\"216\"},\"downsized_small\":{\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy-downsized-small.mp4\",\"mp4_size\":\"96250\"},\"preview_gif\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0ExqtZUpC2LwmpzO\\/giphy-preview.gif\",\"width\":\"312\",\"height\":\"175\",\"size\":\"48078\"}}},{\"type\":\"gif\",\"id\":\"l0MYSCYtvpbUqmG8U\",\"slug\":\"seeso-parks-and-recreation-mad-rec-l0MYSCYtvpbUqmG8U\",\"url\":\"https:\\/\\/giphy.com\\/gifs\\/seeso-parks-and-recreation-mad-rec-l0MYSCYtvpbUqmG8U\",\"bitly_gif_url\":\"http:\\/\\/gph.is\\/2cpZIOj\",\"bitly_url\":\"http:\\/\\/gph.is\\/2cpZIOj\",\"embed_url\":\"https:\\/\\/giphy.com\\/embed\\/l0MYSCYtvpbUqmG8U\",\"username\":\"seeso\",\"source\":\"\",\"rating\":\"g\",\"content_url\":\"\",\"user\":{\"avatar_url\":\"https:\\/\\/media4.giphy.com\\/avatars\\/seeso\\/BmFpD5MsBaaB.jpg\",\"banner_url\":\"\",\"profile_url\":\"https:\\/\\/giphy.com\\/seeso\\/\",\"username\":\"seeso\",\"display_name\":\"Seeso\"},\"source_tld\":\"\",\"source_post_url\":\"\",\"is_indexable\":0,\"import_datetime\":\"2016-09-06 17:39:49\",\"trending_datetime\":\"2017-02-25 16:00:01\",\"images\":{\"fixed_height\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200.gif\",\"width\":\"357\",\"height\":\"200\",\"size\":\"1134996\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200.mp4\",\"mp4_size\":\"118675\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200.webp\",\"webp_size\":\"425214\"},\"fixed_height_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200_s.gif\",\"width\":\"357\",\"height\":\"200\"},\"fixed_height_downsampled\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200_d.gif\",\"width\":\"357\",\"height\":\"200\",\"size\":\"230720\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200_d.webp\",\"webp_size\":\"83054\"},\"fixed_width\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200w.gif\",\"width\":\"200\",\"height\":\"112\",\"size\":\"430246\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200w.mp4\",\"mp4_size\":\"51558\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200w.webp\",\"webp_size\":\"193080\"},\"fixed_width_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200w_s.gif\",\"width\":\"200\",\"height\":\"112\"},\"fixed_width_downsampled\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200w_d.gif\",\"width\":\"200\",\"height\":\"112\",\"size\":\"87597\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/200w_d.webp\",\"webp_size\":\"37798\"},\"fixed_height_small\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100.gif\",\"width\":\"179\",\"height\":\"100\",\"size\":\"360101\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100.mp4\",\"mp4_size\":\"44560\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100.webp\",\"webp_size\":\"165398\"},\"fixed_height_small_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100_s.gif\",\"width\":\"179\",\"height\":\"100\"},\"fixed_width_small\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100w.gif\",\"width\":\"100\",\"height\":\"56\",\"size\":\"139303\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100w.mp4\",\"mp4_size\":\"20219\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100w.webp\",\"webp_size\":\"73290\"},\"fixed_width_small_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/100w_s.gif\",\"width\":\"100\",\"height\":\"56\"},\"downsized\":{\"url\":\"https:\\/\\/media4.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy-downsized.gif\",\"width\":\"250\",\"height\":\"140\",\"size\":\"627864\"},\"downsized_still\":{\"url\":\"https:\\/\\/media4.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy-downsized_s.gif\",\"width\":\"250\",\"height\":\"140\",\"size\":\"21595\"},\"downsized_large\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy.gif\",\"width\":\"500\",\"height\":\"280\",\"size\":\"2156008\"},\"downsized_medium\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy.gif\",\"width\":\"500\",\"height\":\"280\",\"size\":\"2156008\"},\"original\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy.gif\",\"width\":\"500\",\"height\":\"280\",\"size\":\"2156008\",\"frames\":\"31\",\"mp4\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy.mp4\",\"mp4_size\":\"191564\",\"webp\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy.webp\",\"webp_size\":\"698538\"},\"original_still\":{\"url\":\"https:\\/\\/media3.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy_s.gif\",\"width\":\"500\",\"height\":\"280\"},\"looping\":{\"mp4\":\"https:\\/\\/media.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy-loop.mp4\"},\"preview\":{\"mp4\":\"https:\\/\\/media4.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy-preview.mp4\",\"mp4_size\":\"38614\",\"width\":\"204\",\"height\":\"114\"},\"downsized_small\":{\"mp4\":\"https:\\/\\/media4.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy-downsized-small.mp4\",\"mp4_size\":\"177255\"},\"preview_gif\":{\"url\":\"https:\\/\\/media4.giphy.com\\/media\\/l0MYSCYtvpbUqmG8U\\/giphy-preview.gif\",\"width\":\"120\",\"height\":\"67\",\"size\":\"49194\"}}}],\"meta\":{\"status\":200,\"msg\":\"OK\",\"response_id\":\"58b1da2b832926acfb8ab799\"},\"pagination\":{\"count\":5,\"offset\":0}}";
+    private List<String> getGifUrls(String result) {
+        ArrayList<String> gifURLs = new ArrayList<>();
         try {
 
             JSONObject json = new JSONObject(result);
             JSONArray data = json.getJSONArray("data");
-            ArrayList<String> gifURLs = new ArrayList<>(data.length());
-            for (int i=0;i<data.length();i++) {
+
+            for (int i = 0; i < data.length(); i++) {
                 JSONObject orig = data.getJSONObject(i).getJSONObject("images").getJSONObject("fixed_height");
-                String url =  orig.getString("url");
+                String url = orig.getString("url");
                 if (url.toLowerCase().startsWith("https")) {
-                    SurespotLog.d("adding gif url: %s", url);
                     gifURLs.add(url);
                 }
             }
-            return gifURLs;
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
-        return null;
+        return gifURLs;
     }
 }

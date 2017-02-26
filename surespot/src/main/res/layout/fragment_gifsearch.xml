@@ -1,18 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:background="@android:color/background_dark"
-              android:layout_height="match_parent">
-    <EditText
+<com.twofours.surespot.gifs.GifSearchFragment xmlns:android="http://schemas.android.com/apk/res/android"
+                                              android:layout_width="match_parent"
+                                              android:layout_height="match_parent"
+    >
+
+
+    <LinearLayout
+        android:id="@+id/bottomFrame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/etGifSearch"/>
+        android:layout_alignParentBottom="true"
+        android:background="?android:attr/colorBackground"
+        android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rvGifs"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvGifs"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="?android:attr/colorBackground"
+            android:orientation="horizontal"
+            />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvGifKeywords"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="?android:attr/colorBackground"
+            android:orientation="horizontal"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/colorBackground"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:lines="0"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/topFrame"
         android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_weight="100"/>
-
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottomFrame"
+        android:layout_alignParentTop="true"
+        android:background="#CC000000"
+        android:clickable="true"/>
+</com.twofours.surespot.gifs.GifSearchFragment>

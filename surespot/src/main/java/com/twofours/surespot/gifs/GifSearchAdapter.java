@@ -4,9 +4,9 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.network.IAsyncCallback;
 
 import java.util.List;
 
@@ -18,17 +18,19 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
     private GifSearchDownloader mGifSearchDownloader;
     private Context mContext;
 
+    private IAsyncCallback<String> mCallback;
 
     private String mOurUsername;
     private String mTheirUsername;
 
-    public GifSearchAdapter(Context context, String ourUsername, String theirUsername, List<String> gifUrls) {
-        SurespotLog.d(TAG, "Constructor, ourUsername: %s, theirUsername: %s", ourUsername, theirUsername);
+    public GifSearchAdapter(Context context, List<String> gifUrls, IAsyncCallback<String> callback) {
+        //SurespotLog.d(TAG, "Constructor, ourUsername: %s, theirUsername: %s", ourUsername, theirUsername);
 
         mContext = context;
-        mGifSearchDownloader = new GifSearchDownloader(ourUsername, this);
-        mOurUsername = ourUsername;
-        mTheirUsername = theirUsername;
+        mCallback = callback;
+        mGifSearchDownloader = new GifSearchDownloader(this);
+        //      mOurUsername = ourUsername;
+        //    mTheirUsername = theirUsername;
         mGifs = gifUrls;
 
     }
@@ -37,6 +39,9 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         GifImageView v = new GifImageView(mContext);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params.setMargins(2, 0, 2, 0); //substitute parameters for left, top, right, bottom
+        v.setLayoutParams(params);
         GifViewHolder vh = new GifViewHolder(v);
         return vh;
     }
@@ -47,15 +52,14 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
         mGifSearchDownloader.download(holder.imageView, mGifs.get(position));
         holder.imageView.setOnClickListener(new View.OnClickListener() {
 
-                                                @Override
-                                                public void onClick(View v) {
-                                                    String url = mGifs.get(holder.getAdapterPosition());
-                                                    SurespotLog.d(TAG, "Sending gif message from: %s, to %s, url: %s", mOurUsername,mTheirUsername,url);
-                                                    ChatUtils.sendGifMessage(mOurUsername, mTheirUsername, url);
-                                                }
-                                            }
-
-        );
+            @Override
+            public void onClick(View v) {
+                if (mCallback != null) {
+                    String url = mGifs.get(holder.getAdapterPosition());
+                    mCallback.handleResponse(url);
+                }
+            }
+        });
     }
 
     @Override
@@ -71,6 +75,17 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
     public Context getContext() {
         return mContext;
     }
+
+    public void setGifs(List<String> gifUrls) {
+        mGifs = gifUrls;
+        notifyDataSetChanged();
+    }
+
+    public void clearGifs() {
+        mGifs.clear();
+        notifyDataSetChanged();
+    }
+
 
     public static class GifViewHolder extends RecyclerView.ViewHolder {
 

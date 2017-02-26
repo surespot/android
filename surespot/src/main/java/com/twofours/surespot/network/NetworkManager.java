@@ -17,8 +17,16 @@ public class NetworkManager {
     private static String TAG = "NetworkManager";
 
     public static synchronized NetworkController getNetworkController(Context context) {
-        SurespotLog.d(TAG, "creating network controller for no user");
-        return new NetworkController(context, null);
+        SurespotLog.d(TAG, "getNetworkController for no user");
+
+        NetworkController nc = mMap.get(null);
+        if (nc == null) {
+            SurespotLog.d(TAG, "creating network controller for no user");
+            nc = new NetworkController(context, null);
+            mMap.put(null,nc);
+        }
+        return nc;
+
     }
 
     public static synchronized NetworkController getNetworkController(Context context, String username) {

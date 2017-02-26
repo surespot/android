@@ -20,6 +20,7 @@ public class SurespotConfiguration {
 
 	private static String mGoogleApiLicenseKey;
 	private static String mGoogleApiKey;
+	private static String mGiphyApiKey;
 
 	private static int mImageDisplayWidth;
 	private static int mImageDisplayHeight;
@@ -38,6 +39,7 @@ public class SurespotConfiguration {
 			mBaseUrl = SurespotConstants.PRODUCTION ? (String) properties.get("baseUrlProd") : (String) properties.get("baseUrlLocal");
 			mGoogleApiLicenseKey = (String) properties.get("googleApiLicenseKey");
 			mGoogleApiKey = (String) properties.get("googleApiKey");
+			mGiphyApiKey = (String) properties.get("giphyApiKey");
 
 			// figure out image and QR display size based on screen size
 			Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
@@ -100,6 +102,9 @@ public class SurespotConfiguration {
 
 	public static String getGoogleApiKey() {
 		return mGoogleApiKey;
+	}
+	public static String getGiphyApiKey() {
+		return mGiphyApiKey;
 	}
 
 }

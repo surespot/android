@@ -145,7 +145,6 @@ public class NetworkController {
                 .authenticator(authenticator);
 
 
-
         if (SurespotConfiguration.isSslCheckingStrict()) {
             mClient = builder.build();
         }
@@ -1116,5 +1115,27 @@ public class NetworkController {
 
     public HostnameVerifier getHostnameVerifier() {
         return mHostnameVerifier;
+    }
+
+    public void searchGiphy(String query, Callback responseHandler) {
+
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme("https")
+                .host("api.giphy.com")
+                .addPathSegment("v1")
+                .addPathSegment("gifs")
+                .addPathSegment("search")
+                .addQueryParameter("q",query)
+                .addQueryParameter("api_key", SurespotConfiguration.getGiphyApiKey())
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        Call call = mClient.newCall(request);
+        call.enqueue(responseHandler);
+
+
     }
 }

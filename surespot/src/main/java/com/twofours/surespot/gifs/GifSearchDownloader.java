@@ -54,8 +54,7 @@ public class GifSearchDownloader {
     private String mUsername;
 
 
-    public GifSearchDownloader(String username, GifSearchAdapter chatAdapter) {
-        mUsername = username;
+    public GifSearchDownloader(GifSearchAdapter chatAdapter) {
         mChatAdapter = chatAdapter;
     }
 
@@ -172,7 +171,7 @@ public class GifSearchDownloader {
 
             SurespotLog.d(TAG, "GifDownloaderTask getting %s,", mUrl);
 
-            InputStream gifImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(getUrl());
+            InputStream gifImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext()).getFileStream(getUrl());
             GifDrawable gifDrawable = null;
             if (mCancelled) {
                 try {
