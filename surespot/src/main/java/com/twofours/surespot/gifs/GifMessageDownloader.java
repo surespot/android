@@ -278,9 +278,12 @@ public class GifMessageDownloader {
 //                                }
 
 
+
+                                    double widthMultiplier = (double) SurespotConfiguration.getImageDisplayHeight()/finalGifDrawable.getIntrinsicHeight();
+                                    SurespotLog.d(TAG, "widthMultiplier %f",widthMultiplier);
                                     imageView.setImageDrawable(finalGifDrawable);
                                     imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-                                    imageView.getLayoutParams().width =  ((View) imageView.getParent()).getWidth()-20;
+                                    imageView.getLayoutParams().width = (int) (finalGifDrawable.getIntrinsicWidth()*widthMultiplier);
                                     UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
                                 }
 //
