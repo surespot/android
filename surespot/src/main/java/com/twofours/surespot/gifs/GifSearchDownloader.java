@@ -34,7 +34,6 @@ import java.lang.ref.WeakReference;
 
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifDrawableBuilder;
-import pl.droidsonroids.gif.GifImageView;
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -51,11 +50,13 @@ public class GifSearchDownloader {
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private GifSearchAdapter mChatAdapter;
 
+
     public GifSearchDownloader(GifSearchAdapter chatAdapter) {
+
         mChatAdapter = chatAdapter;
     }
 
-    public void download(GifImageView imageView, String message) {
+    public void download(SurespotGifImageView imageView, String message) {
         if (message == null) {
             return;
         }
@@ -64,6 +65,10 @@ public class GifSearchDownloader {
         GifDrawable gifDrawable = getGifDrawableFromCache(message);
         if (gifDrawable == null) {
             SurespotLog.v(TAG, "gif not in memory cache for url: %s",message);
+
+
+
+            imageView.showProgress();
             forceDownload(imageView, message);
         }
         else {
@@ -72,6 +77,7 @@ public class GifSearchDownloader {
             cancelPotentialDownload(imageView, message);
             //imageView.clearAnimation();
             imageView.setImageDrawable(gifDrawable);
+
          //   ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
         }
     }
@@ -84,7 +90,7 @@ public class GifSearchDownloader {
     /**
      * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
      */
-    private void forceDownload(GifImageView imageView, String message) {
+    private void forceDownload(SurespotGifImageView imageView, String message) {
         if (cancelPotentialDownload(imageView, message)) {
             GifDownloaderTask task = new GifDownloaderTask(imageView, message);
             DecryptionTaskWrapper decryptionTaskWrapper = new DecryptionTaskWrapper(task);
@@ -97,7 +103,7 @@ public class GifSearchDownloader {
      * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
      * progress deals with the same url. The download is not stopped in that case.
      */
-    private boolean cancelPotentialDownload(GifImageView imageView, String message) {
+    private boolean cancelPotentialDownload(SurespotGifImageView imageView, String message) {
         GifDownloaderTask GifDownloaderTask = getGifDownloaderTask(imageView);
 
         if (GifDownloaderTask != null) {
@@ -117,7 +123,7 @@ public class GifSearchDownloader {
      * @param imageView Any imageView
      * @return Retrieve the currently active download task (if any) associated with this imageView. null if there is no such task.
      */
-    public GifDownloaderTask getGifDownloaderTask(GifImageView imageView) {
+    public GifDownloaderTask getGifDownloaderTask(SurespotGifImageView imageView) {
         if (imageView != null) {
             Object oDecryptionTaskWrapper = imageView.getTag(R.id.tagGifDownloader);
             if (oDecryptionTaskWrapper instanceof DecryptionTaskWrapper) {
@@ -139,11 +145,11 @@ public class GifSearchDownloader {
             return mMessage;
         }
 
-        private final WeakReference<GifImageView> imageViewReference;
+        private final WeakReference<SurespotGifImageView> imageViewReference;
 
-        public GifDownloaderTask(GifImageView imageView, String message) {
+        public GifDownloaderTask(SurespotGifImageView imageView, String message) {
             mMessage = message;
-            imageViewReference = new WeakReference<GifImageView>(imageView);
+            imageViewReference = new WeakReference<SurespotGifImageView>(imageView);
         }
 
         public void cancel() {
@@ -200,7 +206,7 @@ public class GifSearchDownloader {
 
                     if (gifDrawable != null) {
                         addGifDrawableToCache(getUrl(), gifDrawable);
-                        final GifImageView imageView = imageViewReference.get();
+                        final SurespotGifImageView imageView = imageViewReference.get();
                         if (imageView != null) {
                             final GifDownloaderTask gifDownloaderTask = getGifDownloaderTask(imageView);
 

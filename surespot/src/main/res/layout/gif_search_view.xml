@@ -56,7 +56,6 @@
                 android:id="@+id/rvGifs"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
-                android:background="@android:color/holo_green_light"
                 android:orientation="horizontal"
 
                 />
@@ -97,6 +96,6 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/bottomFrame"
         android:layout_alignParentTop="true"
-        android:background="#55000000"
+        android:background="#66000000"
         android:clickable="true"/>
 </com.twofours.surespot.gifs.GifSearchView>

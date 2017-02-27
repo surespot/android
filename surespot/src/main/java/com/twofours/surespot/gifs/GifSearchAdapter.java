@@ -13,8 +13,6 @@ import com.twofours.surespot.utils.UIUtils;
 
 import java.util.List;
 
-import pl.droidsonroids.gif.GifImageView;
-
 public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifViewHolder> {
     private final static String TAG = "GifSearchAdapter";
     private List<GifDetails> mGifs;
@@ -32,7 +30,7 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        GifImageView v = (GifImageView) parent.inflate(getContext(), R.layout.gif_search_item, null);
+        SurespotGifImageView v = (SurespotGifImageView) parent.inflate(getContext(), R.layout.surespot_gif_image_view, null);
         GifViewHolder vh = new GifViewHolder(v);
         return vh;
     }
@@ -49,8 +47,8 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
         int height = (int) (scale * UIUtils.pxFromDp(getContext(), details.getHeight()));
         int width = (int) (scale * UIUtils.pxFromDp(getContext(), details.getWidth()));
 
-        holder.imageView.setMinimumHeight(height);
-        holder.imageView.setMinimumWidth(width);
+    //    holder.imageView.setMinimumHeight(height);
+     //   holder.imageView.setMinimumWidth(width);
 
         SurespotLog.d(TAG, "onBindViewHolder url: %s, scale: %f, setting width to %d, setting height to %d", details.getUrl(), scale, width, height);
         ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
@@ -102,9 +100,9 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
 
     public static class GifViewHolder extends RecyclerView.ViewHolder {
 
-        public GifImageView imageView;
+        public SurespotGifImageView imageView;
 
-        public GifViewHolder(GifImageView v) {
+        public GifViewHolder(SurespotGifImageView v) {
             super(v);
             imageView = v;
         }
