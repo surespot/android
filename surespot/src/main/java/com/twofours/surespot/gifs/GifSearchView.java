@@ -146,6 +146,7 @@ public class GifSearchView extends RelativeLayout {
                 if (mGifsAdapter == null) {
                     mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), new ArrayList<GifDetails>(0), mCallback);
                     mRecyclerView.setAdapter(mGifsAdapter);
+                    mRecyclerView.scrollToPosition(0);
                     mGifsAdapter.notifyDataSetChanged();
                 }
 
@@ -163,6 +164,7 @@ public class GifSearchView extends RelativeLayout {
                     mGifsAdapter.setGifs(getGifUrls(responseString));
                 }
                 mRecyclerView.setVisibility(View.VISIBLE);
+                mRecyclerView.scrollToPosition(0);
                 mProgressBar.setVisibility(View.GONE);
                 mEmptyView.setVisibility(gifs.size() > 0 ? View.GONE : View.VISIBLE);
 
