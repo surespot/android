@@ -42,6 +42,7 @@ public class GifSearchView extends RelativeLayout {
     private GifSearchAdapter mGifsAdapter;
     private IAsyncCallback<String> mCallback;
     private ProgressBar mProgressBar;
+    private View mEmptyView;
 
 
     public GifSearchView(Context context) {
@@ -72,6 +73,7 @@ public class GifSearchView extends RelativeLayout {
         mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mProgressBar = (ProgressBar) findViewById(R.id.gif_progress_bar);
+        mEmptyView = findViewById(R.id.tv_no_gifs);
 
         RecyclerView keywordView = (RecyclerView) findViewById(R.id.rvGifKeywords);
         keywordView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -149,6 +151,7 @@ public class GifSearchView extends RelativeLayout {
     private void searchGifs(String terms) {
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
+        mEmptyView.setVisibility(View.GONE);
 
         if (mGifsAdapter != null) {
             mGifsAdapter.clearGifs();
@@ -157,15 +160,22 @@ public class GifSearchView extends RelativeLayout {
         NetworkManager.getNetworkController(GifSearchView.this.getContext()).searchGiphy(terms, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                mRecyclerView.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.GONE);
+                mEmptyView.setVisibility(View.VISIBLE);
+                if (mGifsAdapter == null) {
+                    mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), new ArrayList<GifDetails>(0), mCallback);
+                    mRecyclerView.setAdapter(mGifsAdapter);
+                    mGifsAdapter.notifyDataSetChanged();
+                }
 
             }
 
             @Override
             public void onResponse(Call call, Response response, String responseString) throws IOException {
+                List<GifDetails> gifs = getGifUrls(responseString);
                 if (mGifsAdapter == null) {
-                    mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), getGifUrls(responseString), mCallback);
+                    mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), gifs, mCallback);
                     mRecyclerView.setAdapter(mGifsAdapter);
                     mGifsAdapter.notifyDataSetChanged();
                 }
@@ -174,6 +184,7 @@ public class GifSearchView extends RelativeLayout {
                 }
                 mRecyclerView.setVisibility(View.VISIBLE);
                 mProgressBar.setVisibility(View.GONE);
+                mEmptyView.setVisibility(gifs.size() > 0 ? View.GONE : View.VISIBLE);
 
             }
         }));

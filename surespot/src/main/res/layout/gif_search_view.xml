@@ -60,6 +60,15 @@
 
                 />
 
+            <TextView
+                android:id="@+id/tv_no_gifs"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/no_GIFS_found"
+                android:visibility="gone"
+                />
+
 
         </FrameLayout>
 
