@@ -33,16 +33,6 @@
         android:layout_below="@+id/indicator"/>
 
     <FrameLayout
-        android:id="@+id/topPanel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/editTexts"
-        android:layout_below="@+id/indicator"
-        android:background="#88000000"
-        android:clickable="true"
-        android:visibility="gone"/>
-
-    <FrameLayout
         android:id="@+id/fButtons"
         android:layout_width="50dp"
         android:layout_height="match_parent"
@@ -94,8 +84,8 @@
             android:imeOptions="actionDone|flagNoExtractUi"
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:maxHeight="150dp"
-            android:minHeight="45dp"
-            android:singleLine="true">
+            android:maxLines="1"
+            android:minHeight="45dp">
         </EditText>
 
 
@@ -110,7 +100,6 @@
             android:maxLines="5"
             android:minHeight="45dp"
             android:scrollbars="vertical"
-            android:singleLine="false"
             android:visibility="gone"
             app:emojiconSize="30dp">
         </com.rockerhieu.emojicon.EmojiconEditText>
@@ -121,9 +110,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
             android:maxHeight="150dp"
+            android:maxLines="1"
             android:minHeight="45dp"
-            android:singleLine="true"
             android:visibility="gone"
             >
         </EditText>

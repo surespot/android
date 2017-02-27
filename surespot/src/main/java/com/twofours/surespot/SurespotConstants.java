@@ -37,12 +37,10 @@ public class SurespotConstants {
 
 	}
 
-	public final static boolean PRODUCTION = false;
-
+	public final static boolean PRODUCTION = true;
+	public final static boolean LOGGING = true;
 	// PROD set to 3
 	public final static int MAX_IDENTITIES = PRODUCTION ? 3 : 30;
-
-	public final static boolean LOGGING = !PRODUCTION;
 	public final static boolean SSL_STRICT = PRODUCTION;
 	public static final String SERVER_PUBLIC_KEY = PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
 

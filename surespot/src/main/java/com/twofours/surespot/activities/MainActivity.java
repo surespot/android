@@ -156,7 +156,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private LayoutParams mWindowLayoutParams;
     private GifSearchView mGifView;
     private boolean mGifShowing;
-    private View mTopFrame;
     private EditText mEtGifSearch;
     private TextView mTvGIF;
 
@@ -373,8 +372,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
         mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
         mSendButton = (View) mainView.findViewById(R.id.bSend);
-        mTopFrame = mainView.findViewById(R.id.topPanel);
-
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -581,6 +578,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             @Override
             public boolean onEditorAction(final TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
+                SurespotLog.d(TAG, "onEditorAction, actionId: %d, keyEvent: %s", actionId, event);
 
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     final CharSequence text = v.getText();
@@ -596,7 +594,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         }
                     };
 
-                    mGifView.post(runnable);
+                    mActivityLayout.post(runnable);
                     handled = true;
                 }
 
@@ -610,9 +608,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     SurespotLog.d(TAG, "gif search onTouch down");
                     hideGifDrawer(true, true);
-                    return false;
+                    return true;
                 }
-                return true;
+                return false;
             }
         });
 
@@ -826,7 +824,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
-                //  SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
+//                SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
                 if (!visible && mActivityLayout.getPaddingBottom() == 0 && isEmojiVisible()) {
                     hideEmojiDrawer(false);
                 }
@@ -1806,6 +1804,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (friend == null) {
             mEmojiButton.setVisibility(View.GONE);
             mEtMessage.setVisibility(View.GONE);
+            mTvGIF.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
             //  mEmojiView.setVisibility(View.GONE);
 
@@ -1844,16 +1843,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 mEmojiButton.setVisibility(View.GONE);
                 mEtMessage.setVisibility(View.GONE);
+                mTvGIF.setVisibility(View.GONE);
 
 
             }
             else {
                 mEtMessage.setVisibility(View.VISIBLE);
                 mEmojiButton.setVisibility(View.VISIBLE);
+                mTvGIF.setVisibility(View.VISIBLE);
             }
 
             mEtInvite.setVisibility(View.GONE);
             mQRButton.setVisibility(View.GONE);
+            mTvGIF.setVisibility(View.VISIBLE);
             mEtMessage.requestFocus();
         }
 
@@ -1872,6 +1874,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         setButtonText();
+        setEmojiIcon();
         mFriendHasBeenSet = true;
     }
 
@@ -2175,8 +2178,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
         }
 
-
-        mTopFrame.setVisibility(View.VISIBLE);
         mEtGifSearch.setVisibility(View.VISIBLE);
         mEtGifSearch.requestFocus();
         mEtMessage.setVisibility(View.INVISIBLE);
@@ -2277,7 +2278,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         if (!forGifSearch) {
-            mTopFrame.setVisibility(View.GONE);
+            mEtGifSearch.setText("");
             mEtMessage.setVisibility(View.VISIBLE);
             mEtGifSearch.setVisibility(View.INVISIBLE);
             mSendButton.setVisibility(View.VISIBLE);

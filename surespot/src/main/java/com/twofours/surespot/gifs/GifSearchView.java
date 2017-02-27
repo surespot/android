@@ -129,6 +129,7 @@ public class GifSearchView extends RelativeLayout {
     }
 
     public void searchGifs(String terms) {
+        SurespotLog.d(TAG, "searchGifs terms: %s", terms);
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
