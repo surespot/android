@@ -44,13 +44,25 @@
 
     <FrameLayout
         android:id="@+id/fButtons"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="match_parent"
         android:layout_above="@+id/fEmoji"
         android:layout_alignTop="@+id/editTexts"
         android:layout_alignWithParentIfMissing="true">
 
+
+        <TextView
+            android:id="@+id/tvGIF"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="@string/gif"
+            android:textSize="@dimen/abc_text_size_large_material"
+            android:textStyle="bold"/>
+
         <ImageView
+
             android:id="@+id/bEmoji"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -81,9 +93,9 @@
             android:imeActionLabel="@string/invite"
             android:imeOptions="actionDone|flagNoExtractUi"
             android:inputType="textNoSuggestions|textVisiblePassword"
-            android:singleLine="true"
             android:maxHeight="150dp"
-            android:minHeight="45dp">
+            android:minHeight="45dp"
+            android:singleLine="true">
         </EditText>
 
 
@@ -108,9 +120,9 @@
             android:id="@+id/etGiphy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:imeOptions="actionSearch|flagNoExtractUi"
             android:maxHeight="150dp"
             android:minHeight="45dp"
-            android:imeOptions="actionSearch|flagNoExtractUi"
             android:singleLine="true"
             android:visibility="gone"
             >

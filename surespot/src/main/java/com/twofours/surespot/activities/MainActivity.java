@@ -156,10 +156,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private LayoutParams mWindowLayoutParams;
     private GifSearchView mGifView;
     private boolean mGifShowing;
-    private View mEditTexts;
-    private View mButtons;
     private View mTopFrame;
     private EditText mEtGifSearch;
+    private TextView mTvGIF;
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -373,8 +373,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
         mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
         mSendButton = (View) mainView.findViewById(R.id.bSend);
-        mEditTexts = (View) mainView.findViewById(R.id.editTexts);
-        mButtons = mainView.findViewById(R.id.fButtons);
         mTopFrame = mainView.findViewById(R.id.topPanel);
 
 
@@ -495,17 +493,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
-        mEmojiButton.setOnClickListener(new View.OnClickListener() {
-
+        View.OnClickListener emojiToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 toggleEmojiDrawer();
             }
-        });
+        };
 
-        setEmojiIcon(true);
+        mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
+        mEmojiButton.setOnClickListener(emojiToggleListener);
+
+        mTvGIF = (TextView) findViewById(R.id.tvGIF);
+        mTvGIF.setOnClickListener(emojiToggleListener);
+
+        setEmojiIcon();
 
         mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
         mQRButton.setOnClickListener(new View.OnClickListener() {
@@ -1841,17 +1842,31 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mFriendHasBeenSet = true;
     }
 
-    private void setEmojiIcon(final boolean keyboardShowing) {
+    private void setEmojiIcon() {
+        SurespotLog.d(TAG, "setEmojiIcon, mGifShowing: %b, emoji visible: %b", mGifShowing, isEmojiVisible());
         boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-        if (keyboardShowing) {
-            mEmojiButton.setImageResource(R.drawable.smiley);
+
+
+        if (mGifShowing) {
+            mEmojiButton.setVisibility(View.GONE);
+            mTvGIF.setVisibility(View.VISIBLE);
+            mTvGIF.setTextColor(Color.GRAY);
         }
         else {
-            if (black) {
-                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
+            if (isEmojiVisible()) {
+                mEmojiButton.setImageResource(R.drawable.smiley);
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mTvGIF.setVisibility(View.GONE);
             }
             else {
-                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mTvGIF.setVisibility(View.GONE);
+                if (black) {
+                    mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
+                }
+                else {
+                    mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
+                }
             }
         }
     }
@@ -1980,7 +1995,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void toggleEmojiDrawer() {
-        SurespotLog.d(TAG, "toggleEmojiDrawer");
+        SurespotLog.d(TAG, "toggleEmojiDrawer, mGifShowing: %b, emoji visible: %b", mGifShowing, isEmojiVisible());
 
         if (mGifShowing) {
             hideGifDrawer(true, false);
@@ -1994,6 +2009,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 showGifDrawer();
             }
         }
+
+        setEmojiIcon();
 
     }
 
@@ -2054,8 +2071,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             SurespotLog.d(TAG, "setting padding");
             mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
         }
-
-        setEmojiIcon(false);
     }
 
     private void hideEmojiDrawer() {
@@ -2079,13 +2094,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 .getSystemService(Context.WINDOW_SERVICE);
                         wm.removeViewImmediate(mEmojiView);
                     }
-
-                    mEmojiButton.setImageResource(R.drawable.smiley);
                     mActivityLayout.setPadding(0, 0, 0, 0);
-                    mEmojiShowing = false;
                 }
             });
         }
+
+        mEmojiShowing = false;
 
     }
 
