@@ -1982,18 +1982,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void toggleEmojiDrawer() {
         SurespotLog.d(TAG, "toggleEmojiDrawer");
 
-        if (isEmojiVisible()) {
-            hideEmojiDrawer();
-            showGifDrawer();
+        if (mGifShowing) {
+            hideGifDrawer(true, false);
+            showEmojiDrawer();
         }
         else {
-            if (mGifShowing) {
-                hideGifDrawer(true, false);
+            if (isEmojiVisible()) {
+                hideEmojiDrawer();
             }
             else {
-                showEmojiDrawer();
+                showGifDrawer();
             }
         }
+
     }
 
     private void showEmojiDrawer() {
@@ -2066,6 +2067,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             InputMethodManager input = (InputMethodManager) mContext
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
             input.showSoftInput(mEtMessage, 0);
+
         }
 
         if (mEmojiView != null) {
