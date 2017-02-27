@@ -2152,29 +2152,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         final int keyboardHeight = mActivityLayout.getKeyboardHeight();
         SurespotLog.d(TAG, "showGifDrawer height: %d", keyboardHeight);
 
-
-        final ChatController cc = ChatManager.getChatController(mUser);
-        if (cc == null) {
-            return;
-        }
-
-        final String currentChat = cc.getCurrentChat();
-        if (currentChat == null) {
-            return;
-        }
-
         mGifShowing = true;
 
         if (mGifView == null) {
-            mGifView = (GifSearchView) LayoutInflater
-                    .from(this).inflate(R.layout.gif_search_view, null, false);
+            mGifView = (GifSearchView) LayoutInflater.from(this).inflate(R.layout.gif_search_view, null, false);
 
 
             mGifView.setCallback(new IAsyncCallback<String>() {
                 @Override
                 public void handleResponse(String result) {
                     if (result != null) {
-                        ChatUtils.sendGifMessage(mUser, currentChat, result);
+                        sendGifMessage(result);
                     }
                 }
             });
@@ -2229,6 +2217,24 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         getActionBar().hide();
 
+    }
+
+    private void sendGifMessage(String result) {
+        if (mUser == null) {
+            return;
+        }
+
+        final ChatController cc = ChatManager.getChatController(mUser);
+        if (cc == null) {
+            return;
+        }
+
+        final String currentChat = cc.getCurrentChat();
+        if (currentChat == null) {
+            return;
+        }
+
+        ChatUtils.sendGifMessage(mUser, currentChat, result);
     }
 
 
