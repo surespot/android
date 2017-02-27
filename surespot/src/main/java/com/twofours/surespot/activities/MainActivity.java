@@ -1977,22 +1977,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void toggleEmojiDrawer() {
-        // TODO animate drawer enter & exit
         SurespotLog.d(TAG, "toggleEmojiDrawer");
 
-//        if (isEmojiVisible()) {
-//            hideEmojiDrawer();
-//        }
-//        else {
-//            showEmojiDrawer();
-//        }
-////        show gif drawer
-
-        if (mGifShowing) {
-            hideGifDrawer(true, false);
+        if (isEmojiVisible()) {
+            hideEmojiDrawer();
+            showGifDrawer();
         }
         else {
-            showGifDrawer();
+            if (mGifShowing) {
+                hideGifDrawer(true, false);
+            }
+            else {
+                showEmojiDrawer();
+            }
         }
     }
 
@@ -2178,7 +2175,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
 
             if (!forGifSearch) {
-                mGifView.post(new Runnable() {
+                mActivityLayout.post(new Runnable() {
                     @Override
                     public void run() {
                         if (!mActivityLayout.isKeyboardVisible()) {
@@ -2189,7 +2186,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 });
             }
             else {
-                mGifView.post(new Runnable() {
+                mActivityLayout.post(new Runnable() {
                     @Override
                     public void run() {
                         if (!mActivityLayout.isKeyboardVisible()) {
