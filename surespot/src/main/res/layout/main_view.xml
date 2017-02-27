@@ -1,8 +1,8 @@
-<com.twofours.surespot.chat.SoftKeyboardLayout android:id="@+id/chatLayout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<com.twofours.surespot.chat.SoftKeyboardLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                               xmlns:app="http://schemas.android.com/apk/res-auto"
+                                               android:id="@+id/chatLayout"
+                                               android:layout_width="match_parent"
+                                               android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/backgroundImage"
@@ -27,10 +27,20 @@
 
     <com.twofours.surespot.ui.FixedViewPager
         android:id="@+id/pager"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/editTexts"
         android:layout_below="@+id/indicator"/>
+
+    <FrameLayout
+        android:id="@+id/topPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/editTexts"
+        android:layout_below="@+id/indicator"
+        android:background="#88000000"
+        android:clickable="true"
+        android:visibility="gone"/>
 
     <FrameLayout
         android:id="@+id/fButtons"
@@ -71,10 +81,11 @@
             android:imeActionLabel="@string/invite"
             android:imeOptions="actionDone|flagNoExtractUi"
             android:inputType="textNoSuggestions|textVisiblePassword"
+            android:singleLine="true"
             android:maxHeight="150dp"
-            android:minHeight="45dp"
-            android:singleLine="true">
+            android:minHeight="45dp">
         </EditText>
+
 
         <com.rockerhieu.emojicon.EmojiconEditText
             android:id="@+id/etMessage"
@@ -87,10 +98,23 @@
             android:maxLines="5"
             android:minHeight="45dp"
             android:scrollbars="vertical"
-            app:emojiconSize="30dp"
             android:singleLine="false"
-            android:visibility="gone">
+            android:visibility="gone"
+            app:emojiconSize="30dp">
         </com.rockerhieu.emojicon.EmojiconEditText>
+
+
+        <EditText
+            android:id="@+id/etGiphy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="150dp"
+            android:minHeight="45dp"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:singleLine="true"
+            android:visibility="gone"
+            >
+        </EditText>
     </FrameLayout>
 
     <FrameLayout
@@ -138,11 +162,11 @@
     </FrameLayout>
 
     <!--<io.github.rockerhieu.emojicon.EmojiconsView-->
-        <!--android:id="@+id/emojicons_view"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="200dp"-->
-        <!--android:visibility="gone"-->
-        <!--android:layout_alignParentBottom="true" />-->
+    <!--android:id="@+id/emojicons_view"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="200dp"-->
+    <!--android:visibility="gone"-->
+    <!--android:layout_alignParentBottom="true" />-->
 
     <RelativeLayout
         android:id="@+id/voiceHeader"

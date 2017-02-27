@@ -5,18 +5,12 @@ import android.content.Context;
 import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputFilter;
 import android.util.AttributeSet;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
@@ -132,23 +126,9 @@ public class GifSearchView extends RelativeLayout {
             }
         }));
 
-        EditText etGifSearch = (EditText) findViewById(R.id.etGifSearch);
-        etGifSearch.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_SEARCH_LENGTH)});
-        etGifSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    searchGifs(v.getText().toString());
-                }
-
-                return handled;
-            }
-        });
     }
 
-    private void searchGifs(String terms) {
+    public void searchGifs(String terms) {
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
@@ -219,4 +199,6 @@ public class GifSearchView extends RelativeLayout {
         }
         return gifURLs;
     }
+
+
 }
