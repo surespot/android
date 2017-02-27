@@ -1621,43 +1621,76 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     public boolean backButtonPressed() {
-
-        SurespotLog.d(TAG, "backButtonPressed");
-
+        SurespotLog.d(TAG, "backButtonPressed, keyboardVisible: %b, mGifShowing: %b, emoji visible: %b", mActivityLayout.isKeyboardVisible(), mGifShowing, isEmojiVisible());
 
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
+            SurespotLog.d(TAG, "backButtonPressed returning true");
             return true;
         }
 
+
         //returning false will cause the keyboard to be hidden
         if (mActivityLayout.isKeyboardVisible()) {
+
             if (mGifShowing) {
-                hideGifDrawer(false, false);
+                mActivityLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideGifDrawer(false, false);
+                        setEmojiIcon();
+                    }
+                });
+
             }
+
+            if (isEmojiVisible()) {
+                mActivityLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideEmojiDrawer(false);
+                        setEmojiIcon();
+                    }
+                });
+            }
+
+            mActivityLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    setEmojiIcon();
+                }
+            });
+            SurespotLog.d(TAG, "keyboard showing backButtonPressed returning false");
             return false;
         }
 
         if (mGifShowing) {
             hideGifDrawer(false, false);
+            setEmojiIcon();
+            SurespotLog.d(TAG, "mGifShowing and keyboard not visible, backButtonPressed returning true");
             return true;
         }
 
         if (isEmojiVisible()) {
             hideEmojiDrawer(false);
+            setEmojiIcon();
+            SurespotLog.d(TAG, "emoji showing and keyboard not visible, backButtonPressed returning true");
             return true;
         }
 
-
         //go to home page if we not
-        if (mCurrentFriend != null) {
+        if (mCurrentFriend != null)
+
+        {
             ChatController cc = ChatManager.getChatController(mUser);
             if (cc != null) {
                 cc.setCurrentChat(null);
+                SurespotLog.d(TAG, "backButtonPressed returning true");
                 return true;
             }
         }
 
+        SurespotLog.d(TAG, "backButtonPressed returning false at the bottom");
         return false;
     }
 
@@ -2077,16 +2110,24 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         hideEmojiDrawer(true);
     }
 
-    public void hideEmojiDrawer(boolean showKeyboard) {
+    public void hideEmojiDrawer(final boolean showKeyboard) {
+        SurespotLog.d(TAG, "hideEmojiDrawer, showKeyboard: %b", showKeyboard);
         if (showKeyboard) {
-            InputMethodManager input = (InputMethodManager) mContext
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            input.showSoftInput(mEtMessage, 0);
-
+            mActivityLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    InputMethodManager input = (InputMethodManager) mContext
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (!mActivityLayout.isKeyboardVisible()) {
+                        input.showSoftInput(mEtMessage, 0);
+                    }
+                    mEtMessage.requestFocus();
+                }
+            });
         }
 
-        if (mEmojiView != null) {
-            mEmojiView.post(new Runnable() {
+        if (mActivityLayout != null) {
+            mActivityLayout.post(new Runnable() {
                 @Override
                 public void run() {
                     if (mEmojiView.getParent() != null) {
@@ -2095,6 +2136,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         wm.removeViewImmediate(mEmojiView);
                     }
                     mActivityLayout.setPadding(0, 0, 0, 0);
+
+                    if (showKeyboard) {
+                        mEtMessage.requestFocus();
+                    }
                 }
             });
         }
