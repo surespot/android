@@ -606,9 +606,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtGifSearch.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                SurespotLog.d(TAG, "gif search onTouch");
-                hideGifDrawer(true, true);
-                return false;
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    SurespotLog.d(TAG, "gif search onTouch down");
+                    hideGifDrawer(true, true);
+                    return false;
+                }
+                return true;
             }
         });
 
