@@ -41,13 +41,13 @@
 
         <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                      android:layout_width="match_parent"
-                     android:layout_height="150dp">
+                     android:layout_height="wrap_content">
 
             <ProgressBar
                 android:id="@+id/gif_progress_bar"
                 style="?android:progressBarStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="150dp"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:visibility="gone"
                 />
@@ -98,13 +98,13 @@
 
     </LinearLayout>
 
-    <View
+    <!--<View-->
 
-        android:id="@+id/topFrame"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/bottomFrame"
-        android:layout_alignParentTop="true"
-        android:background="#66000000"
-        android:clickable="true"/>
+        <!--android:id="@+id/topFrame"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_above="@id/bottomFrame"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:background="#66000000"-->
+        <!--android:clickable="true"/>-->
 </com.twofours.surespot.gifs.GifSearchView>

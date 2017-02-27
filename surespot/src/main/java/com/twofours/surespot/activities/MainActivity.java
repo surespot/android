@@ -1944,12 +1944,18 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
 //        if (isEmojiVisible()) {
 //            hideEmojiDrawer();
-//        } else {
+//        }
+//        else {
 //            showEmojiDrawer();
 //        }
-        //show gif fragment test
+////        show gif drawer
 
-        showGifDrawer();
+        if (mGifShowing) {
+            hideGifDrawer(true);
+        }
+        else {
+            showGifDrawer();
+        }
     }
 
     private void showEmojiDrawer() {
@@ -1974,10 +1980,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
             mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+
+
         }
 
-        mWindowLayoutParams.height = keyboardHeight;
-        mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        if (mWindowLayoutParams != null) {
+            mWindowLayoutParams.height = keyboardHeight;
+            mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        }
+
 
         WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
 
@@ -2019,36 +2030,42 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             input.showSoftInput(mEtMessage, 0);
         }
 
-        if (mEmojiView != null && mEmojiView.getParent() != null) {
-            WindowManager wm = (WindowManager) mContext
-                    .getSystemService(Context.WINDOW_SERVICE);
-            wm.removeViewImmediate(mEmojiView);
+        if (mEmojiView != null) {
+            mEmojiView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mEmojiView.getParent() != null) {
+                        WindowManager wm = (WindowManager) mContext
+                                .getSystemService(Context.WINDOW_SERVICE);
+                        wm.removeViewImmediate(mEmojiView);
+                    }
+
+                    mEmojiButton.setImageResource(R.drawable.smiley);
+                    mActivityLayout.setPadding(0, 0, 0, 0);
+                    mEmojiShowing = false;
+                }
+            });
         }
 
-        mEmojiButton.setImageResource(R.drawable.smiley);
-        mActivityLayout.setPadding(0, 0, 0, 0);
-        mEmojiShowing = false;
     }
 
     private void showGifDrawer() {
-        int keyboardHeight = mActivityLayout.getKeyboardHeight();
-
-
+        final int keyboardHeight = mActivityLayout.getKeyboardHeight();
         SurespotLog.d(TAG, "showGifDrawer height: %d", keyboardHeight);
-        mGifShowing = true;
+
+
         final ChatController cc = ChatManager.getChatController(mUser);
         if (cc == null) {
-            //TODO handle
             return;
         }
 
         final String currentChat = cc.getCurrentChat();
         if (currentChat == null) {
-            //TODO handle
             return;
         }
 
-        final View currentMainView = mContentFrame.getChildAt(0);
+        mGifShowing = true;
+
         if (mGifView == null) {
             mGifView = (GifSearchView) LayoutInflater
                     .from(this).inflate(R.layout.gif_search_view, null, false);
@@ -2064,29 +2081,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             });
 
             final View bottomFrame = mGifView.findViewById(R.id.bottomFrame);
-
-
-            mContentFrame.addView(mGifView);
-            mSendButton.setVisibility(View.GONE);
-            mButtons.setVisibility(View.GONE);
-            mEditTexts.setVisibility(View.GONE);
-
-
-            final EditText etGifSearch = (EditText) bottomFrame.findViewById(R.id.etGifSearch);
-            //      etGifSearch.setText("Search GIFs");
-            etGifSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-//                    if (hasFocus) {
-//                        etGifSearch.setText("");
-//                    }
-//                    else {
-//                        etGifSearch.setText("Search GIFs");
-//                    }
-                }
-            });
-
             View closeView = bottomFrame.findViewById(R.id.ivGifClose);
+            bottomFrame.getLayoutParams().height = keyboardHeight;
             closeView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -2094,17 +2090,68 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
             });
 
+
             bottomFrame.post(new Runnable() {
                 @Override
                 public void run() {
-                    currentMainView.setPadding(0, 0, 0, bottomFrame.getHeight() + 20);
-                    getActionBar().hide();
+                    int keyboardHeight = mActivityLayout.getKeyboardHeight();
+                    SurespotLog.d(TAG, "post height: %d", keyboardHeight);
+
+                    bottomFrame.getLayoutParams().height = keyboardHeight;
+
                 }
             });
-
+            mWindowLayoutParams = new WindowManager.LayoutParams();
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
         }
 
+
+//            mContentFrame.addView(mGifView);
+//        mSendButton.setVisibility(View.GONE);
+//        mButtons.setVisibility(View.GONE);
+//        mEditTexts.setVisibility(View.GONE);
+
+
+        if (mWindowLayoutParams != null) {
+            mWindowLayoutParams.height = keyboardHeight;
+            mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        }
+
+        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
+
+        try {
+            if (mGifView.getParent() != null) {
+                wm.removeViewImmediate(mGifView);
+            }
+        }
+        catch (Exception e) {
+            SurespotLog.e(TAG, e, "error removing GIF view");
+        }
+
+        try {
+            wm.addView(mGifView, mWindowLayoutParams);
+        }
+        catch (Exception e) {
+            SurespotLog.e(TAG, e, "error adding emoji view");
+            mGifShowing = false;
+            return;
+        }
+
+
+        if (!mActivityLayout.isKeyboardVisible()) {
+            SurespotLog.d(TAG, "setting padding");
+            mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
+        }
+
+        getActionBar().hide();
+
     }
+
+
 
 
     public void hideGifDrawer(boolean showKeyboard) {
@@ -2112,6 +2159,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             InputMethodManager input = (InputMethodManager) mContext
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
             input.showSoftInput(mEtMessage, 0);
+            mEtMessage.requestFocus();
         }
 
 
@@ -2120,10 +2168,16 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEditTexts.setVisibility(View.VISIBLE);
 
 
-        View currentMainView = mContentFrame.getChildAt(0);
-        currentMainView.setPadding(0, 0, 0, 0);
+
+
+        mActivityLayout.setPadding(0, 0, 0, 0);
         getActionBar().show();
-        mContentFrame.removeView(mGifView);
+
+        if (mGifView != null && mGifView.getParent() != null) {
+            WindowManager wm = (WindowManager) mContext
+                    .getSystemService(Context.WINDOW_SERVICE);
+            wm.removeViewImmediate(mGifView);
+        }
 
         mGifView = null;
         mGifShowing = false;
