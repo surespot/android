@@ -361,7 +361,7 @@ public class ChatAdapter extends BaseAdapter {
             }
         }
 
-        if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+        if (item.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || item.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK)) {
             chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 
             chatMessageViewHolder.voiceView.setVisibility(View.GONE);
