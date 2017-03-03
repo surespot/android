@@ -61,4 +61,9 @@ public class SurespotGifImageView extends FrameLayout {
         imageView.setImageDrawable(drawable);
         hideProgress();
     }
+
+    @Override
+    public void setOnClickListener(OnClickListener l) {
+        findViewById(R.id.gif_image_view).setOnClickListener(l);
+    }
 }
