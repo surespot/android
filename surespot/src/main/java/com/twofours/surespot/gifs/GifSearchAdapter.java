@@ -48,9 +48,6 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
         int height = (int) (scale * UIUtils.pxFromDp(getContext(), details.getHeight()));
         int width = (int) (scale * UIUtils.pxFromDp(getContext(), details.getWidth()));
 
-    //    holder.imageView.setMinimumHeight(height);
-     //   holder.imageView.setMinimumWidth(width);
-
         SurespotLog.d(TAG, "onBindViewHolder url: %s, scale: %f, setting width to %d, setting height to %d", details.getUrl(), scale, width, height);
         ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
         if (params == null) {

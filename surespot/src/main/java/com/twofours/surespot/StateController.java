@@ -308,6 +308,9 @@ public class StateController {
                 for (String name : IdentityController.getIdentityNames(context)) {
                     // last chat and user we had open
                     Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.LAST_CHAT, null);
+                    Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.GCM_ID_SENT, null);
+                    Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.GCM_ID_RECEIVED, null);
+                    Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.RECENTLY_USED_GIFS, null);
                 }
                 Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 

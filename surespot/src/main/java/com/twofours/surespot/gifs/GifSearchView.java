@@ -32,12 +32,11 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
-import static android.content.ContentValues.TAG;
+import static com.twofours.surespot.SurespotConstants.PrefNames.RECENTLY_USED_GIFS;
 
 public class GifSearchView extends RelativeLayout {
-
-    public static final String RECENTLY_USED_GIFS = "recently_used_gifs";
-    public static final String RECENT_GIFS = "recent_gifs";
+    private static final String TAG="GifSearchView";
+    private static final String RECENT_GIFS = "recent_gifs";
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private GifSearchAdapter mGifsAdapter;
@@ -89,6 +88,15 @@ public class GifSearchView extends RelativeLayout {
         keywordView.setAdapter(new GifKeywordAdapter(this.getContext(), keywords, new IAsyncCallback<String>() {
             @Override
             public void handleResponse(String result) {
+                CharSequence lastSearch = mTvLastSearch.getText();
+                if (TextUtils.isEmpty(lastSearch)) {
+                    return;
+                }
+
+                if (lastSearch.equals(result)) {
+                    return;
+                }
+
                 String sRecentlyUsed = getContext().getString(R.string.recently_used);
                 if (result.equals(sRecentlyUsed)) {
                     showRecentlyUsed();
@@ -106,6 +114,7 @@ public class GifSearchView extends RelativeLayout {
 
     public void searchGifs(final String terms) {
         SurespotLog.d(TAG, "searchGifs terms: %s", terms);
+
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
@@ -205,8 +214,13 @@ public class GifSearchView extends RelativeLayout {
     private void addRecentlyUsed(GifDetails gifDetails) {
         List<GifDetails> recentlyUsed = getRecentlyUsed();
         int index = recentlyUsed.indexOf(gifDetails);
+
+        //move it to the front if it's already there and it's not at the front already
+        if (index == 0) {
+            return;
+        }
+
         GifDetails gifToAdd = gifDetails;
-        //move it to the front if it's already there
         if (index > -1) {
             gifToAdd = recentlyUsed.remove(index);
         }
