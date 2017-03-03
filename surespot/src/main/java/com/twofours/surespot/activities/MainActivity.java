@@ -2170,11 +2170,22 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mGifView = (GifSearchView) LayoutInflater.from(this).inflate(R.layout.gif_search_view, null, false);
 
 
-            mGifView.setCallback(new IAsyncCallback<GifDetails>() {
+            mGifView.setGifSelectedCallback(new IAsyncCallback<GifDetails>() {
                 @Override
                 public void handleResponse(GifDetails result) {
                     if (result != null) {
                         sendGifMessage(result.getUrl());
+                    }
+                }
+            });
+
+            mGifView.setGifSearchTextCallback(new IAsyncCallback<String>() {
+                @Override
+                public void handleResponse(String result) {
+                    if (mEtGifSearch != null) {
+                        mEtGifSearch.setText(result + " ");
+                        mEtGifSearch.setSelection(mEtGifSearch.getText().length());
+                        hideGifDrawer(true,true);
                     }
                 }
             });

@@ -40,10 +40,11 @@ public class GifSearchView extends RelativeLayout {
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
     private GifSearchAdapter mGifsAdapter;
-    private IAsyncCallback<GifDetails> mCallback;
+    private IAsyncCallback<GifDetails> mGifSelectedCallback;
     private ProgressBar mProgressBar;
     private View mEmptyView;
     private TextView mTvLastSearch;
+    private IAsyncCallback<String> mGifSearchTextCallback;
 
 
     public GifSearchView(Context context) {
@@ -75,12 +76,25 @@ public class GifSearchView extends RelativeLayout {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mProgressBar = (ProgressBar) findViewById(R.id.gif_progress_bar);
         mEmptyView = findViewById(R.id.tv_no_gifs);
+
+        final String sRecentlyUsed = getContext().getString(R.string.recently_used);
         mTvLastSearch = (TextView) findViewById(R.id.tvLastSearch);
+        mTvLastSearch.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!TextUtils.isEmpty(mTvLastSearch.getText())) {
+                    String lastSearchText = mTvLastSearch.getText().toString();
+                    if (!sRecentlyUsed.equals(lastSearchText)) {
+                        mGifSearchTextCallback.handleResponse(lastSearchText);
+                    }
+                }
+            }
+        });
 
         RecyclerView keywordView = (RecyclerView) findViewById(R.id.rvGifKeywords);
         keywordView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-        String sRecentlyUsed = getContext().getString(R.string.recently_used);
+
         String gifTerms = sRecentlyUsed + ":" + getContext().getString(R.string.gif_terms);
         String[] terms = gifTerms.split(":");
         List<String> keywords = Arrays.asList(terms);
@@ -115,10 +129,10 @@ public class GifSearchView extends RelativeLayout {
     public void searchGifs(final String terms) {
         SurespotLog.d(TAG, "searchGifs terms: %s", terms);
 
+        mTvLastSearch.setText(terms);
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
-
 
         NetworkManager.getNetworkController(GifSearchView.this.getContext()).searchGiphy(terms, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
@@ -140,7 +154,7 @@ public class GifSearchView extends RelativeLayout {
         mProgressBar.setVisibility(View.GONE);
         mEmptyView.setVisibility(View.VISIBLE);
         if (mGifsAdapter == null) {
-            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), new ArrayList<GifDetails>(0), mCallback);
+            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), new ArrayList<GifDetails>(0), mGifSelectedCallback);
             mRecyclerView.setAdapter(mGifsAdapter);
             mRecyclerView.scrollToPosition(0);
             mGifsAdapter.notifyDataSetChanged();
@@ -161,7 +175,7 @@ public class GifSearchView extends RelativeLayout {
         }
 
         if (mGifsAdapter == null) {
-            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), gifs, mCallback);
+            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), gifs, mGifSelectedCallback);
             mRecyclerView.setAdapter(mGifsAdapter);
             mGifsAdapter.notifyDataSetChanged();
         }
@@ -175,8 +189,8 @@ public class GifSearchView extends RelativeLayout {
 
     }
 
-    public void setCallback(final IAsyncCallback<GifDetails> callback) {
-        mCallback = new IAsyncCallback<GifDetails>() {
+    public void setGifSelectedCallback(final IAsyncCallback<GifDetails> callback) {
+        mGifSelectedCallback = new IAsyncCallback<GifDetails>() {
             @Override
             public void handleResponse(GifDetails result) {
                 //update recently used
@@ -185,6 +199,10 @@ public class GifSearchView extends RelativeLayout {
             }
         };
         showRecentlyUsed();
+    }
+
+    public void setGifSearchTextCallback(IAsyncCallback<String> callback) {
+        mGifSearchTextCallback = callback;
     }
 
     private List<GifDetails> getGifDetails(String result) {
