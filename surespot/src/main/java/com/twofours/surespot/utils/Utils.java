@@ -167,7 +167,6 @@ public class Utils {
 		return e.commit();
 	}
 
-
 	public static boolean getSharedPrefsBoolean(Context context, String key) {
 		SharedPreferences settings = context.getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE, android.content.Context.MODE_PRIVATE);
 		return settings.getBoolean(key, false);

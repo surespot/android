@@ -6,12 +6,20 @@
                                           android:background="?android:attr/colorBackground"
     >
 
+    <TextView
+        android:id="@+id/tvLastSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_margin="10dp"
+        android:gravity="center"/>
+
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                  android:id="@+id/gifFrame"
                  android:layout_width="match_parent"
                  android:layout_height="150dp"
-                 android:layout_alignParentTop="true">
+                 android:layout_below="@id/tvLastSearch">
 
         <ProgressBar
             android:id="@+id/gif_progress_bar"

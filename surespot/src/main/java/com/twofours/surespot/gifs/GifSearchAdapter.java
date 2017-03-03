@@ -18,9 +18,10 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
     private List<GifDetails> mGifs;
     private GifSearchDownloader mGifSearchDownloader;
     private Context mContext;
-    private IAsyncCallback<String> mCallback;
+    private IAsyncCallback<GifDetails> mCallback;
 
-    public GifSearchAdapter(Context context, List<GifDetails> gifUrls, IAsyncCallback<String> callback) {
+    public GifSearchAdapter(Context context, List<GifDetails> gifUrls, IAsyncCallback<GifDetails> callback) {
+        SurespotLog.d(TAG, "contructor, callback: %s", callback);
         mContext = context;
         mCallback = callback;
         mGifSearchDownloader = new GifSearchDownloader(this);
@@ -66,8 +67,8 @@ public class GifSearchAdapter extends RecyclerView.Adapter<GifSearchAdapter.GifV
             @Override
             public void onClick(View v) {
                 if (mCallback != null) {
-                    String url = mGifs.get(holder.getAdapterPosition()).getUrl();
-                    mCallback.handleResponse(url);
+                    GifDetails gd = mGifs.get(holder.getAdapterPosition());
+                    mCallback.handleResponse(gd);
                 }
             }
         });

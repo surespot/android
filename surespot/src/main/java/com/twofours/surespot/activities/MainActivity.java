@@ -76,6 +76,7 @@ import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.gifs.GifDetails;
 import com.twofours.surespot.gifs.GifSearchView;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
@@ -1810,6 +1811,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             mQRButton.setVisibility(View.VISIBLE);
             mEtInvite.requestFocus();
+            SurespotLog.v(TAG, "handleTabChange requesting invite edit text focus");
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -1857,6 +1859,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mQRButton.setVisibility(View.GONE);
             mTvGIF.setVisibility(View.VISIBLE);
             mEtMessage.requestFocus();
+            SurespotLog.v(TAG, "handleTabChange requesting message edit text focus");
         }
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
@@ -2125,6 +2128,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         input.showSoftInput(mEtMessage, 0);
                     }
                     mEtMessage.requestFocus();
+                    SurespotLog.v(TAG, "hideEmojiDrawer requesting message edit text focus");
                 }
             });
         }
@@ -2142,6 +2146,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                     if (showKeyboard) {
                         mEtMessage.requestFocus();
+                        SurespotLog.v(TAG, "hideEmojiDrawer requesting message edit text focus");
+
                     }
                 }
             });
@@ -2161,11 +2167,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mGifView = (GifSearchView) LayoutInflater.from(this).inflate(R.layout.gif_search_view, null, false);
 
 
-            mGifView.setCallback(new IAsyncCallback<String>() {
+            mGifView.setCallback(new IAsyncCallback<GifDetails>() {
                 @Override
-                public void handleResponse(String result) {
+                public void handleResponse(GifDetails result) {
                     if (result != null) {
-                        sendGifMessage(result);
+                        sendGifMessage(result.getUrl());
                     }
                 }
             });
@@ -2179,7 +2185,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         mEtGifSearch.setVisibility(View.VISIBLE);
-        mEtGifSearch.requestFocus();
+        if (!mEtGifSearch.hasFocus()) {
+            SurespotLog.v(TAG, "showGifDrawer requesting message edit text focus");
+            mEtGifSearch.requestFocus();
+        }
         mEtMessage.setVisibility(View.INVISIBLE);
 
         mSendButton.setVisibility(View.GONE);
@@ -2253,6 +2262,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                             input.showSoftInput(mEtMessage, 0);
                         }
                         mEtMessage.requestFocus();
+                        SurespotLog.v(TAG, "hideGifDrawer requesting message edit text focus");
                     }
                 });
             }
@@ -2263,6 +2273,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         if (!mActivityLayout.isKeyboardVisible()) {
                             input.showSoftInput(mEtGifSearch, 0);
                         }
+                        SurespotLog.v(TAG, "showGifDrawer requesting gif search edit text focus");
                         mEtGifSearch.requestFocus();
                     }
                 });
@@ -2300,5 +2311,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     void sendBackPressed() {
         this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+    }
+
+    void requestFocus(View view) {
+        if (!view.hasFocus()) {
+            view.requestFocus();
+        }
     }
 }
