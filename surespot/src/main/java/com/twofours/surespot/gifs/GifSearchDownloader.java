@@ -64,21 +64,20 @@ public class GifSearchDownloader {
         //cache per IV as well so we have a drawable per message
         GifDrawable gifDrawable = getGifDrawableFromCache(message);
         if (gifDrawable == null) {
-            SurespotLog.v(TAG, "gif not in memory cache for url: %s",message);
-
+            SurespotLog.v(TAG, "gif not in memory cache for url: %s", message);
 
 
             imageView.showProgress();
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.v(TAG, "loading gif from memory cache for url: %s",message);
+            SurespotLog.v(TAG, "loading gif from memory cache for url: %s", message);
 
             cancelPotentialDownload(imageView, message);
             //imageView.clearAnimation();
             imageView.setImageDrawable(gifDrawable);
 
-         //   ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
+            //   ChatUtils.setImageViewLayout(imageView, gifDrawable.getIntrinsicWidth(), gifDrawable.getIntrinsicHeight());
         }
     }
 
@@ -219,12 +218,13 @@ public class GifSearchDownloader {
 
                                     @Override
                                     public void run() {
-
+                                        if (!mCancelled) {
 //                                        imageView.clearAnimation();
 //                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
 //                                        imageView.startAnimation(fadeIn);
-                                        imageView.setImageDrawable(finalGifDrawable);
-                                    //    ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
+                                            imageView.setImageDrawable(finalGifDrawable);
+                                            //    ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
+                                        }
                                     }
 //
 //                            else

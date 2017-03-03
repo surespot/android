@@ -85,7 +85,7 @@ public class MessageImageDownloader {
         else {
             SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
             cancelPotentialDownload(imageView, message);
-       //     imageView.clearAnimation();
+            //     imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
 
             ChatUtils.setImageViewLayout(imageView, bitmap.getWidth(), bitmap.getHeight());
@@ -293,32 +293,34 @@ public class MessageImageDownloader {
                         @Override
                         public void run() {
 
-                            if (finalBitmap != null) {
+                            if (!mCancelled) {
+                                if (finalBitmap != null) {
 
-                                if (!TextUtils.isEmpty(messageData)) {
-                                    MessageImageDownloader.addBitmapToCache(messageData, finalBitmap);
+                                    if (!TextUtils.isEmpty(messageData)) {
+                                        MessageImageDownloader.addBitmapToCache(messageData, finalBitmap);
+                                    }
+
+                                    if (!TextUtils.isEmpty(finalMessageString)) {
+                                        MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
+                                    }
+
+                                    //    Drawable drawable = imageView.getDrawable();
+                                    //       if (drawable instanceof DownloadedDrawable) {
+
+                                    //   imageView.clearAnimation();
+                                    //   Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+                                    // imageView.startAnimation(fadeIn);
+                                    //       }
+
+                                    imageView.setImageBitmap(finalBitmap);
+                                    ChatUtils.setImageViewLayout(imageView, finalBitmap.getWidth(), finalBitmap.getHeight());
+                                    UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
+                                    mChatAdapter.checkLoaded();
                                 }
-
-                                if (!TextUtils.isEmpty(finalMessageString)) {
-                                    MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
+                                else {
+                                    //TODO set error image
+                                    imageView.setImageDrawable(null);
                                 }
-
-                                //    Drawable drawable = imageView.getDrawable();
-                         //       if (drawable instanceof DownloadedDrawable) {
-
-                                 //   imageView.clearAnimation();
-                                 //   Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
-                                   // imageView.startAnimation(fadeIn);
-                         //       }
-
-                                imageView.setImageBitmap(finalBitmap);
-                                ChatUtils.setImageViewLayout(imageView, finalBitmap.getWidth(), finalBitmap.getHeight());
-                                UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
-                                mChatAdapter.checkLoaded();
-                            }
-                            else {
-                                //TODO set error image
-                                imageView.setImageDrawable(null);
                             }
                         }
                     });

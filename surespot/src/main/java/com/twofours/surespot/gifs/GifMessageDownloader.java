@@ -71,11 +71,11 @@ public class GifMessageDownloader {
         //cache per IV as well so we have a drawable per message
         GifDrawable gifDrawable = getGifDrawableFromCache(message.getIv());
         if (gifDrawable == null) {
-            SurespotLog.v(TAG, "gif not in memory cache for iv: %s",message.getIv());
+            SurespotLog.v(TAG, "gif not in memory cache for iv: %s", message.getIv());
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.v(TAG, "loading gif from memory cache for iv: %s",message.getIv());
+            SurespotLog.v(TAG, "loading gif from memory cache for iv: %s", message.getIv());
 
             cancelPotentialDownload(imageView, message);
             //imageView.clearAnimation();
@@ -241,14 +241,15 @@ public class GifMessageDownloader {
 
                                     @Override
                                     public void run() {
-
+                                        if (!mCancelled) {
 //                                        imageView.clearAnimation();
 //                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
 //                                        imageView.startAnimation(fadeIn);
-                                        imageView.setImageDrawable(finalGifDrawable);
-                                        //ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
-                                        UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
-                                        mChatAdapter.checkLoaded();
+                                            imageView.setImageDrawable(finalGifDrawable);
+                                            //ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
+                                            UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
+                                            mChatAdapter.checkLoaded();
+                                        }
                                     }
 //
 //                            else

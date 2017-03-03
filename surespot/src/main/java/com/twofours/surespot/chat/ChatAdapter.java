@@ -361,12 +361,7 @@ public class ChatAdapter extends BaseAdapter {
             }
             else {
                 if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
-                    if (item.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK)) {
-                        chatMessageViewHolder.tvTime.setText(R.string.loading);
-                    }
-                    else {
-                        chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
-                    }
+                    chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
                 }
                 else {
 
@@ -390,7 +385,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.imageView.setVisibility(View.GONE);
-              //  chatMessageViewHolder.imageView.clearAnimation();
+                //  chatMessageViewHolder.imageView.clearAnimation();
                 chatMessageViewHolder.imageView.setImageBitmap(null);
                 if (item.getPlainData() != null) {
                     //chatMessageViewHolder.tvText.clearAnimation();
