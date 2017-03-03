@@ -73,6 +73,7 @@ public class GifMessageDownloader {
         if (gifDrawable == null) {
             SurespotLog.v(TAG, "gif not in memory cache for iv: %s", message.getIv());
             forceDownload(imageView, message);
+            imageView.setImageDrawable(null);
         }
         else {
             SurespotLog.v(TAG, "loading gif from memory cache for iv: %s", message.getIv());
