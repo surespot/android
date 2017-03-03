@@ -1810,9 +1810,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             //  mEmojiView.setVisibility(View.GONE);
 
             mQRButton.setVisibility(View.VISIBLE);
-            mEtInvite.requestFocus();
-            SurespotLog.v(TAG, "handleTabChange requesting invite edit text focus");
 
+            SurespotLog.v(TAG, "handleTabChange requesting invite edit text focus");
+            requestFocus(mEtInvite);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
@@ -1858,8 +1858,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mEtInvite.setVisibility(View.GONE);
             mQRButton.setVisibility(View.GONE);
             mTvGIF.setVisibility(View.VISIBLE);
-            mEtMessage.requestFocus();
+
             SurespotLog.v(TAG, "handleTabChange requesting message edit text focus");
+            requestFocus(mEtMessage);
         }
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
@@ -2127,8 +2128,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (!mActivityLayout.isKeyboardVisible()) {
                         input.showSoftInput(mEtMessage, 0);
                     }
-                    mEtMessage.requestFocus();
+
                     SurespotLog.v(TAG, "hideEmojiDrawer requesting message edit text focus");
+                    requestFocus(mEtMessage);
                 }
             });
         }
@@ -2145,8 +2147,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     mActivityLayout.setPadding(0, 0, 0, 0);
 
                     if (showKeyboard) {
-                        mEtMessage.requestFocus();
+
                         SurespotLog.v(TAG, "hideEmojiDrawer requesting message edit text focus");
+                        requestFocus(mEtMessage);
 
                     }
                 }
@@ -2187,7 +2190,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtGifSearch.setVisibility(View.VISIBLE);
         if (!mEtGifSearch.hasFocus()) {
             SurespotLog.v(TAG, "showGifDrawer requesting message edit text focus");
-            mEtGifSearch.requestFocus();
+            requestFocus(mEtGifSearch);
         }
         mEtMessage.setVisibility(View.INVISIBLE);
 
@@ -2261,8 +2264,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         if (!mActivityLayout.isKeyboardVisible()) {
                             input.showSoftInput(mEtMessage, 0);
                         }
-                        mEtMessage.requestFocus();
                         SurespotLog.v(TAG, "hideGifDrawer requesting message edit text focus");
+                        requestFocus(mEtMessage);
                     }
                 });
             }
@@ -2274,7 +2277,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                             input.showSoftInput(mEtGifSearch, 0);
                         }
                         SurespotLog.v(TAG, "showGifDrawer requesting gif search edit text focus");
-                        mEtGifSearch.requestFocus();
+                        requestFocus(mEtGifSearch);
                     }
                 });
             }
@@ -2314,8 +2317,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     void requestFocus(View view) {
+
         if (!view.hasFocus()) {
+            SurespotLog.d(TAG, "requestFocus, view does not have focus, requesting focus");
             view.requestFocus();
+        }
+        else {
+            SurespotLog.d(TAG, "requestFocus, view has focus, not requesting focus");
         }
     }
 }
