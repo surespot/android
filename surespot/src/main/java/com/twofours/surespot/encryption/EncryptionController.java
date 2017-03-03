@@ -309,7 +309,7 @@ public class EncryptionController {
         return false;
     }
 
-    public static byte[] generateSharedSecretSync(PrivateKey privateKey, PublicKey publicKey, boolean hashed) {
+    public static synchronized byte[] generateSharedSecretSync(PrivateKey privateKey, PublicKey publicKey, boolean hashed) {
 
         try {
             KeyAgreement ka = KeyAgreement.getInstance("ECDH", "SC");
