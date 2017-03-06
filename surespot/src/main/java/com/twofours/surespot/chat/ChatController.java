@@ -736,17 +736,6 @@ public class ChatController {
         }
     }
 
-    public void dispose() {
-        SurespotLog.d(TAG, "disposing of chat controller");
-        // mChatAdapters.clear();
-        // mFriendAdapter = null;
-        // mFragmentManager = null;
-    }
-
-    public boolean hasContext() {
-        return mContext != null;
-    }
-
     private class LatestIdPair {
         int latestMessageId;
         int latestControlMessageId;
@@ -794,10 +783,6 @@ public class ChatController {
     private void getLatestMessagesAndControls(final String username, boolean forceMessageUpdate) {
         LatestIdPair ids = getLatestIds(username);
         getLatestMessagesAndControls(username, ids.latestMessageId, ids.latestControlMessageId, forceMessageUpdate);
-    }
-
-    private void getLatestMessagesAndControls(String username, int messageId, boolean forceMessageUpdate) {
-        getLatestMessagesAndControls(username, messageId, -1, forceMessageUpdate);
     }
 
     private void getLatestMessagesAndControls(final String username, final int fetchMessageId, int fetchControlMessageId, final boolean forceMessageUpdate) {
@@ -1163,12 +1148,8 @@ public class ChatController {
             // and mark you as deleted until I want to delete you
             friend.setDeleted();
 
-            // force the controls to update
-//            CommunicationService cts = SurespotApplication.getCommunicationServiceNoThrow();
-//            if (cts != null) {
             if (friend != null && mCurrentChat != null && mCurrentChat.equals(deletedUser)) {
                 mTabShowingCallback.handleResponse(friend);
-                //    }
             }
         }
 
@@ -1339,8 +1320,6 @@ public class ChatController {
 
         shutdownConnection();
         mSendQueue.clear();
-        dispose();
-
         mChatAdapters.clear();
     }
 
@@ -1471,9 +1450,7 @@ public class ChatController {
 
         mTabShowingCallback.handleResponse(friend);
         if (friend != null) {
-            //  if (SurespotApplication.getCommunicationServiceNoThrow() != null) {
             mCurrentChat = username;
-            //}
             mChatPagerAdapter.addChatFriend(friend);
             friend.setChatActive(true);
             friend.setLastViewedMessageId(friend.getAvailableMessageId());
@@ -1490,7 +1467,6 @@ public class ChatController {
                 mSendIntentCallback.handleResponse(null);
                 setMode(MODE_NORMAL);
             }
-
         }
         else {
             mCurrentChat = null;
@@ -1567,9 +1543,6 @@ public class ChatController {
 
 
     public String getCurrentChat() {
-//        if (SurespotApplication.getCommunicationServiceNoThrow() == null) {
-//            return null;
-//        }
         return mCurrentChat;
     }
 
@@ -1587,8 +1560,6 @@ public class ChatController {
     }
 
     public void deleteMessage(final SurespotMessage message, final boolean notify) {
-
-
         //remove it from send queue
         removeQueuedMessage(message);
 
@@ -1803,10 +1774,6 @@ public class ChatController {
         return getFriendAdapter().getFriend(username).isDeleted();
     }
 
-    public boolean isFriendDeleted() {
-        return getFriendAdapter().getFriend(mCurrentChat).isDeleted();
-    }
-
     //needs to be run on UI thread
     private void getFriendsAndData() {
         SurespotLog.d(TAG, "getFriendsAndData: friend count: %d, mLatestUserControlId: %d", mFriendAdapter.getCount(), mLatestUserControlId);
@@ -1834,9 +1801,6 @@ public class ChatController {
                         boolean userSuddenlyHasFriends = false;
                         try {
                             JSONObject jsonObject = new JSONObject(responseString);
-                            //user could have no friends but rolled keys in which case user control id > 0
-                            //so don't update it
-                            //   mLatestUserControlId = jsonObject.getInt("userControlId");
                             JSONArray friendsArray = jsonObject.optJSONArray("friends");
 
                             if (friendsArray != null) {
@@ -1851,7 +1815,6 @@ public class ChatController {
                             }
                             if (friends.size() > 0) {
                                 userSuddenlyHasFriends = true;
-
                             }
                         }
                         catch (JSONException e) {
@@ -1860,7 +1823,6 @@ public class ChatController {
                             setProgress(null, false);
                             return;
                         }
-
 
                         if (mFriendAdapter != null) {
                             mFriendAdapter.addFriends(friends);
@@ -1966,8 +1928,6 @@ public class ChatController {
 
         if (mMenuItems != null) {
             for (MenuItem menuItem : mMenuItems) {
-                //if (menuItem.getItemId() != R.id.menu_purchase_voice) {
-
                 // deleted users can't have images sent to them
                 if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
 
@@ -1976,12 +1936,6 @@ public class ChatController {
                 else {
                     menuItem.setVisible(enabled);
                 }
-//				}
-//				else {
-//					boolean voiceEnabled = SurespotApplication.getBillingController().hasVoiceMessaging();
-//					SurespotLog.d(TAG, "enableMenuItems, setting voice purchase menu visibility: %b", !voiceEnabled);
-//					menuItem.setVisible(!voiceEnabled);
-//				}
             }
         }
     }
@@ -2118,9 +2072,7 @@ public class ChatController {
                     iAsyncCallback.handleResponse(false);
                 }
             }
-
         }));
-
     }
 
     private void removeFriendImage(String name) {
@@ -2343,13 +2295,13 @@ public class ChatController {
         //if the message is errored don't resend it, remove from queue
         while (nextMessage != null && nextMessage.getErrorStatus() > 0) {
             SurespotLog.d(TAG, "processNextMessage, removing errored message: %s", nextMessage.getIv());
-            removeQueuedMessage(nextMessage);
+            removeQueuedMessage(nextMessage, false);
             nextMessage = mSendQueue.peek();
         }
 
         if (nextMessage != null) {
             SurespotLog.d(TAG, "processNextMessage, currentIv: %s, next message iv: %s", mCurrentSendIv, nextMessage.getIv());
-            if (mCurrentSendIv == nextMessage.getIv()) {
+            if (nextMessage.getIv().equals(mCurrentSendIv)) {
                 SurespotLog.i(TAG, "processNextMessage() still sending message, iv: %s", nextMessage.getIv());
             }
             else {
@@ -2408,14 +2360,12 @@ public class ChatController {
                             };
 
                             mHandler.post(runnableUi);
-
                         }
                     }
                 }
             };
 
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
-
         }
         else {
             sendTextMessage(message);
@@ -2670,7 +2620,6 @@ public class ChatController {
                             }
                             //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(message);
-                            //   processNextMessage();
                             break;
                         default:
                             //try and send next message again
@@ -2728,13 +2677,9 @@ public class ChatController {
                                     }
 
                                     //need to remove the message from the queue before setting the current send iv to null
-
                                     removeQueuedMessage(messageReceived);
-                                    // processNextMessage();
                                 }
                             });
-
-
                         }
                         else {
                             //try and send next message again
@@ -2779,11 +2724,6 @@ public class ChatController {
     public synchronized int getConnectionState() {
         return mConnectionState;
     }
-
-    public ConcurrentLinkedQueue<SurespotMessage> getSendQueue() {
-        return mSendQueue;
-    }
-
 
     // saves all data and current state for user, general
     public synchronized void save() {
@@ -2837,7 +2777,11 @@ public class ChatController {
         saveMessageQueue();
     }
 
-    public synchronized void removeQueuedMessage(SurespotMessage message) {
+    synchronized void removeQueuedMessage(SurespotMessage message) {
+        removeQueuedMessage(message, true);
+    }
+
+    synchronized void removeQueuedMessage(SurespotMessage message, boolean process) {
         boolean removed = false;
 
         Iterator<SurespotMessage> iterator = mSendQueue.iterator();
@@ -2851,15 +2795,16 @@ public class ChatController {
 
         if (removed) {
             saveMessageQueue();
-            processNextMessage();
         }
 
+        if (process) {
+            processNextMessage();
+        }
         SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
     }
 
 
     // chat adapters and state
-
     private synchronized void saveMessages() {
         // save last 30? messages
         SurespotLog.d(TAG, "saveMessages, mUsername: %s", mUsername);
@@ -2904,7 +2849,6 @@ public class ChatController {
     private synchronized void loadMessageQueue() {
         // if we do below we create a different instance of the message in the queue, which borks file sending because
         // we are using a property in the message to figure out it's state
-        //  mSendQueue.clear();
         List<SurespotMessage> unsentMessages = SurespotApplication.getStateController().loadUnsentMessages(mUsername);
         Iterator<SurespotMessage> iterator = unsentMessages.iterator();
         while (iterator.hasNext()) {
@@ -2927,14 +2871,6 @@ public class ChatController {
         SurespotLog.d(TAG, "loaded: " + mSendQueue.size() + " unsent messages.");
     }
 
-//    private void saveFriends() {
-//        if (ChatManager.getChatController(mUsername) != null) {
-//            if (getFriendAdapter() != null && getFriendAdapter().getCount() > 0) {
-//                saveFriends();
-//            }
-//        }
-//    }
-
     // notify listeners that we've connected
     private void onConnected() {
 
@@ -2949,32 +2885,6 @@ public class ChatController {
 
         connected();
         processNextMessage();
-    }
-
-
-    // remove duplicate messages
-    private List<SurespotMessage> removeDuplicates(List<SurespotMessage> messages) {
-        ArrayList<SurespotMessage> messagesSeen = new ArrayList<SurespotMessage>();
-        for (int i = messages.size() - 1; i >= 0; i--) {
-            SurespotMessage message = messages.get(i);
-            if (isMessageEqualToAny(message, messagesSeen)) {
-                messages.remove(i);
-                SurespotLog.d(TAG, "Prevented sending duplicate message: " + message.toString());
-            }
-            else {
-                messagesSeen.add(message);
-            }
-        }
-        return messages;
-    }
-
-    private boolean isMessageEqualToAny(SurespotMessage message, List<SurespotMessage> messages) {
-        for (SurespotMessage msg : messages) {
-            if (SurespotMessage.areMessagesEqual(msg, message)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private int generateInterval(int k) {
@@ -3057,7 +2967,6 @@ public class ChatController {
     }
 
     private synchronized void stopResendTimer() {
-
         if (mResendViaHttpTimer != null) {
             mResendViaHttpTimer.cancel();
             mResendViaHttpTimer = null;
@@ -3076,22 +2985,6 @@ public class ChatController {
     private void shutdownConnection() {
         disconnect();
         stopReconnectionAttempts();
-        unregisterReceiver();
-    }
-
-    private void unregisterReceiver() {
-//        try {
-//            unregisterReceiver(mConnectivityReceiver);
-//        }
-//        catch (IllegalArgumentException e) {
-//            if (e.getMessage().contains("Receiver not registered")) {
-//                // Ignore this exception. This is exactly what is desired
-//            }
-//            else {
-//                // unexpected, re-throw
-//                throw e;
-//            }
-//        }
     }
 
     private synchronized void setState(int state) {
@@ -3171,10 +3064,6 @@ public class ChatController {
 
         mBuilder.setDefaults(defaults);
         mNotificationManager.notify(SurespotConstants.ExtraNames.UNSENT_MESSAGES, SurespotConstants.IntentRequestCodes.UNSENT_MESSAGE_NOTIFICATION, mBuilder.build());
-
-        // mNotificationManager.notify(tag, id, mBuilder.build());
-        // Notification notification = UIUtils.generateNotification(mBuilder, contentIntent, getPackageName(), title, message);
-        // mNotificationManager.notify(tag, id, notification);
     }
 
 
@@ -3389,7 +3278,6 @@ public class ChatController {
                                 messageSendCompleted(message);
                                 removeQueuedMessage(message);
                                 saveIfMainActivityPaused();
-                                //processNextMessage();
                             }
                         });
 
