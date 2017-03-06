@@ -206,6 +206,7 @@ public class StateController {
     }
 
     public synchronized int saveMessages(String user, String spot, List<SurespotMessage> messages, int currentScrollPosition) {
+        SurespotLog.v(TAG, "saveMessages, spot %s, currentSrollPosition: %d", spot, currentScrollPosition);
         String filename = getFilename(user, MESSAGES_PREFIX + spot);
         int returnScrollPosition = currentScrollPosition;
         if (filename != null) {
