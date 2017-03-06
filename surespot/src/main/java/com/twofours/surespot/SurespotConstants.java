@@ -80,6 +80,7 @@ public class SurespotConstants {
 	public class MimeTypes {
 		public final static String TEXT = "text/plain";
 		public final static String IMAGE = "image/";
+		public final static String GIF_LINK = "gif/https";
 		public final static String M4A = "audio/mp4";
 		public final static String DRIVE_FOLDER = "application/vnd.google-apps.folder";
 		public final static String DRIVE_FILE = "application/vnd.google-apps.file";

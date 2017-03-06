@@ -39,6 +39,7 @@
         android:icon="@drawable/surespotlauncher"
         android:label="surespot"
         android:theme="@style/BlackTheme"
+        android:largeHeap="true"
         tools:replace="android:label">
 
         <meta-data
