@@ -18,12 +18,12 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.images.FriendImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -163,14 +163,14 @@ public class FriendAdapter extends BaseAdapter {
     }
 
     private void decryptAliases() {
-        SurespotLog.d(TAG, "decryptAliases");
+    //    SurespotLog.d(TAG, "decryptAliases");
         synchronized (mFriends) {
             for (Friend friend : mFriends) {
                 if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
                     String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), mUsername,
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
-                    SurespotLog.v(TAG, "setting alias for %s", friend.getName());
+              //      SurespotLog.v(TAG, "setting alias for %s", friend.getName());
                     friend.setAliasPlain(plainText);
                 }
             }

@@ -192,12 +192,12 @@ public class FileUtils {
     }
 
     public static void writeFile(String filename, String data) throws IOException {
-        SurespotLog.v(TAG, "writeFile, %s: %s", filename, data.substring(0, data.length() > 100 ? 100 : data.length()));
+    //    SurespotLog.v(TAG, "writeFile, %s: %s", filename, data.substring(0, data.length() > 100 ? 100 : data.length()));
         writeFile(filename, data.getBytes());
     }
 
     public static void writeFile(String filename, byte[] data) throws IOException {
-        SurespotLog.v(TAG, "writeFile, %s", filename);
+      //  SurespotLog.v(TAG, "writeFile, %s", filename);
 
         GZIPOutputStream fos = new GZIPOutputStream(new FileOutputStream(filename));
         fos.write(data);

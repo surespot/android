@@ -40,7 +40,7 @@ public class Friend implements Comparable<Friend> {
 	public Friend(String name) {
 		mName = name;
 
-		SurespotLog.v(TAG, "constructor, friend: %s", name);
+	//	SurespotLog.v(TAG, "constructor, friend: %s", name);
 	}
 
 	public String getName() {
