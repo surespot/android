@@ -17,9 +17,9 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.images.ImageMessageMenuFragment;
 import com.twofours.surespot.images.ImageViewActivity;
@@ -81,8 +81,8 @@ public class ChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setTheirUsername(getArguments().getString("theirUsername"));
         setOurUsername(getArguments().getString("ourUsername"));
-        TAG = TAG + ":" + getOurUsername() + ":" + getTheirUsername();
-        SurespotLog.d(TAG, "onCreate");
+        String tTAG = TAG + ":" + getOurUsername() + ":" + getTheirUsername();
+        SurespotLog.d(tTAG, "onCreate");
 
     }
 
@@ -308,11 +308,13 @@ public class ChatFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d", mTheirUsername, mListView.getFirstVisiblePosition());
+        SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d", mTheirUsername, mListView.getLastVisiblePosition());
 
         if (mListView != null) {
+            int lastVisiblePosition = mListView.getLastVisiblePosition();
+
             if (mChatAdapter != null) {
-                mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
+                mChatAdapter.setCurrentScrollPositionId(lastVisiblePosition);
             }
 
             ChatController chatController = ChatManager.getChatController(getOurUsername());
@@ -322,7 +324,6 @@ public class ChatFragment extends Fragment {
 
                 if (friend != null) {
 
-                    int lastVisiblePosition = mListView.getLastVisiblePosition();
 
                     SurespotLog.v(TAG, "onPause lastVisiblePosition: %d", lastVisiblePosition);
                     SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);

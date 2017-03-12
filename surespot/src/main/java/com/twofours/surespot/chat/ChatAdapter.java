@@ -40,7 +40,7 @@ public class ChatAdapter extends BaseAdapter {
     private IAsyncCallback<Boolean> mAllLoadedCallback;
     private boolean mCheckingSequence;
     private boolean mDebugMode;
-    private int mCurrentScrollPositionId;
+    private int mCurrentScrollPositionId = -1;
     private MessageDecryptor mMessageDecryptor;
     private MessageImageDownloader mMessageImageDownloader;
     private boolean mLoaded;
@@ -200,6 +200,7 @@ public class ChatAdapter extends BaseAdapter {
         if (messages.size() > 0) {
             mMessages.clear();
             mMessages.addAll(messages);
+            mCurrentScrollPositionId = -1;
         }
     }
 
@@ -251,6 +252,7 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     public void setCurrentScrollPositionId(int currentScrollPositionId) {
+        SurespotLog.d(TAG, "setCurrentScrollPositionId: %d", currentScrollPositionId);
         mCurrentScrollPositionId = currentScrollPositionId;
     }
 
