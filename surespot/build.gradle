@@ -28,7 +28,7 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('/home/adam/dev/surespot/keystore/custom-debug.keystore')
+            storeFile file('/Users/adam/dev/surespot/keystore/custom-debug.keystore')
                     storePassword "android"
                     keyAlias "androiddebugkey"
                     keyPassword "android"
@@ -63,4 +63,5 @@ dependencies {
     compile files('libs/google-oauth-client-1.17.0-rc.jar')
     compile 'io.socket:socket.io-client:0.8.3'
     compile 'ch.acra:acra:4.8.5'
+    compile 'com.android.support:support-v4:25.2.0'
 }
