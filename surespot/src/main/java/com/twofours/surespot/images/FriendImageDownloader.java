@@ -29,12 +29,12 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class FriendImageDownloader {
      */
     public static void download(ImageView imageView, String ourUsername, Friend friend) {
         String imageUrl = friend.getImageUrl();
-        SurespotLog.v(TAG, "downloading image for %s", friend);
+      //  SurespotLog.v(TAG, "downloading image for %s", friend);
 
         if (TextUtils.isEmpty(imageUrl)) {
             return;
