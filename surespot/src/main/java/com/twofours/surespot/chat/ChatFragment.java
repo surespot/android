@@ -116,7 +116,8 @@ public class ChatFragment extends Fragment {
                             newIntent.putExtra("ourUsername", mOurUsername);
                             ChatFragment.this.getActivity().startActivity(newIntent);
                         }
-                    } else {
+                    }
+                    else {
                         if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                             SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
                             VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
@@ -138,12 +139,14 @@ public class ChatFragment extends Fragment {
                         DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
                         dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
                         return true;
-                    } else {
+                    }
+                    else {
                         if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
                             DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
                             dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
                             return true;
-                        } else {
+                        }
+                        else {
                             if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                                 DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
                                 dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
@@ -151,7 +154,8 @@ public class ChatFragment extends Fragment {
                             }
                         }
                     }
-                } catch (IllegalStateException e) {
+                }
+                catch (IllegalStateException e) {
                     //swallow this fucker
                     //AOSP bug
                     //https://stackoverflow.com/questions/27329913/dialogfragshow-from-a-fragment-throwing-illegalstateexception-can-not-perfo
@@ -215,8 +219,8 @@ public class ChatFragment extends Fragment {
                     // SurespotLog.v(TAG, "hasEarlier: " + hasEarlier);
                     if (hasEarlier && mHasEarlier && (firstVisibleItem > 0 && firstVisibleItem < 20)) {
 
-                        // SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
-                        // + ", visibleItemCount: " + visibleItemCount);
+                        //  SurespotLog.v(TAG, "onScroll, totalItemCount: " + totalItemCount + ", firstVisibleItem: " + firstVisibleItem
+                        //+ ", visibleItemCount: " + visibleItemCount);
 
                         // immediately after setting the position above, mLoading is false with "firstVisibleItem" set to the pre loading
                         // value for what seems like one call
@@ -224,7 +228,8 @@ public class ChatFragment extends Fragment {
                         if (mJustLoaded) {
                             mJustLoaded = false;
                             return;
-                        } else {
+                        }
+                        else {
 
                             mLoading = true;
                             mPreviousTotal = mChatAdapter.getCount();
@@ -256,7 +261,8 @@ public class ChatFragment extends Fragment {
                                         mJustLoaded = true;
                                         mLoading = false;
                                         return;
-                                    } else {
+                                    }
+                                    else {
                                         mJustLoaded = false;
                                         mLoading = false;
 
@@ -302,7 +308,8 @@ public class ChatFragment extends Fragment {
 //                        mSelectedTop = 0;
 //                    }
                     scrollToState();
-                } else {
+                }
+                else {
                     //if we're creating chat adapter anew, scroll to the bottom
                     mSelectedItem = -1;
                     mSelectedTop = 0;
@@ -314,11 +321,21 @@ public class ChatFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        SurespotLog.v(TAG, "onPause, mTheirUsername: %s, currentScrollId: %d", mTheirUsername, mListView.getFirstVisiblePosition());
+        SurespotLog.v(TAG, "onPause");
+        updateScrollState();
+    }
+
+    public void updateScrollState() {
+        SurespotLog.v(TAG, "updateScrollState, currentScrollId: %d", mListView.getFirstVisiblePosition());
 
         if (mListView != null) {
+            View v = mListView.getChildAt(0);
+            int top = (v == null) ? 0 : v.getTop();
+            mSelectedTop = top;
+
             if (mChatAdapter != null) {
                 mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
+                mSelectedItem = mChatAdapter.getCurrentScrollPositionId();
             }
 
             ChatController chatController = ChatManager.getChatController(getOurUsername());
@@ -330,23 +347,26 @@ public class ChatFragment extends Fragment {
 
                     int lastVisiblePosition = mListView.getLastVisiblePosition();
 
-                    SurespotLog.v(TAG, "onPause lastVisiblePosition: %d", lastVisiblePosition);
-                    SurespotLog.v(TAG, "onPause mListview count() - 1: %d", mListView.getCount() - 1);
+                    SurespotLog.v(TAG, "updateScrollState lastVisiblePosition: %d", lastVisiblePosition);
+                    SurespotLog.v(TAG, "updateScrollState mListview count() - 1: %d", mListView.getCount() - 1);
                     if (lastVisiblePosition == mListView.getCount() - 1) {
-                        SurespotLog.v(TAG, "we are scrolled to bottom - saving selected item: %d", -1);
+                        SurespotLog.v(TAG, "updateScrollState we are scrolled to bottom - saving selected item: %d", -1);
                         friend.setSelectedItem(-1);
+                        mSelectedItem = -1;
                         if (mChatAdapter != null) {
                             mChatAdapter.setCurrentScrollPositionId(-1);
                         }
                         friend.setSelectedTop(0);
+                        mSelectedTop = 0;
 
-                    } else {
-                        View v = mListView.getChildAt(0);
-                        int top = (v == null) ? 0 : v.getTop();
+                    }
+                    else {
+
 
                         //the index is set on save messages now based on how many messages are saved
                         //so just save the top
                         friend.setSelectedTop(top);
+                        mSelectedTop = top;
                     }
                 }
             }
@@ -384,7 +404,8 @@ public class ChatFragment extends Fragment {
 
                 });
 
-            } else {
+            }
+            else {
                 scrollToEnd();
             }
         }

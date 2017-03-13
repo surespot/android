@@ -1443,13 +1443,24 @@ public class ChatController {
 
         SurespotLog.d(TAG, "setCurrentChat: %s", username);
 
+
         Friend friend = null;
         if (username != null) {
             friend = mFriendAdapter.getFriend(username);
         }
 
+        ChatFragment cfOld;
+        if (mCurrentChat != null) {
+            cfOld = getChatFragment(mCurrentChat);
+            if (cfOld != null) {
+                cfOld.updateScrollState();
+            }
+        }
+
         mTabShowingCallback.handleResponse(friend);
         if (friend != null) {
+            //save scroll position
+
             mCurrentChat = username;
             mChatPagerAdapter.addChatFriend(friend);
             friend.setChatActive(true);
@@ -1468,9 +1479,10 @@ public class ChatController {
                 setMode(MODE_NORMAL);
             }
 
-            ChatFragment cf = getChatFragment(username);
-            if (cf != null) {
-                cf.scrollToState();
+            //restore scroll position
+            ChatFragment cfNew = getChatFragment(username);
+            if (cfNew != null) {
+                cfNew.scrollToState();
             }
         }
         else {
