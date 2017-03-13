@@ -31,7 +31,7 @@ import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatAdapter extends BaseAdapter {
-    private final static String TAG = "ChatAdapter";
+    private String TAG = "ChatAdapter";
     private List<SurespotMessage> mMessages =  Collections.synchronizedList(new ArrayList<SurespotMessage>());
     private Context mContext;
     private final static int TYPE_US = 0;
@@ -48,8 +48,9 @@ public class ChatAdapter extends BaseAdapter {
     private CopyOnWriteArrayList<SurespotControlMessage> mControlMessages = new CopyOnWriteArrayList<>();
     private String mOurUsername;
 
-    public ChatAdapter(Context context, String ourUsername) {
-        SurespotLog.d(TAG, "Constructor, ourUsername: %s", ourUsername);
+    public ChatAdapter(Context context, String ourUsername, String theirUsername) {
+        TAG = String.format("ChatAdapter:%s:%s", ourUsername, theirUsername);
+        SurespotLog.d(TAG, "Constructor");
         mContext = context;
         mOurUsername = ourUsername;
 

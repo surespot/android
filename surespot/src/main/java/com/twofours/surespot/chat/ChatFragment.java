@@ -67,6 +67,8 @@ public class ChatFragment extends Fragment {
 
 
     public static ChatFragment newInstance(String ourUsername, String theirUsername) {
+        String tTAG = "ChatFragment:" + ourUsername + ":" + theirUsername;
+        SurespotLog.d(tTAG, "newInstance");
         ChatFragment cf = new ChatFragment();
 
         Bundle bundle = new Bundle();
@@ -81,8 +83,8 @@ public class ChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setTheirUsername(getArguments().getString("theirUsername"));
         setOurUsername(getArguments().getString("ourUsername"));
-        String tTAG = TAG + ":" + getOurUsername() + ":" + getTheirUsername();
-        SurespotLog.d(tTAG, "onCreate");
+        TAG = "ChatFragment:" + getOurUsername() + ":" + getTheirUsername();
+        SurespotLog.d(TAG, "onCreate");
 
     }
 
@@ -294,12 +296,16 @@ public class ChatFragment extends Fragment {
                 if (mChatAdapter != null && mChatAdapter.isLoaded()) {
                     SurespotLog.v(TAG, "chat adapter loaded already, scrolling, count: %d", mChatAdapter.getCount());
                     mSelectedItem = mChatAdapter.getCurrentScrollPositionId();
+//                    if (mSelectedItem == 0) {
+//                        SurespotLog.v(TAG, "chat adapter scroll position 0, setting to -1");
+//                        mSelectedItem = -1;
+//                        mSelectedTop = 0;
+//                    }
                     scrollToState();
                 } else {
                     //if we're creating chat adapter anew, scroll to the bottom
                     mSelectedItem = -1;
                     mSelectedTop = 0;
-
                 }
             }
         }

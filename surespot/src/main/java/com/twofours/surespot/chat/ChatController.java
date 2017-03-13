@@ -1398,7 +1398,7 @@ public class ChatController {
 
         if (chatAdapter == null && create) {
 
-            chatAdapter = new ChatAdapter(mContext, mUsername);
+            chatAdapter = new ChatAdapter(mContext, mUsername, username);
 
             Friend friend = mFriendAdapter.getFriend(username);
             if (friend != null) {
@@ -1466,6 +1466,11 @@ public class ChatController {
             if (mMode == MODE_SELECT) {
                 mSendIntentCallback.handleResponse(null);
                 setMode(MODE_NORMAL);
+            }
+
+            ChatFragment cf = getChatFragment(username);
+            if (cf != null) {
+                cf.scrollToState();
             }
         }
         else {
