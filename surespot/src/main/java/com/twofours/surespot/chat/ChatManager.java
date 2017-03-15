@@ -140,10 +140,10 @@ public class ChatManager {
     private static class BroadcastReceiverHandler extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            SurespotLog.d(TAG, "Broadcast Receiver onReceive");
+            SurespotLog.d(TAG, "Broadcast Receiver onReceive, isUIAttached: %b", isUIAttached());
             Utils.debugIntent(intent, TAG);
 
-            if (mAttachedUsername != null) {
+            if (isUIAttached() && mAttachedUsername != null) {
                 Bundle extras = intent.getExtras();
                 if (extras.containsKey("networkInfo")) {
                     NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
