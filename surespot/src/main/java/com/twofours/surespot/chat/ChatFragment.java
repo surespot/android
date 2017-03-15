@@ -326,48 +326,51 @@ public class ChatFragment extends Fragment {
     }
 
     public void updateScrollState() {
-        SurespotLog.v(TAG, "updateScrollState, currentScrollId: %d", mListView.getFirstVisiblePosition());
-
         if (mListView != null) {
-            View v = mListView.getChildAt(0);
-            int top = (v == null) ? 0 : v.getTop();
-            mSelectedTop = top;
+            int firstVisiblePosition = mListView.getFirstVisiblePosition();
+            int lastVisiblePosition = mListView.getLastVisiblePosition();
+            int listViewCountMinusOne = mListView.getCount() - 1;
 
-            if (mChatAdapter != null) {
-                mChatAdapter.setCurrentScrollPositionId(mListView.getFirstVisiblePosition());
-                mSelectedItem = mChatAdapter.getCurrentScrollPositionId();
-            }
+            SurespotLog.v(TAG, "updateScrollState, firstVisiblePosition: %d, lastVisiblePosition: %d, listView Count - 1: %d",
+                    firstVisiblePosition, lastVisiblePosition, listViewCountMinusOne);
 
+            Friend friend = null;
             ChatController chatController = ChatManager.getChatController(getOurUsername());
             if (chatController != null && chatController.getFriendAdapter() != null) {
+                friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
+            }
 
-                Friend friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
+            if (lastVisiblePosition == -1 || lastVisiblePosition == listViewCountMinusOne) {
+                mSelectedItem = -1;
+                mSelectedTop = 0;
+
+                SurespotLog.v(TAG, "updateScrollState we are scrolled to bottom - saving selected item: %d", mSelectedItem);
+                if (mChatAdapter != null) {
+                    mChatAdapter.setCurrentScrollPositionId(mSelectedItem);
+                }
 
                 if (friend != null) {
+                    friend.setSelectedItem(mSelectedItem);
+                    friend.setSelectedTop(mSelectedTop);
+                }
+            }
+            else {
+                mSelectedItem = firstVisiblePosition;
 
-                    int lastVisiblePosition = mListView.getLastVisiblePosition();
+                View v = mListView.getChildAt(0);
+                int top = (v == null) ? 0 : v.getTop();
+                mSelectedTop = top;
 
-                    SurespotLog.v(TAG, "updateScrollState lastVisiblePosition: %d", lastVisiblePosition);
-                    SurespotLog.v(TAG, "updateScrollState mListview count() - 1: %d", mListView.getCount() - 1);
-                    if (lastVisiblePosition == mListView.getCount() - 1) {
-                        SurespotLog.v(TAG, "updateScrollState we are scrolled to bottom - saving selected item: %d", -1);
-                        friend.setSelectedItem(-1);
-                        mSelectedItem = -1;
-                        if (mChatAdapter != null) {
-                            mChatAdapter.setCurrentScrollPositionId(-1);
-                        }
-                        friend.setSelectedTop(0);
-                        mSelectedTop = 0;
+                SurespotLog.v(TAG, "updateScrollState we are not scrolled to bottom - saving selected item: %d, top: %d", mSelectedItem, mSelectedTop);
 
-                    }
-                    else {
+                if (mChatAdapter != null) {
+                    mChatAdapter.setCurrentScrollPositionId(mSelectedItem);
+                }
 
-
-                        //the index is set on save messages now based on how many messages are saved
-                        //so just save the top
-                        friend.setSelectedTop(top);
-                        mSelectedTop = top;
-                    }
+                //the index is set on save messages now based on how many messages are saved
+                //so just save the top
+                if (friend != null) {
+                    friend.setSelectedTop(mSelectedTop);
                 }
             }
         }
