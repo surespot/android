@@ -110,6 +110,7 @@ public class ChatManager {
         SurespotLog.d(TAG, "paused %d", id);
         ChatController cc = getChatController(username);
         if (cc != null) {
+            cc.setMainActivityPaused();
             cc.save();
             cc.disconnect();
         }

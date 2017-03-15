@@ -1373,6 +1373,7 @@ public class ChatController {
     }
 
     synchronized void resume() {
+        mMainActivityPaused = false;
         setProgress(null, true);
 
         // load chat messages from disk that may have been added by gcm
@@ -1385,6 +1386,7 @@ public class ChatController {
         }
 
         clearMessageNotification(mCurrentChat);
+
     }
 
     ChatAdapter getChatAdapter(String username) {
@@ -2255,6 +2257,8 @@ public class ChatController {
     synchronized boolean connect() {
 
         if (mMainActivityPaused) {
+            SurespotLog.d(TAG, "connect, mMainActivityPaused true, doing nothing");
+
             // if the communication service wants to stay connected again any time in the future, disable the below statement
             return true;
         }
@@ -2629,9 +2633,8 @@ public class ChatController {
                                 handleMessage(newMessage, new IAsyncCallback<Object>() {
                                     @Override
                                     public void handleResponse(Object result) {
-                                        if (mMainActivityPaused) {
-                                            saveMessages(message.getTo());
-                                        }
+                                        saveIfMainActivityPaused(message.getTo());
+
                                     }
                                 });
                             }
@@ -2689,9 +2692,7 @@ public class ChatController {
                             handleMessage(messageReceived, new IAsyncCallback<Object>() {
                                 @Override
                                 public void handleResponse(Object result) {
-                                    if (mMainActivityPaused) {
-                                        saveMessages(message.getTo());
-                                    }
+                                    saveIfMainActivityPaused(message.getTo());
 
                                     //need to remove the message from the queue before setting the current send iv to null
                                     removeQueuedMessage(messageReceived);
@@ -2754,9 +2755,9 @@ public class ChatController {
         Utils.putUserSharedPrefsString(mContext, mUsername, SurespotConstants.PrefNames.LAST_CHAT, getCurrentChat());
     }
 
-    private void saveIfMainActivityPaused() {
+    private void saveIfMainActivityPaused(String theirUsername) {
         if (mMainActivityPaused) {
-            save();
+            saveMessages(theirUsername);
         }
     }
 
@@ -3088,11 +3089,10 @@ public class ChatController {
         SurespotLog.d(TAG, "disconnect.");
         if (mConnectionState != STATE_DISCONNECTED) {
             setState(STATE_DISCONNECTED);
-
-            if (mSocket != null) {
-                mSocket.disconnect();
-                disposeSocket();
-            }
+        }
+        if (mSocket != null) {
+            mSocket.disconnect();
+            disposeSocket();
         }
     }
 
@@ -3294,7 +3294,7 @@ public class ChatController {
 
                                 messageSendCompleted(message);
                                 removeQueuedMessage(message);
-                                saveIfMainActivityPaused();
+                                saveIfMainActivityPaused(message.getOtherUser(mUsername));
                             }
                         });
 
@@ -3314,6 +3314,10 @@ public class ChatController {
 
     public void clearError() {
         mErrored = false;
+    }
+
+    synchronized void setMainActivityPaused() {
+        mMainActivityPaused = true;
     }
 
 }
