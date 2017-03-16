@@ -3320,4 +3320,19 @@ public class ChatController {
         mMainActivityPaused = true;
     }
 
+    public boolean notifyChatAdapterDataSetChanged(String username) {
+        final ChatAdapter chatAdapter = mChatAdapters.get(username);
+        if (chatAdapter != null) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    chatAdapter.notifyDataSetChanged();
+                }
+
+            };
+            mHandler.post(runnable);
+            return true;
+        }
+        return false;
+    }
 }
