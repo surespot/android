@@ -297,16 +297,11 @@ public class ChatFragment extends Fragment {
 
             if (friend != null) {
                 SurespotLog.v(TAG, "onResume, selectedItem: " + mSelectedItem);
-                mSelectedTop = friend.getSelectedTop();
                 mChatAdapter = chatController.getChatAdapter(mTheirUsername, false);
                 if (mChatAdapter != null && mChatAdapter.isLoaded()) {
                     SurespotLog.v(TAG, "chat adapter loaded already, scrolling, count: %d", mChatAdapter.getCount());
                     mSelectedItem = mChatAdapter.getCurrentScrollPositionId();
-//                    if (mSelectedItem == 0) {
-//                        SurespotLog.v(TAG, "chat adapter scroll position 0, setting to -1");
-//                        mSelectedItem = -1;
-//                        mSelectedTop = 0;
-//                    }
+                    mSelectedTop = mChatAdapter.getSelectedTop();
                     scrollToState();
                 }
                 else {
@@ -334,25 +329,9 @@ public class ChatFragment extends Fragment {
             SurespotLog.v(TAG, "updateScrollState, firstVisiblePosition: %d, lastVisiblePosition: %d, listView Count - 1: %d",
                     firstVisiblePosition, lastVisiblePosition, listViewCountMinusOne);
 
-            Friend friend = null;
-            ChatController chatController = ChatManager.getChatController(getOurUsername());
-            if (chatController != null && chatController.getFriendAdapter() != null) {
-                friend = chatController.getFriendAdapter().getFriend(mTheirUsername);
-            }
-
             if (lastVisiblePosition == -1 || lastVisiblePosition == listViewCountMinusOne) {
                 mSelectedItem = -1;
                 mSelectedTop = 0;
-
-                SurespotLog.v(TAG, "updateScrollState we are scrolled to bottom - saving selected item: %d", mSelectedItem);
-                if (mChatAdapter != null) {
-                    mChatAdapter.setCurrentScrollPositionId(mSelectedItem);
-                }
-
-                if (friend != null) {
-                    friend.setSelectedItem(mSelectedItem);
-                    friend.setSelectedTop(mSelectedTop);
-                }
             }
             else {
                 mSelectedItem = firstVisiblePosition;
@@ -362,16 +341,11 @@ public class ChatFragment extends Fragment {
                 mSelectedTop = top;
 
                 SurespotLog.v(TAG, "updateScrollState we are not scrolled to bottom - saving selected item: %d, top: %d", mSelectedItem, mSelectedTop);
+            }
 
-                if (mChatAdapter != null) {
-                    mChatAdapter.setCurrentScrollPositionId(mSelectedItem);
-                }
-
-                //the index is set on save messages now based on how many messages are saved
-                //so just save the top
-                if (friend != null) {
-                    friend.setSelectedTop(mSelectedTop);
-                }
+            if (mChatAdapter != null) {
+                mChatAdapter.setCurrentScrollPositionId(mSelectedItem);
+                mChatAdapter.setSelectedTop(mSelectedTop);
             }
         }
     }
@@ -383,30 +357,24 @@ public class ChatFragment extends Fragment {
 
                 @Override
                 public void run() {
-
                     mListView.setSelection(mChatAdapter.getCount() - 1);
-
                 }
             });
         }
     }
 
     public void scrollToState() {
-        SurespotLog.v(TAG, "scrollToState, mSelectedItem: " + mSelectedItem);
+        SurespotLog.v(TAG, "scrollToState, mSelectedItem: %s, selectedTop: %s", mSelectedItem, mSelectedTop);
         if (mChatAdapter != null && mListView != null) {
-
             if (mSelectedItem > -1 && mSelectedItem != mListView.getSelectedItemPosition()) {
-
                 mListView.post(new Runnable() {
 
                     @Override
                     public void run() {
-
                         mListView.setSelectionFromTop(mSelectedItem, mSelectedTop);
                     }
 
                 });
-
             }
             else {
                 scrollToEnd();

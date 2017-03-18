@@ -34,8 +34,6 @@ public class Friend implements Comparable<Friend> {
 	private String mAliasPlain;
 	private boolean mAliasHashed;
 	private boolean mImageHashed;
-	private int mSelectedItem = -1;
-	private int mSelectedTop = 0;
 
 	public Friend(String name) {
 		mName = name;
@@ -367,8 +365,6 @@ public class Friend implements Comparable<Friend> {
 		friend.setLastReceivedMessageControlId(jsonFriend.optInt("lastReceivedMessageControlId"));
 		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"), false);
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
-		friend.setSelectedItem(jsonFriend.optInt("selectedItem", -1));
-		friend.setSelectedTop(jsonFriend.optInt("selectedTop", 0));
 
 		return friend;
 	}
@@ -391,10 +387,6 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("aliasIv", this.getAliasIv());
 			jsonFriend.put("aliasHashed", this.isAliasHashed());
 			jsonFriend.put("imageHashed", this.isImageHashed());
-
-			jsonFriend.put("selectedItem", this.getSelectedItem());
-			jsonFriend.put("selectedTop", this.getSelectedTop());
-
 			return jsonFriend;
 		}
 		catch (JSONException e) {
@@ -417,35 +409,8 @@ public class Friend implements Comparable<Friend> {
 		sb.append("\tavailableMessageId: " + getAvailableMessageId() + "\n");
 		sb.append("\tlastReceivedMessageControlId: " + getLastReceivedMessageControlId() + "\n");
 		sb.append("\tavailableMessageControlId: " + getAvailableMessageControlId() + "\n");
-		sb.append("\tselectedItem: " + getSelectedItem() + "\n");
-		sb.append("\tselectedTop: " + getSelectedTop() + "\n");
 
 		return sb.toString();
-	}
-
-	public void setSelectedItem(int i) {
-		// if (i == 0) {
-		// SurespotLog.v(TAG, "SELECTED ITEM SET TO 0 FOR USER: %s", getName());
-		// Utils.makeLongToast(MainActivity.getContext(), "SELECTED ITEM SET TO 0");
-		// }
-		// SurespotLog.v(TAG, "setSelectedItemAfter: %s", this);
-		mSelectedItem = i;
-		// SurespotLog.v(TAG, "setSelectedItemBefore: %s", this);
-
-	}
-
-	public void setSelectedTop(int i) {
-		mSelectedTop = i;
-
-	}
-
-	public int getSelectedItem() {
-
-		return mSelectedItem;
-	}
-
-	public int getSelectedTop() {
-		return mSelectedTop;
 	}
 
 	public String getAliasData() {
