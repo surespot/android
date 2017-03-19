@@ -61,7 +61,7 @@ public class Friend implements Comparable<Friend> {
 		else {
 			mLastViewedMessageId = mAvailableMessageId;
 		}
-		//SurespotLog.v(TAG, "setLastViewedMessageId, lastViewedMessageId: %d, friend: %s", lastViewedMessageId, this);
+		SurespotLog.v(TAG, "setLastViewedMessageId, lastViewedMessageId: %d, name: %s", lastViewedMessageId, this.getName());
 	}
 
 	public int getAvailableMessageId() {
@@ -69,7 +69,7 @@ public class Friend implements Comparable<Friend> {
 	}
 
 	public void setAvailableMessageId(int availableMessageId, boolean fetchedFriends) {
-		if (availableMessageId > 0 && isFriend() && !isDeleted()) {
+		if (availableMessageId > mAvailableMessageId && isFriend() && !isDeleted()) {
 			mAvailableMessageId = availableMessageId;
 
 			// we received a message so we're not "new"

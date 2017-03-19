@@ -1220,6 +1220,9 @@ public class ChatController {
                 int availableId = lastMessage.getId();
                 friend.setAvailableMessageId(availableId, false);
 
+                //might have been less than what the friend knew from the message counters so we'll let the friend decide
+                availableId = friend.getAvailableMessageId();
+
                 int lastViewedId = friend.getLastViewedMessageId();
 
                 // how many new messages total are there
