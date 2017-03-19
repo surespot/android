@@ -2795,12 +2795,14 @@ public class ChatController {
     synchronized void removeQueuedMessage(SurespotMessage message, boolean process) {
         boolean removed = false;
 
-        Iterator<SurespotMessage> iterator = mSendQueue.iterator();
-        while (iterator.hasNext()) {
-            SurespotMessage m = iterator.next();
-            if (m.getIv().equals(message.getIv())) {
-                iterator.remove();
-                removed = true;
+        if (mSendQueue.size() > 0) {
+            Iterator<SurespotMessage> iterator = mSendQueue.iterator();
+            while (iterator.hasNext()) {
+                SurespotMessage m = iterator.next();
+                if (m.getIv().equals(message.getIv())) {
+                    iterator.remove();
+                    removed = true;
+                }
             }
         }
 
