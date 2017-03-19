@@ -621,13 +621,6 @@ public class ChatController {
                                 }
                             }.execute();
 
-                            //get friend state synched first before processing messages
-                            JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
-                            if (userControlMessages != null) {
-                                handleControlMessages(mUsername, userControlMessages);
-                            }
-
-
                             JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
                             Friend friend = null;
                             if (conversationIds != null) {
@@ -669,6 +662,11 @@ public class ChatController {
                                         SurespotLog.w(TAG, e, "getlatestData");
                                     }
                                 }
+                            }
+
+                            JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
+                            if (userControlMessages != null) {
+                                handleControlMessages(mUsername, userControlMessages);
                             }
 
                             JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
