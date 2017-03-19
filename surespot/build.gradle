@@ -2,16 +2,21 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
-    android {
-        compileSdkVersion rootProject.ext.compileSdkVersion
-        buildToolsVersion rootProject.ext.buildToolsVersion
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        multiDexEnabled rootProject.ext.multiDexEnabled
+    }
 
-        defaultConfig {
-            minSdkVersion rootProject.ext.minSdkVersion
-            targetSdkVersion rootProject.ext.targetSdkVersion
-            multiDexEnabled rootProject.ext.multiDexEnabled
-        }
+
+    lintOptions {
+        checkReleaseBuilds true
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
     }
 
     buildTypes {
@@ -28,10 +33,10 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('/Users/adam/dev/surespot/keystore/custom-debug.keystore')
-                    storePassword "android"
-                    keyAlias "androiddebugkey"
-                    keyPassword "android"
+            storeFile file('/home/adam/dev/surespot/keystore/custom-debug.keystore')
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
         }
     }
     dexOptions {
