@@ -547,8 +547,8 @@ public class ChatController {
         }
     }
 
-    private void getLatestData(final boolean mayBeCacheClear) {
-        SurespotLog.v(TAG, "getLatestData");
+    private void getLatestData(final boolean fetchedFriends) {
+        SurespotLog.v(TAG, "getLatestData, mLatestUserControlId: %d, fetchedFriends: %b", mLatestUserControlId, fetchedFriends);
         // setMessagesLoading(true);
 
         //get messages from server for open tabs
@@ -621,8 +621,14 @@ public class ChatController {
                                 }
                             }.execute();
 
-                            JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
+                            //get friend state synched first before processing messages
+                            JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
+                            if (userControlMessages != null) {
+                                handleControlMessages(mUsername, userControlMessages);
+                            }
 
+
+                            JSONObject conversationIds = jsonResponse.optJSONObject("conversationIds");
                             Friend friend = null;
                             if (conversationIds != null) {
                                 Iterator i = conversationIds.keys();
@@ -634,7 +640,7 @@ public class ChatController {
                                         // update available ids
                                         friend = mFriendAdapter.getFriend(user);
                                         if (friend != null) {
-                                            friend.setAvailableMessageId(availableId, mayBeCacheClear);
+                                            friend.setAvailableMessageId(availableId, fetchedFriends);
                                         }
                                     }
                                     catch (Exception e) {
@@ -665,11 +671,6 @@ public class ChatController {
                                 }
                             }
 
-                            JSONArray userControlMessages = jsonResponse.optJSONArray("userControlMessages");
-                            if (userControlMessages != null) {
-                                handleControlMessages(mUsername, userControlMessages);
-                            }
-
                             JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
                             if (messageDatas != null) {
                                 for (int i = 0; i < messageDatas.length(); i++) {
@@ -684,7 +685,7 @@ public class ChatController {
 
                                         JSONArray messages = messageData.optJSONArray("messages");
                                         if (messages != null) {
-                                            handleMessages(friendName, messages, mayBeCacheClear);
+                                            handleMessages(friendName, messages, fetchedFriends);
                                         }
 
                                     }
@@ -1812,6 +1813,10 @@ public class ChatController {
                             JSONObject jsonObject = new JSONObject(responseString);
                             JSONArray friendsArray = jsonObject.optJSONArray("friends");
 
+                            //set latest user control id
+                            mLatestUserControlId = jsonObject.optInt("userControlId", mLatestUserControlId);
+                            SurespotLog.v(TAG, "getFriendsAndData setting mLatestUserControlId to: %d", mLatestUserControlId);
+
                             if (friendsArray != null) {
                                 for (int i = 0; i < friendsArray.length(); i++) {
                                     JSONObject jsonFriend = friendsArray.getJSONObject(i);
@@ -1819,7 +1824,7 @@ public class ChatController {
                                     Friend friend = Friend.toFriend(jsonFriend);
                                     friends.add(friend);
 
-                                    SurespotLog.v(TAG, "getFriendsAndData, adding friend: %s", friend);
+                                    //    SurespotLog.v(TAG, "getFriendsAndData, adding friend: %s", friend);
                                 }
                             }
                             if (friends.size() > 0) {

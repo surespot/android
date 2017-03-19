@@ -68,14 +68,14 @@ public class Friend implements Comparable<Friend> {
 		return mAvailableMessageId;
 	}
 
-	public void setAvailableMessageId(int availableMessageId, boolean cacheClear) {
+	public void setAvailableMessageId(int availableMessageId, boolean fetchedFriends) {
 		if (availableMessageId > 0 && isFriend() && !isDeleted()) {
 			mAvailableMessageId = availableMessageId;
 
 			// we received a message so we're not "new"
 			setNewFriend(false);
 
-			if (cacheClear) {
+			if (fetchedFriends) {
 				setLastViewedMessageId(availableMessageId);
 			}
 		}
