@@ -205,26 +205,17 @@ public class StateController {
 
     }
 
-    public synchronized int saveMessages(String user, String spot, List<SurespotMessage> messages, int currentScrollPosition) {
-        SurespotLog.v(TAG, "saveMessages, spot %s, currentSrollPosition: %d", spot, currentScrollPosition);
+    public synchronized void saveMessages(String user, String spot, List<SurespotMessage> messages) {
+        SurespotLog.v(TAG, "saveMessages, spot %s", spot);
         String filename = getFilename(user, MESSAGES_PREFIX + spot);
-        int returnScrollPosition = currentScrollPosition;
+
         if (filename != null) {
             if (messages != null) {
                 synchronized (messages) {
-                    int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messages.size());
                     int messagesSize = messages.size();
+                    int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messagesSize);
 
-                    if (currentScrollPosition > -1) {
-                        int saveSize = messagesSize - currentScrollPosition;
-                        int saveSizePlusBuffer = saveSize + SurespotConstants.SAVE_MESSAGE_MINIMUM;
-
-                        saveCount = saveSizePlusBuffer > messagesSize ? messagesSize : saveSizePlusBuffer;
-                        returnScrollPosition = saveCount - saveSize;
-                    }
-
-                    SurespotLog.v(TAG, "saving %d messages for spot %s, returnScrollPosition: %d", saveCount, spot, returnScrollPosition);
-
+                    SurespotLog.v(TAG, "saving %d messages for spot %s", saveCount, spot);
                     String sMessages = ChatUtils.chatMessagesToJson(
                             messages.subList(messagesSize - saveCount, messagesSize), true)
                             .toString();
@@ -246,7 +237,6 @@ public class StateController {
                 }
             }
         }
-        return returnScrollPosition;
     }
 
     public synchronized ArrayList<SurespotMessage> loadMessages(String user, String spot) {

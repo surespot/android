@@ -155,7 +155,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             messages.add(sm);
                             SurespotLog.d(TAG, "added gcm message directly to disk");
                             added = true;
-                            SurespotApplication.getStateController().saveMessages(to, spot, messages, -1);
+                            SurespotApplication.getStateController().saveMessages(to, spot, messages);
                         }
                         else {
                             SurespotLog.d(TAG, "did not add gcm message directly to disk as it's already there");
