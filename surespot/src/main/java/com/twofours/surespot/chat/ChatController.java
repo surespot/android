@@ -551,6 +551,7 @@ public class ChatController {
     private void getLatestData(final boolean fetchedFriends) {
         SurespotLog.v(TAG, "getLatestData, mLatestUserControlId: %d, fetchedFriends: %b", mLatestUserControlId, fetchedFriends);
         // setMessagesLoading(true);
+        setProgress("getLatestData", true);
 
         //get messages from server for open tabs
         JSONArray spotIds = new JSONArray();
@@ -1848,9 +1849,9 @@ public class ChatController {
                         if (!mNetworkController.isUnauthorized()) {
                             mFriendAdapter.setLoading(false);
                             SurespotLog.w(TAG, "getFriendsAndData error");
-                            setProgress("friendsAndData", false);
                         }
                     }
+                    setProgress("friendsAndData", false);
                 }
             }));
         }
