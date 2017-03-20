@@ -32,6 +32,7 @@ public class ChatManager {
     private static HashMap<Integer, BroadcastReceiverHandler> mHandlers = new HashMap<>();
     private static boolean mPaused;
     private static String mAttachedUsername;
+    private static NetworkInfo mActiveNetworkInfo;
     //private static HashSet<Integer> mIds = new HashSet<>(5);
 
 
@@ -65,6 +66,17 @@ public class ChatManager {
 
         cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
         mAttachedUsername = username;
+
+        //set connectivity state
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        mActiveNetworkInfo = cm.getActiveNetworkInfo();
+        if (mActiveNetworkInfo != null) {
+            SurespotLog.d(TAG, "attachChatController current active active network type %s", mActiveNetworkInfo.getTypeName());
+        }
+
+
         BroadcastReceiverHandler handler = mHandlers.get(id);
         if (handler == null) {
             SurespotLog.d(TAG, "attachChatController %d, username: %s registering new broadcast receiver", id, username);
@@ -144,48 +156,59 @@ public class ChatManager {
             SurespotLog.d(TAG, "Broadcast Receiver onReceive, isUIAttached: %b", isUIAttached());
             Utils.debugIntent(intent, TAG);
 
-            if (isUIAttached() && mAttachedUsername != null) {
-                Bundle extras = intent.getExtras();
-                if (extras.containsKey("networkInfo")) {
-                    NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
+            Bundle extras = intent.getExtras();
+            if (extras.containsKey("networkInfo")) {
+                NetworkInfo newActiveNetwork = (NetworkInfo) extras.get("networkInfo");
+                if (newActiveNetwork != null) {
+                    if (newActiveNetwork.getState() == NetworkInfo.State.CONNECTED) {
+                        SurespotLog.d(TAG, "onReceive,  CONNECTED");
+                        boolean disconnect = false;
+                        //if network different than active network, disconnect
+                        //  NetworkInfo newActiveNetwork = cm.getActiveNetworkInfo();
 
-                    ChatController cc = getChatController(mAttachedUsername);
-                    if (cc != null) {
-                        ConnectivityManager cm =
-                                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-                        if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
-                            SurespotLog.d(TAG, "onReceive,  CONNECTED");
-                            synchronized (this) {
-
-
-                                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                                if (activeNetwork != null) {
-                                    SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
-                                }
-                                cc.clearError();
-                                cc.connect();
-                                cc.processNextMessage();
+                        if (mActiveNetworkInfo != null) {
+                            SurespotLog.d(TAG, "Current active active network type %s, new active network type: %s", mActiveNetworkInfo.getTypeName(), newActiveNetwork.getTypeName());
+                            if (newActiveNetwork.getType() != mActiveNetworkInfo.getType()) {
+                                SurespotLog.d(TAG, "new active network different, disconnecting socket");
+                                disconnect = true;
                             }
-                            return;
                         }
+                        mActiveNetworkInfo = newActiveNetwork;
 
-                        if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
-                            SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
-                            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                            if (activeNetwork != null) {
-                                SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
-                            }
-                            synchronized (this) {
-                                cc.disconnect();
-                                cc.processNextMessage();
+                        if (isUIAttached() && mAttachedUsername != null) {
+                            ChatController cc = getChatController(mAttachedUsername);
+                            if (cc != null) {
+                                synchronized (this) {
+                                    if (disconnect) {
+                                        cc.disconnect();
+                                    }
+                                    cc.clearError();
+                                    cc.connect();
+                                    cc.processNextMessage();
+                                }
                             }
                         }
                     }
                 }
+
+//                        if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
+//                            SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
+//                            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+//                            if (activeNetwork != null) {
+//                                SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
+//                            }
+//                            synchronized (this) {
+//                                if (isUIAttached() && mAttachedUsername != null) {
+//                                    cc.disconnect();
+//                                    cc.processNextMessage();
+//                                }
+//                            }
+//                        }
+
             }
         }
     }
+
 
     public static synchronized String getLoggedInUser() {
         return mAttachedUsername;
