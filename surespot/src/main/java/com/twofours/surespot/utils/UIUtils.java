@@ -454,10 +454,12 @@ public class UIUtils {
     }
 
     public static void showProgressAnimation(Context context, View view) {
-        Animation a = AnimationUtils.loadAnimation(context, R.anim.progress_anim);
-        a.setDuration(1000);
-        view.clearAnimation();
-        view.startAnimation(a);
+        if (context != null) {
+            Animation a = AnimationUtils.loadAnimation(context, R.anim.progress_anim);
+            a.setDuration(1000);
+            view.clearAnimation();
+            view.startAnimation(a);
+        }
     }
 
     // thanks to http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity

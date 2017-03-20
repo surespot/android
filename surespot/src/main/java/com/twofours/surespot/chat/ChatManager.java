@@ -54,7 +54,7 @@ public class ChatManager {
                                                                    IAsyncCallback<Boolean> progressCallback,
                                                                    IAsyncCallback<Void> sendIntentCallback,
                                                                    IAsyncCallback<Friend> tabShowingCallback,
-                                                                   IAsyncCallback<Object> listener) {
+                                                                   IAsyncCallback<Object> listener401) {
         SurespotLog.d(TAG, "attachChatController %d, username: %s", id, username);
 
         ChatController cc = mChatControllers.get(username);
@@ -64,7 +64,7 @@ public class ChatManager {
             mChatControllers.put(username, cc);
         }
 
-        cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
+        cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener401);
         mAttachedUsername = username;
 
         //set connectivity state

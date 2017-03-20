@@ -225,6 +225,7 @@ public class ChatController {
 
     // this is wired up to listen for a message from the   It's UI stuff
     public void connected() {
+        setProgress("connect", false);
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -575,7 +576,7 @@ public class ChatController {
                     public void onFailure(Call call, IOException e) {
                         Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
                         SurespotLog.w(TAG, e, "error getLatestData");
-                        setProgress(null, false);
+                        setProgress("getLatestData", false);
                     }
 
                     @Override
@@ -589,7 +590,7 @@ public class ChatController {
                             catch (JSONException e) {
                                 Utils.makeToast(mContext, mContext.getString(R.string.loading_latest_messages_failed));
                                 SurespotLog.w(TAG, e, "error getLatestData");
-                                setProgress(null, false);
+                                setProgress("getLatestData", false);
                                 return;
                             }
 
@@ -700,11 +701,11 @@ public class ChatController {
 
                             handleAutoInvite();
                             processNextMessage();
-                            setProgress(null, false);
+                            setProgress("getLatestData", false);
                         }
                         else {
                             SurespotLog.w(TAG, "error getLatestData, response code: %d", response.code());
-                            setProgress(null, false);
+                            setProgress("getLatestData", false);
                             switch (response.code()) {
                                 case 401:
                                     // don't show toast on 401 as we are going to be going bye bye
@@ -723,6 +724,8 @@ public class ChatController {
         // connection completes (if they
         // are received out of order for some reason)
         //
+        setProgress("connect", true);
+
         mPreConnectIds.clear();
         for (Map.Entry<String, ChatAdapter> entry : mChatAdapters.entrySet()) {
             String username = entry.getKey();
@@ -1376,19 +1379,14 @@ public class ChatController {
 
     synchronized void resume() {
         mMainActivityPaused = false;
-        setProgress(null, true);
 
         // load chat messages from disk that may have been added by gcm
         for (Entry<String, ChatAdapter> ca : mChatAdapters.entrySet()) {
             loadMessages(ca.getKey(), false);
         }
 
-        if (connect()) {
-            setProgress(null, false);
-        }
-
+        connect();
         clearMessageNotification(mCurrentChat);
-
     }
 
     ChatAdapter getChatAdapter(String username) {
@@ -1789,14 +1787,14 @@ public class ChatController {
     private void getFriendsAndData() {
         SurespotLog.d(TAG, "getFriendsAndData: friend count: %d, mLatestUserControlId: %d", mFriendAdapter.getCount(), mLatestUserControlId);
         if (mFriendAdapter.getCount() == 0 || mLatestUserControlId == 0) {
-            setProgress(null, true);
+            setProgress("friendsAndData", true);
             mFriendAdapter.setLoading(true);
             // get the list of friends
             mNetworkController.getFriends(new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
 
                 @Override
                 public void onFailure(Call call, final IOException e) {
-                    setProgress(null, false);
+                    setProgress("friendsAndData", false);
                     if (!mNetworkController.isUnauthorized()) {
                         mFriendAdapter.setLoading(false);
                         SurespotLog.w(TAG, e, "getFriendsAndData error");
@@ -1835,7 +1833,7 @@ public class ChatController {
                         catch (JSONException e) {
                             SurespotLog.e(TAG, e, "getFriendsAndData error");
                             mFriendAdapter.setLoading(false);
-                            setProgress(null, false);
+                            setProgress("friendsAndData", false);
                             return;
                         }
 
@@ -1850,7 +1848,7 @@ public class ChatController {
                         if (!mNetworkController.isUnauthorized()) {
                             mFriendAdapter.setLoading(false);
                             SurespotLog.w(TAG, "getFriendsAndData error");
-                            setProgress(null, false);
+                            setProgress("friendsAndData", false);
                         }
                     }
                 }
@@ -2250,27 +2248,27 @@ public class ChatController {
         return mSocket;
     }
 
-    synchronized boolean connect() {
+    synchronized void connect() {
 
         if (mMainActivityPaused) {
             SurespotLog.d(TAG, "connect, mMainActivityPaused true, doing nothing");
 
             // if the communication service wants to stay connected again any time in the future, disable the below statement
-            return true;
+            return;
         }
 
         SurespotLog.d(TAG, "connect, mSocket: " + mSocket + ", connected: " + (mSocket != null ? mSocket.connected() : false) + ", state: " + mConnectionState);
 
         if (mSocket != null && getConnectionState() == STATE_CONNECTED) {
             //onConnected();
-            return true;
+            return;
         }
 
         if (mSocket != null && getConnectionState() == STATE_CONNECTING) {
             // do NOT call already connected here, since we're not already connected
             // need to test to see if the program flow is good returning true here, or if we should allow things to continue
             // and try to connect()...
-            return true;
+            return;
         }
 
         setState(STATE_CONNECTING);
@@ -2285,7 +2283,7 @@ public class ChatController {
             SurespotLog.w(TAG, e, "connect");
         }
 
-        return false;
+        return;
     }
 
     synchronized void enqueueMessage(SurespotMessage message) {
