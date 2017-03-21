@@ -2306,7 +2306,7 @@ public class ChatController {
             return;
         }
 
-        SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
+        //SurespotLog.d(TAG, "processNextMessage, messages in queue: %d", mSendQueue.size());
         SurespotMessage nextMessage = mSendQueue.peek();
         //if the message is errored don't resend it, remove from queue
         while (nextMessage != null && nextMessage.getErrorStatus() > 0) {
@@ -2725,11 +2725,11 @@ public class ChatController {
         //if we're not onto a different message, set the current message pointer to null
 
         if (message.getIv().equals(mCurrentSendIv)) {
-            SurespotLog.d(TAG, "messageSendCompleted iv's the same, setting to null, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
+            //SurespotLog.d(TAG, "messageSendCompleted iv's the same, setting to null, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
             mCurrentSendIv = null;
         }
         else {
-            SurespotLog.d(TAG, "messageSendCompleted iv's not the same, doing nothing, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
+            //SurespotLog.d(TAG, "messageSendCompleted iv's not the same, doing nothing, mCurrentSendIv: %s, messageIv: %s", mCurrentSendIv, message.getIv());
         }
 
     }
@@ -2815,7 +2815,7 @@ public class ChatController {
         if (process) {
             processNextMessage();
         }
-        SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
+        //SurespotLog.d(TAG, "removedQueuedMessage, iv: %s, removed: %b", message.getIv(), removed);
     }
 
 

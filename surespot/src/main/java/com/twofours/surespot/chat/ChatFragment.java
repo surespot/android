@@ -353,13 +353,13 @@ public class ChatFragment extends Fragment {
     public void scrollToEnd() {
         SurespotLog.d(TAG, "scrollToEnd: %s", mTheirUsername);
         if (mChatAdapter != null && mListView != null) {
-            mListView.post(new Runnable() {
+            mListView.postDelayed(new Runnable() {
 
                 @Override
                 public void run() {
-                    mListView.setSelection(mChatAdapter.getCount() - 1);
+                    mListView.setSelection(mChatAdapter.getCount()-1);
                 }
-            });
+            }, 400);
         }
     }
 
