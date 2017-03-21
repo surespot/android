@@ -164,12 +164,10 @@ public class ChatManager {
                         SurespotLog.d(TAG, "onReceive,  CONNECTED");
                         boolean disconnect = false;
                         //if network different than active network, disconnect
-                        //  NetworkInfo newActiveNetwork = cm.getActiveNetworkInfo();
-
                         if (mActiveNetworkInfo != null) {
                             SurespotLog.d(TAG, "Current active active network type %s, new active network type: %s", mActiveNetworkInfo.getTypeName(), newActiveNetwork.getTypeName());
                             if (newActiveNetwork.getType() != mActiveNetworkInfo.getType()) {
-                                SurespotLog.d(TAG, "new active network different, disconnecting socket");
+                                SurespotLog.d(TAG, "new active network different will disconnect socket if UI showing for chatcontroller for %s", mAttachedUsername);
                                 disconnect = true;
                             }
                         }
@@ -180,6 +178,7 @@ public class ChatManager {
                             if (cc != null) {
                                 synchronized (this) {
                                     if (disconnect) {
+                                        SurespotLog.d(TAG, "disconnecting socket for %s", mAttachedUsername);
                                         cc.disconnect();
                                     }
                                     cc.clearError();
@@ -190,21 +189,6 @@ public class ChatManager {
                         }
                     }
                 }
-
-//                        if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
-//                            SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
-//                            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-//                            if (activeNetwork != null) {
-//                                SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
-//                            }
-//                            synchronized (this) {
-//                                if (isUIAttached() && mAttachedUsername != null) {
-//                                    cc.disconnect();
-//                                    cc.processNextMessage();
-//                                }
-//                            }
-//                        }
-
             }
         }
     }
