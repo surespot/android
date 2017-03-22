@@ -14,7 +14,7 @@ public class SurespotLog {
 	public static void v(String tag, String msg) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.v(tag, tag + ": " + msg);
+			Log.v(tag, msg);
 		}
 
 	}
@@ -22,7 +22,7 @@ public class SurespotLog {
 	public static void v(String tag, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.v(tag, tag + ": " + String.format(msg, msgArgs));
+			Log.v(tag, String.format(msg, msgArgs));
 		}
 
 	}
@@ -30,14 +30,14 @@ public class SurespotLog {
 	public static void v(String tag, Throwable tr, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.v(tag, tag + ": " + String.format(msg, msgArgs), tr);
+			Log.v(tag, String.format(msg, msgArgs), tr);
 		}
 	}
 
 	public static void d(String tag, String msg) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.d(tag, tag + ": " + msg);
+			Log.d(tag, msg);
 		}
 
 	}
@@ -46,7 +46,7 @@ public class SurespotLog {
 	public static void d(String tag, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.d(tag, tag + ": " + String.format(msg, msgArgs));
+			Log.d(tag, String.format(msg, msgArgs));
 		}
 
 	}
@@ -55,7 +55,7 @@ public class SurespotLog {
 	public static void i(String tag, String msg) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.i(tag, tag + ": " + msg);
+			Log.i(tag, msg);
 		}
 	}
 
@@ -63,21 +63,21 @@ public class SurespotLog {
 	public static void i(String tag, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.i(tag, tag + ": " + String.format(msg, msgArgs));
+			Log.i(tag, String.format(msg, msgArgs));
 		}
 	}
 
 	public static void i(String tag, Throwable tr, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.i(tag, tag + ": " + String.format(msg, msgArgs), tr);
+			Log.i(tag, String.format(msg, msgArgs), tr);
 		}
 	}
 
 	public static void w(String tag, String msg) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.w(tag, tag + ": " + msg);
+			Log.w(tag, msg);
 		}
 	}
 
@@ -85,7 +85,7 @@ public class SurespotLog {
 	public static void w(String tag, String msg, Object... msgArgs) {
 		if (mLogging) {
 			if (msg == null) msg = "";
-			Log.w(tag, tag + ": " + String.format(msg, msgArgs));
+			Log.w(tag, String.format(msg, msgArgs));
 		}
 	}
 
@@ -93,7 +93,7 @@ public class SurespotLog {
 		String message = null;
 		if (mLogging) {
 			if (msg == null) msg = "";
-			message = tag + ": " + String.format(msg, msgArgs);
+			message = String.format(msg, msgArgs);
 			// Log.w(tag, msg +", " + tr.getMessage());
 			Log.w(tag, message, tr);
 		}
@@ -103,7 +103,7 @@ public class SurespotLog {
 		String message = null;
 		if (mLogging) {
 			if (msg == null) msg = "";
-			message = tag + ": " + String.format(msg, msgArgs);
+			message = String.format(msg, msgArgs);
 			Log.e(tag, message, tr);
 		}
 

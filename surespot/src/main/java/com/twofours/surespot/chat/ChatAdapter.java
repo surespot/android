@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import pl.droidsonroids.gif.GifImageView;
 
 public class ChatAdapter extends BaseAdapter {
-    private final static String TAG = "ChatAdapter";
+    private String TAG = "ChatAdapter";
     private List<SurespotMessage> mMessages = Collections.synchronizedList(new ArrayList<SurespotMessage>());
     private Context mContext;
     private final static int TYPE_US = 0;
@@ -43,7 +43,7 @@ public class ChatAdapter extends BaseAdapter {
     private IAsyncCallback<Boolean> mAllLoadedCallback;
     private boolean mCheckingSequence;
     private boolean mDebugMode;
-    private int mCurrentScrollPositionId;
+    private int mCurrentScrollPositionId = -1;
     private MessageDecryptor mMessageDecryptor;
     private MessageImageDownloader mMessageImageDownloader;
     private boolean mLoaded;
@@ -51,9 +51,11 @@ public class ChatAdapter extends BaseAdapter {
     private CopyOnWriteArrayList<SurespotControlMessage> mControlMessages = new CopyOnWriteArrayList<>();
     private String mOurUsername;
     private GifMessageDownloader mGifDownloader;
+    private int mSelectedTop;
 
-    public ChatAdapter(Context context, String ourUsername) {
-        SurespotLog.d(TAG, "Constructor, ourUsername: %s", ourUsername);
+    public ChatAdapter(Context context, String ourUsername, String theirUsername) {
+        TAG = String.format("ChatAdapter:%s:%s", ourUsername, theirUsername);
+        SurespotLog.d(TAG, "Constructor");
         mContext = context;
         mOurUsername = ourUsername;
 
@@ -207,6 +209,7 @@ public class ChatAdapter extends BaseAdapter {
         if (messages.size() > 0) {
             mMessages.clear();
             mMessages.addAll(messages);
+            mCurrentScrollPositionId = -1;
         }
     }
 
@@ -259,7 +262,18 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     public void setCurrentScrollPositionId(int currentScrollPositionId) {
+        SurespotLog.d(TAG, "setCurrentScrollPositionId: %d", currentScrollPositionId);
         mCurrentScrollPositionId = currentScrollPositionId;
+    }
+
+    public void setSelectedTop(int i) {
+        SurespotLog.d(TAG, "setSelectedTop: %d", i);
+        mSelectedTop = i;
+
+    }
+
+    public int getSelectedTop() {
+        return mSelectedTop;
     }
 
     @Override
@@ -385,10 +399,10 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.imageView.setVisibility(View.GONE);
-                //  chatMessageViewHolder.imageView.clearAnimation();
+                chatMessageViewHolder.imageView.clearAnimation();
                 chatMessageViewHolder.imageView.setImageBitmap(null);
                 if (item.getPlainData() != null) {
-                    //chatMessageViewHolder.tvText.clearAnimation();
+                    chatMessageViewHolder.tvText.clearAnimation();
                     chatMessageViewHolder.tvText.setText(item.getPlainData());
                 }
                 else {
@@ -427,9 +441,7 @@ public class ChatAdapter extends BaseAdapter {
                 if (type == TYPE_US) {
                     chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
                 }
-                // //if it's ours we don't care if it's been played or not
                 else {
-
                     if (item.isVoicePlayed()) {
                         SurespotLog.v(TAG, "chatAdapter setting played to visible");
                         chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);

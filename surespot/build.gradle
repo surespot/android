@@ -2,16 +2,21 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
-    android {
-        compileSdkVersion rootProject.ext.compileSdkVersion
-        buildToolsVersion rootProject.ext.buildToolsVersion
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        multiDexEnabled rootProject.ext.multiDexEnabled
+    }
 
-        defaultConfig {
-            minSdkVersion rootProject.ext.minSdkVersion
-            targetSdkVersion rootProject.ext.targetSdkVersion
-            multiDexEnabled rootProject.ext.multiDexEnabled
-        }
+
+    lintOptions {
+        checkReleaseBuilds true
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
     }
 
     buildTypes {
@@ -53,17 +58,17 @@ dependencies {
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    compile 'com.google.android.gms:play-services-auth:10.0.1'
-    compile 'com.google.android.gms:play-services-gcm:10.0.1'
-    compile 'com.google.android.gms:play-services-drive:10.0.1'
+    compile 'com.google.android.gms:play-services-auth:10.2.0'
+    compile 'com.google.android.gms:play-services-gcm:10.2.0'
+    compile 'com.google.android.gms:play-services-drive:10.2.0'
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
-    compile 'com.google.code.gson:gson:2.4'
-    compile 'com.google.guava:guava:18.0'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.google.guava:guava:20.0'
     compile 'com.google.protobuf:protobuf-java:2.6.1'
     compile 'com.android.support:multidex:1.0.1'
     compile 'io.socket:socket.io-client:0.8.3'
     compile 'ch.acra:acra:4.8.5'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
-    compile 'com.android.support:recyclerview-v7:25.2.0'
-    compile 'com.android.support:support-v4:25.2.0'
+    compile 'com.android.support:recyclerview-v7:25.3.0'
+    compile 'com.android.support:support-v4:25.3.0'
 }

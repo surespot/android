@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.twofours.surespot"
-    android:versionCode="70"
-    android:versionName="70">
+    android:versionCode="72"
+    android:versionName="72">
 
 
     <permission

@@ -742,7 +742,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         launch();
     }
 
-    private void setupGlobal() {
+    private void    setupGlobal() {
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
             Intent intent = new Intent(this, RegistrationIntentService.class);
@@ -754,7 +754,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         // set volume control buttons
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         mHomeImageView = (ImageView) findViewById(android.R.id.home);
-        setHomeProgress(true);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         //drawer
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -841,7 +840,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 getFragmentManager(),
                 titlePageIndicator,
                 mMenuItems,
-
                 new IAsyncCallback<Boolean>() {
                     @Override
                     public void handleResponse(Boolean inProgress) {
@@ -862,8 +860,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     @Override
                     public void handleResponse(Friend result) {
                         handleTabChange(result);
-
-
                     }
                 },
                 m401Handler
@@ -1482,23 +1478,36 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
     }
 
-    private void setHomeProgress(boolean inProgress) {
-        if (mHomeImageView == null) {
-            return;
-        }
+    private boolean mInProgress;
 
-        SurespotLog.d(TAG, "progress status changed to: %b", inProgress);
-        if (inProgress) {
-            UIUtils.showProgressAnimation(this, mHomeImageView);
-        }
-        else {
-            mHomeImageView.clearAnimation();
-        }
+    private void setHomeProgress(final boolean inProgress) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mHomeImageView == null) {
+                    mInProgress = false;
+                    return;
+                }
+                SurespotLog.d(TAG, "progress status changed to: %b", inProgress);
+                if (inProgress) {
+                    //if it's not already showing show it
+                    if (!mInProgress) {
+                        UIUtils.showProgressAnimation(MainActivity.this, mHomeImageView);
+                    }
+                }
+                else {
+                    mHomeImageView.clearAnimation();
+                }
 
-        ChatController cc = ChatManager.getChatController(mUser);
-        if (cc != null) {
-            cc.enableMenuItems(mCurrentFriend);
-        }
+                ChatController cc = ChatManager.getChatController(mUser);
+                if (cc != null) {
+                    cc.enableMenuItems(mCurrentFriend);
+                }
+                mInProgress = inProgress;
+            }
+        };
+
+        mHandler.post(runnable);
     }
 
 
@@ -1766,7 +1775,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mIvVoice.setVisibility(View.GONE);
                 mIvHome.setVisibility(View.VISIBLE);
                 mIvSend.setVisibility(View.GONE);
-
             }
             else {
                 if (mEtMessage.getText().length() > 0) {
@@ -1885,7 +1893,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void setEmojiIcon() {
         SurespotLog.d(TAG, "setEmojiIcon, mGifShowing: %b, emoji visible: %b", mGifShowing, isEmojiVisible());
         boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-
 
         if (mGifShowing) {
             mEmojiButton.setVisibility(View.GONE);

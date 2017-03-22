@@ -1,12 +1,12 @@
 /**
  * Copyright 2015 Google Inc. All Rights Reserved.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,13 +32,13 @@ import android.text.TextUtils;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.utils.UIUtils;
 
@@ -67,8 +67,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
      * Called when message is received.
      *
      * @param senderId SenderID of the sender.
-     * @param bundle Data bundle containing message data as key/value pairs.
-     *             For Set of keys use data.keySet().
+     * @param bundle   Data bundle containing message data as key/value pairs.
+     *                 For Set of keys use data.keySet().
      */
     // [START receive_message]
     @Override
@@ -120,8 +120,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
             boolean uiAttached = ChatManager.isUIAttached();
 
-            //TODO check chat controller connected for user
-
             SurespotLog.d(TAG, "gcm is screen on: %b, uiAttached: %b, hasLoggedInUser: %b, sameUser: %b, tabOpenToUser: %b, connected: %b", isScreenOn, uiAttached, hasLoggedInUser,
                     sameUser, tabOpenToUser, chatControllerConnected);
 
@@ -130,6 +128,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
 
+            boolean tabVisibleButNotConnected = hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && uiAttached && !chatControllerConnected;
             String spot = ChatUtils.getSpot(from, to);
 
             // add the message if it came in the GCM
@@ -156,7 +155,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             messages.add(sm);
                             SurespotLog.d(TAG, "added gcm message directly to disk");
                             added = true;
-                            SurespotApplication.getStateController().saveMessages(to, spot, messages, 0);
+                            SurespotApplication.getStateController().saveMessages(to, spot, messages);
                         }
                         else {
                             SurespotLog.d(TAG, "did not add gcm message directly to disk as it's already there");
@@ -165,32 +164,45 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             // so gonna show notification now; was unnecessary before because the socket would have been
                             // disconnected before push arrived if we got this far thanks to above isscreenon...etc.  check
                             // OE hmmm... is there a flag we can set if the main activity is not paused to indicate the user has truly "seen" the message or not?
-                       //     added = true;
+                            //     added = true;
                         }
                     }
 
                     if (added) {
-                        //String password = IdentityController.getStoredPasswordForIdentity(this, to);
-                        //SurespotLog.d(TAG, "GOT PASSWORD: %s",  password);
+                        boolean notified = false;
+                        //added and tab's not
+                        if (tabVisibleButNotConnected) {
+                            //tab visible but not connected, and message added by the gcm, so just notify the chat adapter
 
+                            SurespotLog.d(TAG, "tab visible but not connected, not showing notification, notifying chat adapter data set changed");
+                            notified = chatController.notifyChatAdapterDataSetChanged(from);
 
-                        String fromName = null;
-                        //get friend name if we can otherwise no name
-                        if (sameUser && chatController != null) {
-                            fromName = chatController.getAliasedName(from);
                         }
 
-                        generateNotification(
-                                this,
-                                SurespotConstants.IntentFilters.MESSAGE_RECEIVED,
-                                from,
-                                to,
-                                getString(R.string.notification_title),
-                                TextUtils.isEmpty(fromName) ?
-                                        getString(R.string.notification_message_no_from, to) :
-                                        getString(R.string.notification_message, to, fromName),
-                                to + ":" + spot,
-                                SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+                        if (!notified) {
+                            //otherwise show notification
+                            //String password = IdentityController.getStoredPasswordForIdentity(this, to);
+                            //SurespotLog.d(TAG, "GOT PASSWORD: %s",  password);
+
+
+                            String fromName = null;
+                            //get friend name if we can otherwise no name
+                            if (sameUser && chatController != null) {
+                                fromName = chatController.getAliasedName(from);
+                            }
+
+                            generateNotification(
+                                    this,
+                                    SurespotConstants.IntentFilters.MESSAGE_RECEIVED,
+                                    from,
+                                    to,
+                                    getString(R.string.notification_title),
+                                    TextUtils.isEmpty(fromName) ?
+                                            getString(R.string.notification_message_no_from, to) :
+                                            getString(R.string.notification_message, to, fromName),
+                                    to + ":" + spot,
+                                    SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
+                        }
                     }
                 }
             }
@@ -339,4 +351,5 @@ public class SurespotGcmListenerService extends GcmListenerService {
         Notification notification = UIUtils.generateNotification(mBuilder, contentIntent, getPackageName(), title, message);
 
         mNotificationManager.notify(tag, id, notification);
-    }}
+    }
+}

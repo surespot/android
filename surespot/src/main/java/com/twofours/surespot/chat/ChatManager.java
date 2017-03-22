@@ -32,6 +32,7 @@ public class ChatManager {
     private static HashMap<Integer, BroadcastReceiverHandler> mHandlers = new HashMap<>();
     private static boolean mPaused;
     private static String mAttachedUsername;
+    private static NetworkInfo mActiveNetworkInfo;
     //private static HashSet<Integer> mIds = new HashSet<>(5);
 
 
@@ -53,7 +54,7 @@ public class ChatManager {
                                                                    IAsyncCallback<Boolean> progressCallback,
                                                                    IAsyncCallback<Void> sendIntentCallback,
                                                                    IAsyncCallback<Friend> tabShowingCallback,
-                                                                   IAsyncCallback<Object> listener) {
+                                                                   IAsyncCallback<Object> listener401) {
         SurespotLog.d(TAG, "attachChatController %d, username: %s", id, username);
 
         ChatController cc = mChatControllers.get(username);
@@ -63,8 +64,19 @@ public class ChatManager {
             mChatControllers.put(username, cc);
         }
 
-        cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener);
+        cc.attach(context, viewPager, fm, pageIndicator, menuItems, progressCallback, sendIntentCallback, tabShowingCallback, listener401);
         mAttachedUsername = username;
+
+        //set connectivity state
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        mActiveNetworkInfo = cm.getActiveNetworkInfo();
+        if (mActiveNetworkInfo != null) {
+            SurespotLog.d(TAG, "attachChatController current active active network type %s", mActiveNetworkInfo.getTypeName());
+        }
+
+
         BroadcastReceiverHandler handler = mHandlers.get(id);
         if (handler == null) {
             SurespotLog.d(TAG, "attachChatController %d, username: %s registering new broadcast receiver", id, username);
@@ -110,6 +122,7 @@ public class ChatManager {
         SurespotLog.d(TAG, "paused %d", id);
         ChatController cc = getChatController(username);
         if (cc != null) {
+            cc.setMainActivityPaused();
             cc.save();
             cc.disconnect();
         }
@@ -140,55 +153,46 @@ public class ChatManager {
     private static class BroadcastReceiverHandler extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            SurespotLog.d(TAG, "Broadcast Receiver onReceive");
+            SurespotLog.d(TAG, "Broadcast Receiver onReceive, isUIAttached: %b", isUIAttached());
             Utils.debugIntent(intent, TAG);
 
-            if (mAttachedUsername != null) {
-                Bundle extras = intent.getExtras();
-                if (extras.containsKey("networkInfo")) {
-                    NetworkInfo networkInfo2 = (NetworkInfo) extras.get("networkInfo");
-
-                    ChatController cc = getChatController(mAttachedUsername);
-                    if (cc != null) {
-                        ConnectivityManager cm =
-                                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-                        if (networkInfo2.getState() == NetworkInfo.State.CONNECTED) {
-                            SurespotLog.d(TAG, "onReceive,  CONNECTED");
-                            synchronized (this) {
-
-
-                                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                                if (activeNetwork != null) {
-                                    SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
-                                }
-                                //disconnect if we're connected and we just connected to wifi
-//                                if ( networkInfo2.getType() == ConnectivityManager.TYPE_WIFI || networkInfo2.getType() == ConnectivityManager.TYPE_WIMAX) {
-//                                    cc.disconnect();
-//                                }
-//                                cc.clearError();
-//                                cc.connect();
-//                                cc.processNextMessage();
+            Bundle extras = intent.getExtras();
+            if (extras.containsKey("networkInfo")) {
+                NetworkInfo newActiveNetwork = (NetworkInfo) extras.get("networkInfo");
+                if (newActiveNetwork != null) {
+                    if (newActiveNetwork.getState() == NetworkInfo.State.CONNECTED) {
+                        SurespotLog.d(TAG, "onReceive,  CONNECTED");
+                        boolean disconnect = false;
+                        //if network different than active network, disconnect
+                        if (mActiveNetworkInfo != null) {
+                            SurespotLog.d(TAG, "Current active active network type %s, new active network type: %s", mActiveNetworkInfo.getTypeName(), newActiveNetwork.getTypeName());
+                            if (newActiveNetwork.getType() != mActiveNetworkInfo.getType()) {
+                                SurespotLog.d(TAG, "new active network different will disconnect socket if UI showing for chatcontroller for %s", mAttachedUsername);
+                                disconnect = true;
                             }
-                            return;
                         }
+                        mActiveNetworkInfo = newActiveNetwork;
 
-                        if (networkInfo2.getState() == NetworkInfo.State.DISCONNECTED) {
-                            SurespotLog.d(TAG, "onReceive,  DISCONNECTED");
-                            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                            if (activeNetwork != null) {
-                                SurespotLog.d(TAG, "active network type %s", activeNetwork.getTypeName());
+                        if (isUIAttached() && mAttachedUsername != null) {
+                            ChatController cc = getChatController(mAttachedUsername);
+                            if (cc != null) {
+                                synchronized (this) {
+                                    if (disconnect) {
+                                        SurespotLog.d(TAG, "disconnecting socket for %s", mAttachedUsername);
+                                        cc.disconnect();
+                                    }
+                                    cc.clearError();
+                                    cc.connect();
+                                    cc.processNextMessage();
+                                }
                             }
-//                            synchronized (this) {
-//                                cc.disconnect();
-//                                cc.processNextMessage();
-//                            }
                         }
                     }
                 }
             }
         }
     }
+
 
     public static synchronized String getLoggedInUser() {
         return mAttachedUsername;
