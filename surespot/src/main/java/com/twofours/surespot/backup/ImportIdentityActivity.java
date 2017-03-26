@@ -506,16 +506,19 @@ public class ImportIdentityActivity extends Activity {
 
         List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
         try {
-            File file = mDriveHelper.getDriveService().files().get(mFileId).execute();
+            File file = mDriveHelper.getDriveService().files()
+                    .get(mFileId)
+                    .setFields("modifiedTime, originalFilename")
+                    .execute();
 
-            if (file != null && file.getTrashed() != null && !file.getTrashed()) {
+            if (file != null && (file.getTrashed() == null || !file.getTrashed())) {
 
                 DateTime lastModTime = file.getModifiedTime();
 
                 String date = DateFormat.getDateFormat(this).format(lastModTime.getValue()) + " "
                         + DateFormat.getTimeFormat(this).format(lastModTime.getValue());
                 HashMap<String, String> map = new HashMap<String, String>();
-                String name = IdentityController.getIdentityNameFromFilename(file.getName());
+                String name = IdentityController.getIdentityNameFromFilename(file.getOriginalFilename());
                 map.put("name", name);
                 map.put("date", date);
                 map.put("id", mFileId);
@@ -560,22 +563,9 @@ public class ImportIdentityActivity extends Activity {
                 });
 
             }
-        }
-        catch (IOException e) {
-            SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
-
-            this.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_import_identity));
-                }
-            });
-
-            finish();
             return;
-
         }
+
         catch (SecurityException e) {
             SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
             // when key is revoked on server this happens...should return
@@ -595,6 +585,21 @@ public class ImportIdentityActivity extends Activity {
 
             finish();
             return;
+        }
+        catch (Exception e) {
+            SurespotLog.w(TAG, e, "could not retrieve identity from google drive");
+
+            this.runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_import_identity));
+                }
+            });
+
+            finish();
+            return;
+
         }
 
         SurespotLog.v(TAG, "loaded %d identities from google drive", items.size());
