@@ -56,10 +56,10 @@ public class SurespotConstants {
 
 
 	// PROD set to 3
-	public final static int MAX_IDENTITIES = 3;
+	public final static int MAX_IDENTITIES = 30;
 
 	// PROD false for production
-	public final static boolean LOGGING = false;
+	public final static boolean LOGGING = true;
 
 	// PROD true for production
 	public final static boolean SSL_STRICT = true;
@@ -82,6 +82,7 @@ public class SurespotConstants {
 		public final static String IMAGE = "image/";
 		public final static String GIF_LINK = "gif/https";
 		public final static String M4A = "audio/mp4";
+        public final static String FILE = "application/octet-stream";
 		public final static String DRIVE_FOLDER = "application/vnd.google-apps.folder";
 		public final static String DRIVE_FILE = "application/vnd.google-apps.file";
 		public final static String SURESPOT_IDENTITY = "application/ssi";

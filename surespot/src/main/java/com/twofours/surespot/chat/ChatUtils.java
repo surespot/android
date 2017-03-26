@@ -265,7 +265,6 @@ public class ChatUtils {
                         }
                     });
 
-
                     chatController.enqueueMessage(finalMessage);
                 } catch (IOException e) {
                     //TODO mark errored

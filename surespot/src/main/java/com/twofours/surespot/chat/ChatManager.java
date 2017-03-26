@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,7 +45,7 @@ public class ChatManager {
         return mChatControllers.get(username);
     }
 
-    public static synchronized ChatController attachChatController(Context context,
+    public static synchronized ChatController attachChatController(Activity context,
                                                                    String username,
                                                                    int id,
                                                                    ViewPager viewPager,

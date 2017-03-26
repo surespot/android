@@ -407,7 +407,7 @@ public class ExportIdentityActivity extends Activity {
             // see if identities directory exists
 
             FileList identityDir = mDriveHelper.getDriveService().files().list()
-                    .setQ("name = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
+                    .setQ("name = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false and mimeType='application/vnd.google-apps.folder'").execute();
             List<com.google.api.services.drive.model.File> items = identityDir.getFiles();
 
             if (items.size() > 0) {
@@ -472,23 +472,23 @@ public class ExportIdentityActivity extends Activity {
             String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
 
             // see if identity exists
-            File file = null;
-            File idFile = getIdentityFile(idDirId, caseInsensitiveUsername);
-            if (idFile != null) {
 
-                // update
-                file = mDriveHelper.getDriveService().files().get(idFile.getId()).execute();
-                if (file != null) {
+            File file = getIdentityFile(idDirId, caseInsensitiveUsername);
+            if (file != null) {
+//
+//                // update
+//             //   file = mDriveHelper.getDriveService().files().get(idFile.getId()).execute();
+//                if (file != null) {
                     SurespotLog.d(TAG, "updateIdentityDriveFile, updating existing identity file: %s", filename);
                     mDriveHelper.getDriveService().files().update(file.getId(), file, content).execute();
                     return true;
-                }
+                //}
             }
 
             // create
             SurespotLog.d(TAG, "updateIdentityDriveFile, inserting new identity file: %s", filename);
 
-            file = new com.google.api.services.drive.model.File();
+            file = new File();
             file.setParents(Arrays.asList(idDirId));
             file.setName(filename);
             file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
@@ -529,7 +529,7 @@ public class ExportIdentityActivity extends Activity {
         String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
 
         FileList identityFileList = mDriveHelper.getDriveService().files().list()
-                .setQ(String.format("name='%s' and '%s' in parents and trashed = false",filename + IdentityController.IDENTITY_EXTENSION, identityDirId)).execute();
+                .setQ(String.format("name='%s' and '%s' in parents and trashed = false",filename, identityDirId)).execute();
         List<com.google.api.services.drive.model.File> items = identityFileList.getFiles();
 
         if (items.size() == 1) {

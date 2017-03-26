@@ -35,7 +35,7 @@ public class DriveHelper {
 	}
 
 	public Drive getDriveService() {
-
+		SurespotLog.d(TAG, "getDriveService");
 		if (mService == null) {
 
 			if (getDriveAccount() != null) {
@@ -54,6 +54,7 @@ public class DriveHelper {
 	}
 
 	public Account getDriveAccount() {
+		SurespotLog.d(TAG, "getDriveAccount");
 		if (mAccount == null && mUseStoredAccount) {
 			SharedPreferences sp = mContext.getSharedPreferences(IdentityController.getLoggedInUser(), Context.MODE_PRIVATE);
 

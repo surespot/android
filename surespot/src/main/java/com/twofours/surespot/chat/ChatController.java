@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -28,7 +29,9 @@ import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Tuple;
 import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.backup.DriveHelper;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.filetransfer.FileTransferUtils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
@@ -102,7 +105,7 @@ public class ChatController {
 
     private NetworkController mNetworkController;
 
-    private Context mContext;
+    private Activity mContext;
     public static final int MODE_NORMAL = 0;
     public static final int MODE_SELECT = 1;
 
@@ -144,7 +147,9 @@ public class ChatController {
     private ProcessNextMessageTask mResendTask;
     private boolean mErrored;
 
-    ChatController(Context context, String username) {
+    private DriveHelper mDriveHelper;
+
+    ChatController(Activity context, String username) {
         SurespotLog.d(TAG, "constructor, username: %s", username);
 
         mContext = context;
@@ -152,6 +157,7 @@ public class ChatController {
         mNetworkController = NetworkManager.getNetworkController(context, mUsername);
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(mContext);
+        mDriveHelper = new DriveHelper(context, true);
 
         mEarliestMessage = new HashMap<String, Integer>();
         mChatAdapters = new HashMap<String, ChatAdapter>();
@@ -162,7 +168,7 @@ public class ChatController {
 
     // this has to be done outside of the contructor as it creates fragments, which need chat controller instance
     void attach(
-            Context context,
+            Activity context,
             ViewPager viewPager,
             FragmentManager fm,
             TitlePageIndicator pageIndicator, ArrayList<MenuItem> menuItems,
@@ -226,7 +232,7 @@ public class ChatController {
     // this is wired up to listen for a message from the   It's UI stuff
     public void connected() {
         setProgress("connect", false);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 getFriendsAndData();
@@ -281,7 +287,7 @@ public class ChatController {
                 @Override
                 protected Void doInBackground(Void... params) {
                     SurespotLog.d(TAG, "ChatAdapter open for user: %s", otherUser);
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK)) {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) || message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
 
                         // decrypt it before adding
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
@@ -2285,7 +2291,7 @@ public class ChatController {
         return;
     }
 
-    synchronized void enqueueMessage(SurespotMessage message) {
+    public synchronized void enqueueMessage(SurespotMessage message) {
         if (getConnectionState() == STATE_DISCONNECTED) {
             connect();
         }
@@ -2328,12 +2334,16 @@ public class ChatController {
 
                 switch (nextMessage.getMimeType()) {
                     case SurespotConstants.MimeTypes.TEXT:
+
                         prepAndSendTextMessage(nextMessage);
                         break;
                     case SurespotConstants.MimeTypes.IMAGE:
                     case SurespotConstants.MimeTypes.M4A:
                         prepAndSendFileMessage(nextMessage);
                         break;
+
+                    case SurespotConstants.MimeTypes.FILE:
+                        prepAndSendCloudMessage(nextMessage);
                 }
             }
         }
@@ -3319,4 +3329,129 @@ public class ChatController {
         }
         return false;
     }
+
+    private void prepAndSendCloudMessage(final SurespotMessage message) {
+        SurespotLog.d(TAG, "prepAndSendCloudMessage, current thread: %s", Thread.currentThread().getName());
+        if (!isMessageReadyToSend(message)) {
+           Runnable runnable = new Runnable() {
+               @Override
+               public void run() {
+
+                   //make sure it's pointing to a local file
+
+                   synchronized (ChatController.this) {
+                       //could be null because it's already being processed
+                       CharSequence cs = message.getPlainData();
+                       SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData: %s", cs);
+                       if (cs == null) {
+                           SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData null, already processed, doing nothing");
+                           return;
+                       }
+
+                       final String plainData = cs.toString();
+
+                       if (!plainData.startsWith("file")) {
+                           //processing TODO check queue
+                           SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData doesn't start with file, currently processing, doing nothing");
+                           return;
+                       }
+
+                       //    try {
+
+                       final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
+                       final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+
+                       if (theirVersion == null) {
+                           SurespotLog.d(TAG, "prepAndSendCloudMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
+                           //retry
+                           message.setErrorStatus(0);
+                           return;
+                       }
+                       final String iv = message.getIv();
+
+
+//                            // save encrypted image to disk
+//                            InputStream fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//                            File localImageFile = ChatUtils.getTempImageUploadFile(mContext);
+//                            OutputStream fileSaveStream = new FileOutputStream(localImageFile);
+//                            String localImageUri = Uri.fromFile(localImageFile).toString();
+//                            SurespotLog.d(TAG, "prepAndSendCloudMessage: encrypting file iv: %s, from %s to encrypted file %s", iv, plainData, localImageUri);
+//
+//                            //encrypt
+//                            PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+//                            final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
+//                            EncryptionController.runEncryptTask(mUsername, ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+//
+//                            int bufferSize = 1024;
+//                            byte[] buffer = new byte[bufferSize];
+//
+//                            int len = 0;
+//                            while ((len = encryptionInputStream.read(buffer)) != -1) {
+//                                fileSaveStream.write(buffer, 0, len);
+//                            }
+//                            fileSaveStream.close();
+//                            encryptionInputStream.close();
+//
+//                            boolean deleted = new File(Uri.parse(plainData).getPath()).delete();
+//                            SurespotLog.d(TAG, "prepAndSendCloudMessage: deleting unencrypted file %s, iv: %s, success: %b", plainData, iv, deleted);
+
+
+                       FileTransferUtils.createFile(mContext, mDriveHelper, message.getFrom(), iv, null, new IAsyncCallback<String>() {
+                           @Override
+                           public void handleResponse(String driveUrl) {
+                               if (driveUrl != null) {
+                                   //set the url to the encrypted drive data
+                                   message.setPlainData(driveUrl);
+                                   message.setFromVersion(ourVersion);
+                                   message.setToVersion(theirVersion);
+
+
+                                   //TODO pass to/from version to encrypt message so the file and message are encrypted with the same key
+                                   //encrypt the url to the encrypted drive data
+                                   final Boolean success = encryptMessage(message);
+
+                                   if (success != null) {
+                                       mHandler.post(new Runnable() {
+                                           @Override
+                                           public void run() {
+                                               addMessage(message);
+                                               if (success) {
+                                                   //save the link to the local file so we can open it
+                                                   message.setPlainData(plainData);
+                                                   sendTextMessage(message);
+                                               }
+                                               else {
+                                                   messageSendCompleted(message);
+                                                   if (!scheduleResendTimer()) {
+                                                       errorMessageQueue();
+                                                   }
+                                               }
+                                           }
+                                       });
+                                   }
+                               }
+                           }
+                       });
+                   }
+               }
+           };
+
+           SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+        }
+        else {
+            sendTextMessage(message);
+        }
+    }
+
+
 }

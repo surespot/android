@@ -16,6 +16,10 @@
                 android:icon="@drawable/ic_menu_camera"
                 android:title="@string/capture_image"/>
             <item
+                android:id="@+id/menu_send_file_bar"
+                android:icon="@android:drawable/ic_menu_send"
+                android:title="@string/send_file"/>
+            <item
                 android:id="@+id/menu_close_bar"
                 android:icon="@drawable/ic_menu_end_conversation"
                 android:title="@string/close_tab"/>

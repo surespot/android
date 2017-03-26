@@ -74,6 +74,7 @@ import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
+import com.twofours.surespot.filetransfer.FileTransferUtils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.identity.IdentityController;
@@ -1208,6 +1209,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                 }.execute();
 
+                return true;
+            case R.id.menu_send_file_bar:
+                FileTransferUtils.uploadFileAsync(this, cc, null, mUser, currentChat);
                 return true;
             case R.id.menu_settings_bar:
 
