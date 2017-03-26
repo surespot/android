@@ -3404,6 +3404,7 @@ public class ChatController {
 
                         final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
                         final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+                        final String iv = message.getIv();
 
                         if (theirVersion == null) {
                             SurespotLog.d(TAG, "prepAndSendCloudMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
@@ -3411,51 +3412,20 @@ public class ChatController {
                             message.setErrorStatus(0);
                             return;
                         }
-                        final String iv = message.getIv();
 
-
-//                            // save encrypted image to disk
-//                            InputStream fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//                            File localImageFile = ChatUtils.getTempImageUploadFile(mContext);
-//                            OutputStream fileSaveStream = new FileOutputStream(localImageFile);
-//                            String localImageUri = Uri.fromFile(localImageFile).toString();
-//                            SurespotLog.d(TAG, "prepAndSendCloudMessage: encrypting file iv: %s, from %s to encrypted file %s", iv, plainData, localImageUri);
-//
-//                            //encrypt
-//                            PipedOutputStream encryptionOutputStream = new PipedOutputStream();
-//                            final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-//                            EncryptionController.runEncryptTask(mUsername, ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
-//
-//                            int bufferSize = 1024;
-//                            byte[] buffer = new byte[bufferSize];
-//
-//                            int len = 0;
-//                            while ((len = encryptionInputStream.read(buffer)) != -1) {
-//                                fileSaveStream.write(buffer, 0, len);
-//                            }
-//                            fileSaveStream.close();
-//                            encryptionInputStream.close();
-//
-//                            boolean deleted = new File(Uri.parse(plainData).getPath()).delete();
-//                            SurespotLog.d(TAG, "prepAndSendCloudMessage: deleting unencrypted file %s, iv: %s, success: %b", plainData, iv, deleted);
-
-
-                        InputStream is;
+                        PipedInputStream encryptionInputStream;
+                        InputStream fileInputStream;
                         try {
-                            is = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
+                            fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
+                            //encrypt
+                            PipedOutputStream encryptionOutputStream = new PipedOutputStream();
+                            encryptionInputStream = new PipedInputStream(encryptionOutputStream);
+                            EncryptionController.runEncryptTask(message.getFrom(), ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+
                         }
                         catch (Exception e) {
-                            SurespotLog.w(TAG, "file not found: %s", plainData);
+                            //TODO this could be ugly, don't have access to the content anymore ie if process stops which is how we'd end up here
+                            SurespotLog.w(TAG, "exception opening data: %s", plainData);
                             //TODO error?
 //                            message.setPlainData(plainData);
 //                            messageSendCompleted(message);
@@ -3472,7 +3442,7 @@ public class ChatController {
                             return;
                         }
 
-                        FileTransferUtils.createFile(mContext, mDriveHelper, message.getFrom(), iv, is, new IAsyncCallback<String>() {
+                        FileTransferUtils.createFile(mContext, mDriveHelper, message.getFrom(), iv, encryptionInputStream, new IAsyncCallback<String>() {
                             @Override
                             public void handleResponse(final String driveUrl) {
                                 if (driveUrl != null) {

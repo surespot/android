@@ -146,7 +146,7 @@ public class FileTransferUtils {
     }
 
     //must be called from non UI thread
-    public static void createFile(final Activity activity, final DriveHelper driveHelper, final String from, final String filename, InputStream plainContentStream, final IAsyncCallback<String> callback) {
+    public static void createFile(final Activity activity, final DriveHelper driveHelper, final String from, final String filename, InputStream encryptedContentStream, final IAsyncCallback<String> callback) {
         SurespotLog.d(TAG, "createFile, filename: %s, thread: %s", filename, Thread.currentThread().getName());
 
 //        if (TextUtils.isEmpty(dataDir)) {
@@ -157,7 +157,7 @@ public class FileTransferUtils {
         try {
 
             SurespotLog.d(TAG, "createFile, before open resource, thread: %s", Thread.currentThread().getName());
-            final InputStreamContent mediaContent = new InputStreamContent(SurespotConstants.MimeTypes.FILE, new BufferedInputStream(plainContentStream));
+            final InputStreamContent mediaContent = new InputStreamContent(SurespotConstants.MimeTypes.FILE, new BufferedInputStream(encryptedContentStream));
 
             //create.xecute needs to execute on a different thread than the stream apparently
             Runnable runnable = new Runnable() {
