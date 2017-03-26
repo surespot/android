@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.twofours.surespot"
-    android:versionCode="72"
-    android:versionName="72">
+    android:versionCode="73"
+    android:versionName="73">
 
 
     <permission
@@ -44,7 +44,7 @@
 
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"></meta-data>
+            android:value="@integer/google_play_services_version"/>
 
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
@@ -60,7 +60,7 @@
         </receiver>
 
         <!-- Used for install referral measurement -->
-        <service android:name="com.google.analytics.tracking.android.CampaignTrackingService" />
+        <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
 
         <receiver android:name="com.twofours.surespot.SurespotBroadcastReceiver">
             <intent-filter>
@@ -87,10 +87,10 @@
         <!-- [END instanceId_listener] -->
         <service
             android:name=".services.RegistrationIntentService"
-            android:exported="false"></service>
+            android:exported="false"/>
         <service
             android:name="com.twofours.surespot.services.CredentialCachingService"
-            android:exported="false"></service>
+            android:exported="false"/>
 
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"
@@ -152,7 +152,7 @@
             android:name="com.twofours.surespot.images.ImageSelectActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity android:name="com.twofours.surespot.activities.SettingsActivity"></activity>
+        <activity android:name="com.twofours.surespot.activities.SettingsActivity"/>
         <activity android:name="com.twofours.surespot.backup.ExportIdentityActivity">
             <intent-filter>
                 <action android:name="com.twofours.surespot.backup.ExportIdentityActivity" />
