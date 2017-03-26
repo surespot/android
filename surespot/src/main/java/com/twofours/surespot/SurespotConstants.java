@@ -10,6 +10,13 @@ public class SurespotConstants {
 			+ "mrA8vJNUo1bAEe9dWY9FucDnZIbNNNGKh8soA9Ej7gyW9Yc6D7llh52LhscBpGd6\n" + "bX+FNZEROhIDJP2KgTTKVX+ASB0WtPT3V9AbyoAAxEse8IP5Wec5ZGQG1B/mOlGm\n"
 			+ "Z/aaRkB1bwl9eCNojpw=\n" + "-----END PUBLIC KEY-----";
 
+	public final static boolean PRODUCTION = false;
+	public final static boolean LOGGING = true;
+
+	public final static int MAX_IDENTITIES = PRODUCTION ? 3 : 30;
+	public final static boolean SSL_STRICT = PRODUCTION;
+	public static final String SERVER_PUBLIC_KEY = PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
+
 	public class IntentFilters {
 		public static final String INVITE_REQUEST = "invite_request_intent";
 		public static final String INVITE_RESPONSE = "invite_response_intent";
@@ -36,14 +43,6 @@ public class SurespotConstants {
 		public static final String UNSENT_MESSAGES = "unsent_messages";
 
 	}
-
-	public final static boolean PRODUCTION = true;
-	public final static boolean LOGGING = true;
-
-	public final static int MAX_IDENTITIES = PRODUCTION ? 3 : 30;
-	public final static boolean SSL_STRICT = PRODUCTION;
-	public static final String SERVER_PUBLIC_KEY = PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
-
 
 	public class PrefNames {
 		public final static String PREFS_FILE = "surespot_preferences";
