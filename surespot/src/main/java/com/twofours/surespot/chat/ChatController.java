@@ -1525,8 +1525,6 @@ public class ChatController {
 
             chatAdapter.addOrUpdateMessage(chatMessage, false, true, true);
             enqueueMessage(chatMessage);
-            processNextMessage();
-
         }
     }
 
@@ -2296,6 +2294,8 @@ public class ChatController {
             mSendQueue.add(message);
             saveMessageQueue();
         }
+
+        processNextMessage();
     }
 
     synchronized void processNextMessage() {

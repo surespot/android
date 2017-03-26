@@ -219,8 +219,6 @@ public class ChatUtils {
                         });
 
                         chatController.enqueueMessage(finalMessage);
-                        chatController.processNextMessage();
-
                     }
 
                 } catch (IOException e) {
@@ -269,8 +267,6 @@ public class ChatUtils {
 
 
                     chatController.enqueueMessage(finalMessage);
-                    chatController.processNextMessage();
-
                 } catch (IOException e) {
                     //TODO mark errored
                     SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
