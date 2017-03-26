@@ -395,6 +395,7 @@ public class ChatAdapter extends BaseAdapter {
         switch (item.getMimeType()) {
 
             case SurespotConstants.MimeTypes.TEXT:
+            case SurespotConstants.MimeTypes.FILE:
                 chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
