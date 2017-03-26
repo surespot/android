@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -327,6 +328,11 @@ public class ChatAdapter extends BaseAdapter {
             chatMessageViewHolder.voicePlayed = (ImageView) convertView.findViewById(R.id.voicePlayed);
             chatMessageViewHolder.voiceStop = (ImageView) convertView.findViewById(R.id.voiceStop);
 
+            chatMessageViewHolder.mFileDownloadButton = (Button) convertView.findViewById(R.id.fileDownload);
+            chatMessageViewHolder.mFilename = (TextView) convertView.findViewById(R.id.fileFilename);
+            chatMessageViewHolder.mFileOpenButton = (Button) convertView.findViewById(R.id.fileOpen);
+            chatMessageViewHolder.mFileView = convertView.findViewById(R.id.fileLayout);
+
 
             chatMessageViewHolder.tvToVersion = (TextView) convertView.findViewById(R.id.messageToVersion);
             chatMessageViewHolder.tvFromVersion = (TextView) convertView.findViewById(R.id.messageFromVersion);
@@ -395,12 +401,13 @@ public class ChatAdapter extends BaseAdapter {
         switch (item.getMimeType()) {
 
             case SurespotConstants.MimeTypes.TEXT:
-            case SurespotConstants.MimeTypes.FILE:
-                chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
 
+                chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
+                chatMessageViewHolder.imageView.setVisibility(View.GONE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
-                chatMessageViewHolder.imageView.setVisibility(View.GONE);
+                chatMessageViewHolder.mFileView.setVisibility(View.GONE);
+
                 chatMessageViewHolder.imageView.clearAnimation();
                 chatMessageViewHolder.imageView.setImageBitmap(null);
                 if (item.getPlainData() != null) {
@@ -415,12 +422,14 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
                 break;
             case SurespotConstants.MimeTypes.IMAGE:
-
+                chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
+                chatMessageViewHolder.mFileView.setVisibility(View.GONE);
+
                 //chatMessageViewHolder.tvText.clearAnimation();
-                chatMessageViewHolder.tvText.setVisibility(View.GONE);
+
                 chatMessageViewHolder.tvText.setText("");
                 if (!TextUtils.isEmpty(item.getData()) || !TextUtils.isEmpty(item.getPlainData())) {
                     mMessageImageDownloader.download(chatMessageViewHolder.imageView, item);
@@ -435,11 +444,13 @@ public class ChatAdapter extends BaseAdapter {
                     chatMessageViewHolder.ivNotShareable.setVisibility(View.VISIBLE);
                     chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
                 }
+
                 break;
             case SurespotConstants.MimeTypes.M4A:
                 chatMessageViewHolder.imageView.setVisibility(View.GONE);
                 chatMessageViewHolder.voiceView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
+                chatMessageViewHolder.mFileView.setVisibility(View.GONE);
 
                 if (type == TYPE_US) {
                     chatMessageViewHolder.voicePlayed.setVisibility(View.VISIBLE);
@@ -473,6 +484,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
+                chatMessageViewHolder.mFileView.setVisibility(View.GONE);
                 //chatMessageViewHolder.tvText.clearAnimation();
 
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
@@ -483,8 +495,29 @@ public class ChatAdapter extends BaseAdapter {
 
                 chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
                 chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
-
                 break;
+            case SurespotConstants.MimeTypes.FILE:
+
+                chatMessageViewHolder.tvText.setVisibility(View.GONE);
+                chatMessageViewHolder.imageView.setVisibility(View.GONE);
+                chatMessageViewHolder.voiceView.setVisibility(View.GONE);
+                chatMessageViewHolder.messageSize.setVisibility(View.VISIBLE);
+                chatMessageViewHolder.mFileView.setVisibility(View.VISIBLE);
+
+                //chatMessageViewHolder.tvText.clearAnimation();
+
+                chatMessageViewHolder.tvText.setText("");
+
+                if (item.getPlainData() != null) {
+                    chatMessageViewHolder.mFilename.clearAnimation();
+                    chatMessageViewHolder.mFilename.setText(item.getPlainData());
+                }
+                else {
+                    chatMessageViewHolder.mFilename.setText("");
+                    mMessageDecryptor.decrypt(chatMessageViewHolder.mFilename, item);
+                }
+                break;
+
         }
 
         if (type == TYPE_US) {
@@ -535,6 +568,13 @@ public class ChatAdapter extends BaseAdapter {
         public ImageView voicePlayed;
         public ImageView voicePlay;
         public ImageView voiceStop;
+
+
+        public View mFileView;
+        public TextView mFilename;
+        public TextView mFilesize;
+        public Button mFileOpenButton;
+        public Button mFileDownloadButton;
 
 
     }

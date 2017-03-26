@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:emojicon="http://schemas.android.com/apk/res-auto"
-    android:descendantFocusability="blocksDescendants"
-    android:orientation="horizontal">
+              xmlns:emojicon="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:descendantFocusability="blocksDescendants"
+              android:orientation="horizontal">
 
     <!-- <TextView -->
     <!-- android:id="@+id/messageUser" -->
@@ -23,7 +23,7 @@
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
         android:background="@drawable/filled_black_rectangle_grey_border"
-        android:visibility="visible" >
+        android:visibility="visible">
     </View>
 
     <View
@@ -32,18 +32,18 @@
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical"
         android:background="@drawable/filled_grey_rectangle"
-        android:visibility="gone" >
+        android:visibility="gone">
     </View>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical" >
+            android:gravity="center_vertical">
 
             <ImageView
                 android:id="@+id/messageImageShareable"
@@ -52,7 +52,7 @@
                 android:layout_marginBottom="1dp"
                 android:layout_marginTop="1dp"
                 android:src="@drawable/ic_partial_secure"
-                android:visibility="gone" />
+                android:visibility="gone"/>
 
             <ImageView
                 android:id="@+id/messageImageNotShareable"
@@ -61,7 +61,7 @@
                 android:layout_marginBottom="1dp"
                 android:layout_marginTop="1dp"
                 android:src="@drawable/ic_secure"
-                android:visibility="gone" />
+                android:visibility="gone"/>
 
             <TextView
                 android:id="@+id/messageTime"
@@ -70,7 +70,7 @@
                 android:layout_marginLeft="7dp"
                 android:layout_marginRight="2dp"
                 android:textSize="10sp"
-                android:visibility="visible" />
+                android:visibility="visible"/>
 
             <TextView
                 android:id="@+id/messageSize"
@@ -79,21 +79,21 @@
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
                 android:gravity="right"
-                android:textSize="10sp" />
+                android:textSize="10sp"/>
         </LinearLayout>
 
         <com.rockerhieu.emojicon.EmojiconTextView
             android:id="@+id/messageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="7dp"
             android:layout_marginRight="55dp"
-            emojicon:emojiconSize="30dp"
+            android:layout_marginTop="2dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            emojicon:emojiconSize="30dp"/>
 
         <pl.droidsonroids.gif.GifImageView
             android:id="@+id/messageImage"
@@ -105,7 +105,7 @@
             android:layout_marginRight="2sp"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <LinearLayout
             android:id="@+id/messageVoice"
@@ -115,7 +115,7 @@
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2sp"
             android:orientation="horizontal"
-            android:visibility="gone" >
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/voicePlayed"
@@ -124,7 +124,7 @@
                 android:adjustViewBounds="false"
                 android:enabled="false"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_media_play" />
+                android:src="@drawable/ic_media_play"/>
 
             <ImageView
                 android:id="@+id/voiceStop"
@@ -133,15 +133,53 @@
                 android:adjustViewBounds="false"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_media_previous"
-                android:visibility="gone" />
+                android:visibility="gone"/>
 
             <SeekBar
                 android:id="@+id/seekBarVoice"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:enabled="false" />
+                android:enabled="false"/>
         </LinearLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/fileLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/fileFilename"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+
+            <TextView
+                android:id="@+id/fileSize"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/fileFilename"
+                />
+
+            <Button
+                android:id="@+id/fileDownload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/fileFilename"
+                android:text="Download"/>
+
+            <Button
+                android:id="@+id/fileOpen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/fileFilename"
+                android:layout_toRightOf="@id/fileDownload"
+                android:layout_toEndOf="@id/fileDownload"
+                android:text="Open"/>
+
+
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/messageMimeType"
@@ -152,7 +190,7 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/messageId"
@@ -163,7 +201,7 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/messageToVersion"
@@ -174,7 +212,7 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/messageFromVersion"
@@ -185,7 +223,7 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/messageIv"
@@ -196,7 +234,7 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/messageData"
@@ -207,7 +245,7 @@
             android:layout_marginRight="55dp"
             android:autoLink="all"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
     </LinearLayout>
 
 </LinearLayout>

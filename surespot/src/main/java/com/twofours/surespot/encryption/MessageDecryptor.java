@@ -136,7 +136,7 @@ public class MessageDecryptor {
                         @Override
                         public void run() {
                             textView.setText(finalPlainData);
-                            UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) textView.getParent());
+                            UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, textView.getRootView());
                         }
                     });
                 }
