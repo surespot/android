@@ -77,6 +77,8 @@ import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.filetransfer.FileTransferUtils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.gifs.GifDetails;
+import com.twofours.surespot.gifs.GifSearchView;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
@@ -154,6 +156,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private FrameLayout mContentFrame;
     private DrawerLayout mDrawerLayout;
     private LayoutParams mWindowLayoutParams;
+    private GifSearchView mGifView;
+    private boolean mGifShowing;
+    private EditText mEtGifSearch;
+    private TextView mTvGIF;
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -485,17 +492,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
-        mEmojiButton.setOnClickListener(new View.OnClickListener() {
-
+        View.OnClickListener emojiToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 toggleEmojiDrawer();
             }
-        });
+        };
 
-        setEmojiIcon(true);
+        mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
+        mEmojiButton.setOnClickListener(emojiToggleListener);
+
+        mTvGIF = (TextView) findViewById(R.id.tvGIF);
+        mTvGIF.setOnClickListener(emojiToggleListener);
+
+        setEmojiIcon();
 
         mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
         mQRButton.setOnClickListener(new View.OnClickListener() {
@@ -519,7 +529,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         handled = true;
                     }
 
-                    if (mEnterToSend == true && actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (mEnterToSend == true && actionId == EditorInfo.IME_NULL && event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
                         sendMessage(friend.getName());
                         handled = true;
                     }
@@ -529,14 +539,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         });
 
         TextWatcher tw = new ChatTextWatcher();
-        mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_MESSAGE_LENGTH)});
+        mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
         OnTouchListener editTouchListener = new OnTouchListener() {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (mEmojiShowing) {
+
+                if (mEmojiShowing || mGifShowing) {
                     return true;
                 }
 
@@ -547,8 +558,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtMessage.setOnTouchListener(editTouchListener);
 
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
-        mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
-        //mEtInvite.setOnTouchListener(editTouchListener);
+        mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
 
         mEtInvite.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
@@ -565,7 +575,48 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
+        mEtGifSearch = (EditText) mainView.findViewById(R.id.etGiphy);
+        mEtGifSearch.setOnEditorActionListener(new OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(final TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                SurespotLog.d(TAG, "onEditorAction, actionId: %d, keyEvent: %s", actionId, event);
 
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    final CharSequence text = v.getText();
+
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            showGifDrawer();
+                            if (!TextUtils.isEmpty(text)) {
+                                mGifView.searchGifs(text.toString());
+                            }
+                            v.setText("");
+                        }
+                    };
+
+                    mActivityLayout.post(runnable);
+                    handled = true;
+                }
+
+                return handled;
+            }
+        });
+
+        mEtGifSearch.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    SurespotLog.d(TAG, "gif search onTouch down");
+                    hideGifDrawer(true, true);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        mEtGifSearch.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_SEARCH_LENGTH)});
     }
 
     private void switchUser(String identityName) {
@@ -716,15 +767,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
                 if (slideOffset > 0.5) {
-//                    if (mActivityLayout.isKeyboardVisible()) {
-//                        sendBackPressed();
-//                    }
-//                    else {
+
                     if (isEmojiVisible()) {
                         hideEmojiDrawer(false);
                     }
-                    //   }
-                    //hideSoftKeyboard();
+
+                    if (mGifShowing) {
+                        hideGifDrawer(false, false);
+                    }
                 }
             }
         });
@@ -775,7 +825,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
-                //  SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
+//                SurespotLog.d(TAG, "OnKeyboardShown: visible %b", visible);
                 if (!visible && mActivityLayout.getPaddingBottom() == 0 && isEmojiVisible()) {
                     hideEmojiDrawer(false);
                 }
@@ -983,6 +1033,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
+        }
+
+        if (mGifShowing) {
+            hideGifDrawer(false, false);
         }
 
         ChatManager.pause(mUser, this.hashCode());
@@ -1512,7 +1566,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         };
 
         mHandler.post(runnable);
-
     }
 
 
@@ -1566,9 +1619,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
                 SurespotLog.d(TAG, "received action send, data: %s", sharedText);
                 mEtMessage.append(sharedText);
-                // requestFocus();
-                // clear the intent
-
             }
             else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
@@ -1637,34 +1687,76 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     public boolean backButtonPressed() {
-
-        SurespotLog.d(TAG, "backButtonPressed");
+        SurespotLog.d(TAG, "backButtonPressed, keyboardVisible: %b, mGifShowing: %b, emoji visible: %b", mActivityLayout.isKeyboardVisible(), mGifShowing, isEmojiVisible());
 
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
+            SurespotLog.d(TAG, "backButtonPressed returning true");
             return true;
         }
 
+
         //returning false will cause the keyboard to be hidden
         if (mActivityLayout.isKeyboardVisible()) {
+
+            if (mGifShowing) {
+                mActivityLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideGifDrawer(false, false);
+                        setEmojiIcon();
+                    }
+                });
+
+            }
+
+            if (isEmojiVisible()) {
+                mActivityLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideEmojiDrawer(false);
+                        setEmojiIcon();
+                    }
+                });
+            }
+
+            mActivityLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    setEmojiIcon();
+                }
+            });
+            SurespotLog.d(TAG, "keyboard showing backButtonPressed returning false");
             return false;
+        }
+
+        if (mGifShowing) {
+            hideGifDrawer(false, false);
+            setEmojiIcon();
+            SurespotLog.d(TAG, "mGifShowing and keyboard not visible, backButtonPressed returning true");
+            return true;
         }
 
         if (isEmojiVisible()) {
             hideEmojiDrawer(false);
+            setEmojiIcon();
+            SurespotLog.d(TAG, "emoji showing and keyboard not visible, backButtonPressed returning true");
             return true;
         }
 
-
         //go to home page if we not
-        if (mCurrentFriend != null) {
+        if (mCurrentFriend != null)
+
+        {
             ChatController cc = ChatManager.getChatController(mUser);
             if (cc != null) {
                 cc.setCurrentChat(null);
+                SurespotLog.d(TAG, "backButtonPressed returning true");
                 return true;
             }
         }
 
+        SurespotLog.d(TAG, "backButtonPressed returning false at the bottom");
         return false;
     }
 
@@ -1779,12 +1871,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (friend == null) {
             mEmojiButton.setVisibility(View.GONE);
             mEtMessage.setVisibility(View.GONE);
+            mTvGIF.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
             //  mEmojiView.setVisibility(View.GONE);
 
             mQRButton.setVisibility(View.VISIBLE);
-            mEtInvite.requestFocus();
 
+            SurespotLog.v(TAG, "handleTabChange requesting invite edit text focus");
+            requestFocus(mEtInvite);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
@@ -1817,17 +1911,22 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 mEmojiButton.setVisibility(View.GONE);
                 mEtMessage.setVisibility(View.GONE);
+                mTvGIF.setVisibility(View.GONE);
 
 
             }
             else {
                 mEtMessage.setVisibility(View.VISIBLE);
                 mEmojiButton.setVisibility(View.VISIBLE);
+                mTvGIF.setVisibility(View.VISIBLE);
             }
 
             mEtInvite.setVisibility(View.GONE);
             mQRButton.setVisibility(View.GONE);
-            mEtMessage.requestFocus();
+            mTvGIF.setVisibility(View.VISIBLE);
+
+            SurespotLog.v(TAG, "handleTabChange requesting message edit text focus");
+            requestFocus(mEtMessage);
         }
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
@@ -1845,20 +1944,34 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         setButtonText();
+        setEmojiIcon();
         mFriendHasBeenSet = true;
     }
 
-    private void setEmojiIcon(final boolean keyboardShowing) {
+    private void setEmojiIcon() {
+        SurespotLog.d(TAG, "setEmojiIcon, mGifShowing: %b, emoji visible: %b", mGifShowing, isEmojiVisible());
         boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-        if (keyboardShowing) {
-            mEmojiButton.setImageResource(R.drawable.smiley);
+
+        if (mGifShowing) {
+            mEmojiButton.setVisibility(View.GONE);
+            mTvGIF.setVisibility(View.VISIBLE);
+            mTvGIF.setTextColor(Color.GRAY);
         }
         else {
-            if (black) {
-                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
+            if (isEmojiVisible()) {
+                mEmojiButton.setImageResource(R.drawable.smiley);
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mTvGIF.setVisibility(View.GONE);
             }
             else {
-                mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mTvGIF.setVisibility(View.GONE);
+                if (black) {
+                    mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
+                }
+                else {
+                    mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
+                }
             }
         }
     }
@@ -1896,6 +2009,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (inviteHintShown++ < 6) {
             mEtInvite.setHint(R.string.invite_hint);
         }
+
+        mEtGifSearch.setHint(R.string.search_gifs);
 
         Editor editor = sp.edit();
         editor.putInt("messageHintShown", messageHintShown);
@@ -1985,14 +2100,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void toggleEmojiDrawer() {
-        // TODO animate drawer enter & exit
+        SurespotLog.d(TAG, "toggleEmojiDrawer, mGifShowing: %b, emoji visible: %b", mGifShowing, isEmojiVisible());
 
-        if (isEmojiVisible()) {
-            hideEmojiDrawer();
-        }
-        else {
+        if (mGifShowing) {
+            hideGifDrawer(true, false);
             showEmojiDrawer();
         }
+        else {
+            if (isEmojiVisible()) {
+                hideEmojiDrawer();
+            }
+            else {
+                showGifDrawer();
+            }
+        }
+
+        setEmojiIcon();
+
     }
 
     private void showEmojiDrawer() {
@@ -2017,10 +2141,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
             mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+
+
         }
 
-        mWindowLayoutParams.height = keyboardHeight;
-        mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        if (mWindowLayoutParams != null) {
+            mWindowLayoutParams.height = keyboardHeight;
+            mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        }
+
 
         WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
 
@@ -2038,6 +2167,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
         catch (Exception e) {
             SurespotLog.e(TAG, e, "error adding emoji view");
+            mEmojiShowing = false;
             return;
         }
 
@@ -2045,32 +2175,207 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (!mActivityLayout.isKeyboardVisible()) {
             SurespotLog.d(TAG, "setting padding");
             mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
-            // TODO mEmojiButton.setImageResource(R.drawable.ic_msg_panel_hide);
         }
-
-        setEmojiIcon(false);
     }
 
     private void hideEmojiDrawer() {
         hideEmojiDrawer(true);
     }
 
-    public void hideEmojiDrawer(boolean showKeyboard) {
+    public void hideEmojiDrawer(final boolean showKeyboard) {
+        SurespotLog.d(TAG, "hideEmojiDrawer, showKeyboard: %b", showKeyboard);
         if (showKeyboard) {
-            InputMethodManager input = (InputMethodManager) mContext
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            input.showSoftInput(mEtMessage, 0);
+            mActivityLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    InputMethodManager input = (InputMethodManager) mContext
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (!mActivityLayout.isKeyboardVisible()) {
+                        input.showSoftInput(mEtMessage, 0);
+                    }
+
+                    SurespotLog.v(TAG, "hideEmojiDrawer requesting message edit text focus");
+                    requestFocus(mEtMessage);
+                }
+            });
         }
 
-        if (mEmojiView != null && mEmojiView.getParent() != null) {
+        if (mActivityLayout != null) {
+            mActivityLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mEmojiView.getParent() != null) {
+                        WindowManager wm = (WindowManager) mContext
+                                .getSystemService(Context.WINDOW_SERVICE);
+                        wm.removeViewImmediate(mEmojiView);
+                    }
+                    mActivityLayout.setPadding(0, 0, 0, 0);
+
+                    if (showKeyboard) {
+
+                        SurespotLog.v(TAG, "hideEmojiDrawer requesting message edit text focus");
+                        requestFocus(mEtMessage);
+
+                    }
+                }
+            });
+        }
+
+        mEmojiShowing = false;
+
+    }
+
+    private void showGifDrawer() {
+        final int keyboardHeight = mActivityLayout.getKeyboardHeight();
+        SurespotLog.d(TAG, "showGifDrawer height: %d", keyboardHeight);
+
+        mGifShowing = true;
+
+        if (mGifView == null) {
+            mGifView = (GifSearchView) LayoutInflater.from(this).inflate(R.layout.gif_search_view, null, false);
+
+
+            mGifView.setGifSelectedCallback(new IAsyncCallback<GifDetails>() {
+                @Override
+                public void handleResponse(GifDetails result) {
+                    if (result != null) {
+                        sendGifMessage(result.getUrl());
+                    }
+                }
+            });
+
+            mGifView.setGifSearchTextCallback(new IAsyncCallback<String>() {
+                @Override
+                public void handleResponse(String result) {
+                    if (mEtGifSearch != null) {
+                        mEtGifSearch.setText(result + " ");
+                        mEtGifSearch.setSelection(mEtGifSearch.getText().length());
+                        hideGifDrawer(true,true);
+                    }
+                }
+            });
+
+            mWindowLayoutParams = new WindowManager.LayoutParams();
+            mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+            mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+            mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
+            mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        }
+
+        mEtGifSearch.setVisibility(View.VISIBLE);
+        if (!mEtGifSearch.hasFocus()) {
+            SurespotLog.v(TAG, "showGifDrawer requesting message edit text focus");
+            requestFocus(mEtGifSearch);
+        }
+        mEtMessage.setVisibility(View.INVISIBLE);
+
+        mSendButton.setVisibility(View.GONE);
+
+        if (mWindowLayoutParams != null) {
+            mWindowLayoutParams.height = keyboardHeight;
+            mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        }
+
+        WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
+
+        try {
+            if (mGifView.getParent() != null) {
+                wm.removeViewImmediate(mGifView);
+            }
+        }
+        catch (Exception e) {
+            SurespotLog.e(TAG, e, "error removing GIF view");
+        }
+
+        try {
+            wm.addView(mGifView, mWindowLayoutParams);
+        }
+        catch (Exception e) {
+            SurespotLog.e(TAG, e, "error adding emoji view");
+            mGifShowing = false;
+            return;
+        }
+
+
+        if (!mActivityLayout.isKeyboardVisible()) {
+            SurespotLog.d(TAG, "setting padding");
+            mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
+        }
+
+
+        getActionBar().hide();
+
+    }
+
+    private void sendGifMessage(String result) {
+        if (mUser == null) {
+            return;
+        }
+
+        final ChatController cc = ChatManager.getChatController(mUser);
+        if (cc == null) {
+            return;
+        }
+
+        final String currentChat = cc.getCurrentChat();
+        if (currentChat == null) {
+            return;
+        }
+
+        ChatUtils.sendGifMessage(mUser, currentChat, result);
+    }
+
+
+    public void hideGifDrawer(boolean showKeyboard, boolean forGifSearch) {
+        SurespotLog.d(TAG, "hideGifDrawer keyboard showing: %b, showKeyboard: %b, forGifSearch: %b", mActivityLayout.isKeyboardVisible(), showKeyboard, forGifSearch);
+        if (showKeyboard) {
+            final InputMethodManager input = (InputMethodManager) mContext
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            if (!forGifSearch) {
+                mActivityLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!mActivityLayout.isKeyboardVisible()) {
+                            input.showSoftInput(mEtMessage, 0);
+                        }
+                        SurespotLog.v(TAG, "hideGifDrawer requesting message edit text focus");
+                        requestFocus(mEtMessage);
+                    }
+                });
+            }
+            else {
+                mActivityLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!mActivityLayout.isKeyboardVisible()) {
+                            input.showSoftInput(mEtGifSearch, 0);
+                        }
+                        SurespotLog.v(TAG, "showGifDrawer requesting gif search edit text focus");
+                        requestFocus(mEtGifSearch);
+                    }
+                });
+            }
+        }
+
+        mActivityLayout.setPadding(0, 0, 0, 0);
+
+        if (mGifView != null && mGifView.getParent() != null) {
             WindowManager wm = (WindowManager) mContext
                     .getSystemService(Context.WINDOW_SERVICE);
-            wm.removeViewImmediate(mEmojiView);
+            wm.removeViewImmediate(mGifView);
         }
 
-        mEmojiButton.setImageResource(R.drawable.smiley);
-        mActivityLayout.setPadding(0, 0, 0, 0);
-        mEmojiShowing = false;
+        if (!forGifSearch) {
+            mEtGifSearch.setText("");
+            mEtMessage.setVisibility(View.VISIBLE);
+            mEtGifSearch.setVisibility(View.INVISIBLE);
+            mSendButton.setVisibility(View.VISIBLE);
+            getActionBar().show();
+            mGifShowing = false;
+        }
+
     }
 
     @Override
@@ -2085,5 +2390,16 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     void sendBackPressed() {
         this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+    }
+
+    void requestFocus(View view) {
+
+        if (!view.hasFocus()) {
+            SurespotLog.d(TAG, "requestFocus, view does not have focus, requesting focus");
+            view.requestFocus();
+        }
+        else {
+            SurespotLog.d(TAG, "requestFocus, view has focus, not requesting focus");
+        }
     }
 }

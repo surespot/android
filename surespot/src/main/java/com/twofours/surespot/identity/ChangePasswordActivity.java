@@ -21,16 +21,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.chat.ChatUtils;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.ui.MultiProgressDialog;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.IOException;
 import java.security.PrivateKey;
@@ -84,13 +84,13 @@ public class ChangePasswordActivity extends Activity {
         tvBackup.setText(TextUtils.concat(warning));
 
         final EditText etCurrent = (EditText) this.findViewById(R.id.etChangePasswordCurrent);
-        etCurrent.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        etCurrent.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
 
         final EditText etNew = (EditText) findViewById(R.id.etChangePasswordNew);
-        etNew.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        etNew.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
 
         final EditText etConfirm = (EditText) findViewById(R.id.etChangePasswordConfirm);
-        etConfirm.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConstants.MAX_PASSWORD_LENGTH)});
+        etConfirm.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_PASSWORD_LENGTH)});
 
         Button changePasswordButton = (Button) findViewById(R.id.bChangePassword);
 

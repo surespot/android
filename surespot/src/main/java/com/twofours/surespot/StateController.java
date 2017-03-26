@@ -213,7 +213,7 @@ public class StateController {
             if (messages != null) {
                 synchronized (messages) {
                     int messagesSize = messages.size();
-                    int saveCount = Math.min(SurespotConstants.SAVE_MESSAGE_MINIMUM, messagesSize);
+                    int saveCount = Math.min(SurespotConfiguration.SAVE_MESSAGE_MINIMUM, messagesSize);
 
                     SurespotLog.v(TAG, "saving %d messages for spot %s", saveCount, spot);
                     String sMessages = ChatUtils.chatMessagesToJson(
@@ -299,6 +299,9 @@ public class StateController {
                 for (String name : IdentityController.getIdentityNames(context)) {
                     // last chat and user we had open
                     Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.LAST_CHAT, null);
+                    Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.GCM_ID_SENT, null);
+                    Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.GCM_ID_RECEIVED, null);
+                    Utils.putUserSharedPrefsString(context, name, SurespotConstants.PrefNames.RECENTLY_USED_GIFS, null);
                 }
                 Utils.putSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER, null);
 

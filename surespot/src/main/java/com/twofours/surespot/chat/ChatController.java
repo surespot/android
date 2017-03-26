@@ -293,17 +293,25 @@ public class ChatController {
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
                                 message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
-                        // substitute emoji
+
                         if (plainText != null) {
+
                             if (message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
                                 message.setPlainData(plainText);
                             }
                             else {
 
                                 // set plaintext in message so we don't have to decrypt again
-                                SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
-                                EmojiconHandler.addEmojis(mContext, builder, 30);
-                                message.setPlainData(builder.toString());
+                                // set plaintext in message so we don't have to decrypt again
+                                if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                                    // substitute emoji
+                                    SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
+                                    EmojiconHandler.addEmojis(mContext, builder, 30);
+                                    message.setPlainData(builder.toString());
+                                }
+                                else {
+                                    message.setPlainData(plainText);
+                                }
                             }
                         }
                         else {
@@ -1464,8 +1472,6 @@ public class ChatController {
 
         mTabShowingCallback.handleResponse(friend);
         if (friend != null) {
-            //save scroll position
-
             mCurrentChat = username;
             mChatPagerAdapter.addChatFriend(friend);
             friend.setChatActive(true);
@@ -2340,7 +2346,7 @@ public class ChatController {
 
                 switch (nextMessage.getMimeType()) {
                     case SurespotConstants.MimeTypes.TEXT:
-
+                    case SurespotConstants.MimeTypes.GIF_LINK:
                         prepAndSendTextMessage(nextMessage);
                         break;
                     case SurespotConstants.MimeTypes.IMAGE:
@@ -3390,7 +3396,7 @@ public class ChatController {
                         }
 
                         //lock
-                     //   message.setPlainData(null);
+                        //   message.setPlainData(null);
 
                         final String plainData = cs.toString();
 //
@@ -3469,7 +3475,7 @@ public class ChatController {
                                                 }
                                                 else {
                                                     //save the link to the local file so we can open it
-                                                 //   message.setPlainData(plainData);
+                                                    //   message.setPlainData(plainData);
                                                     messageSendCompleted(message);
                                                     if (!scheduleResendTimer()) {
                                                         errorMessageQueue();

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.twofours.surespot.gifs.GifSearchView xmlns:android="http://schemas.android.com/apk/res/android"
+                                          android:id="@+id/gifSearchView"
+                                          android:layout_width="match_parent"
+                                          android:layout_height="match_parent"
+                                          android:background="?android:attr/colorBackground"
+    >
+
+    <TextView
+        android:id="@+id/tvLastSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_margin="10dp"
+        android:gravity="center"/>
+
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                 android:id="@+id/gifFrame"
+                 android:layout_width="match_parent"
+                 android:layout_height="150dp"
+                 android:layout_below="@id/tvLastSearch">
+
+        <ProgressBar
+            android:id="@+id/gif_progress_bar"
+            style="?android:progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvGifs"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:orientation="horizontal"
+
+            />
+
+        <TextView
+            android:id="@+id/tv_no_gifs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/no_GIFS_found"
+            android:visibility="gone"
+            />
+
+
+    </FrameLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvGifKeywords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/gifFrame"
+        android:layout_margin="20dp"
+        android:orientation="horizontal"
+        />
+
+</com.twofours.surespot.gifs.GifSearchView>

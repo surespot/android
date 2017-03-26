@@ -13,7 +13,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
+import android.text.TextUtils;
 import android.util.Base64;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
@@ -88,42 +91,18 @@ public class ChatUtils {
         return chatMessage;
     }
 
-//    public static SurespotMessage buildPlainBinaryMessage(String to, String mimeType, byte[] plainData, String iv) {
-//        SurespotMessage chatMessage = new SurespotMessage();
-//        chatMessage.setFrom(IdentityController.getLoggedInUser());
-//        chatMessage.setTo(to);
-//        chatMessage.setPlainBinaryData(plainData);
-//        chatMessage.setIv(iv);
-//        chatMessage.setHashed(true);
-//
-//        // store the mime type outside teh encrypted envelope, this way we can offload resources
-//        // by mime type
-//        chatMessage.setMimeType(mimeType);
-//        return chatMessage;
-//    }
 
-//    public static SurespotMessage buildMessage(String to, String mimeType, String plainData, String iv, String cipherData) {
-//        //might not be connected to network
-//        String theirVersion = IdentityController.getTheirLatestVersion(to);
-//        if (theirVersion == null) {
-//            return null;
-//        }
-//
-//        SurespotMessage chatMessage = new SurespotMessage();
-//        chatMessage.setFrom(IdentityController.getLoggedInUser());
-//        chatMessage.setFromVersion(IdentityController.getOurLatestVersion());
-//        chatMessage.setTo(to);
-//        chatMessage.setToVersion(theirVersion);
-//        chatMessage.setData(cipherData);
-//        chatMessage.setPlainData(plainData);
-//        chatMessage.setIv(iv);
-//        chatMessage.setHashed(true);
-//
-//        // store the mime type outside teh encrypted envelope, this way we can offload resources
-//        // by mime type
-//        chatMessage.setMimeType(mimeType);
-//        return chatMessage;
-//    }
+    public static boolean sendGifMessage(String ourUsername, String theirUsername, String url) {
+
+        if (!TextUtils.isEmpty(url)) {
+            ChatController cc = ChatManager.getChatController(ourUsername);
+            if (cc != null) {
+                cc.sendMessage(theirUsername, url, SurespotConstants.MimeTypes.GIF_LINK);
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static File getTempImageUploadFile(Context context) {
         // save unencrypted image locally until we can send it
@@ -135,9 +114,11 @@ public class ChatUtils {
             final File localImageFile = new File(localImageFilename);
             localImageFile.createNewFile();
             return localImageFile;
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "getTempImageUploadFile");
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "getTempImageUploadFile");
         }
 
@@ -164,7 +145,7 @@ public class ChatUtils {
                     //scale to file
                     if (scale) {
                         SurespotLog.d(TAG, "scalingImage");
-                        bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConstants.MESSAGE_IMAGE_DIMENSION);
+                        bitmap = decodeSampledBitmapFromUri(activity, imageUri, -1, SurespotConfiguration.MESSAGE_IMAGE_DIMENSION);
 
                         if (bitmap != null) {
                             final Bitmap finalBitmap = bitmap;
@@ -177,14 +158,16 @@ public class ChatUtils {
                                     try {
                                         fos.close();
                                         SurespotLog.d(TAG, "imageCompressed");
-                                    } catch (IOException e) {
+                                    }
+                                    catch (IOException e) {
                                         SurespotLog.w(TAG, e, "error compressing image");
                                     }
                                 }
                             };
                             SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
                         }
-                    } else {
+                    }
+                    else {
                         Utils.copyStreamToFile(activity.getContentResolver().openInputStream(imageUri), localImageFile);
                     }
 
@@ -197,7 +180,8 @@ public class ChatUtils {
                             bitmap = getSampledImage(bos.toByteArray());
                             bos.close();
                         }
-                    } else {
+                    }
+                    else {
                         // scale to display size
                         bitmap = getSampledImage(Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(imageUri)));
                     }
@@ -207,6 +191,7 @@ public class ChatUtils {
 
                         String iv = EncryptionController.getStringIv();
                         MessageImageDownloader.addBitmapToCache(localImageUri, bitmap);
+
                         SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.IMAGE, localImageUri, iv);
                         final SurespotMessage finalMessage = message;
 
@@ -221,7 +206,8 @@ public class ChatUtils {
                         chatController.enqueueMessage(finalMessage);
                     }
 
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     //TODO mark errored? error notification? error toast?
                     SurespotLog.w(TAG, e, "uploadPictureMessageAsync");
                 }
@@ -266,11 +252,16 @@ public class ChatUtils {
                     });
 
                     chatController.enqueueMessage(finalMessage);
+
                 } catch (IOException e) {
-                    //TODO mark errored
-                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
-                    //callback.handleResponse(false);
+                    chatController.processNextMessage();
+
                 }
+//                catch (IOException e) {
+//                    //TODO mark errored
+//                    SurespotLog.w(TAG, e, "uploadVoiceMessageAsync");
+//                    //callback.handleResponse(false);
+//                }
             }
         };
 
@@ -302,12 +293,14 @@ public class ChatUtils {
                         public void handleResponse(String uri) {
                             if (uri != null) {
                                 callback.handleResponse(uri, ourVersion, iv);
-                            } else {
+                            }
+                            else {
                                 callback.handleResponse(null, null, null);
                             }
                         }
                     });
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     callback.handleResponse(null, null, null);
                     SurespotLog.w(TAG, e, "uploadFriendImageAsync");
                 }
@@ -339,13 +332,15 @@ public class ChatUtils {
             // if we have a rotation use it otherwise look at the EXIF
             if (rotate > -1) {
                 orientation = rotate;
-            } else {
+            }
+            else {
                 orientation = (int) rotationForImage(context, imageUri);
             }
             if (orientation == 90 || orientation == 270) {
                 rotatedWidth = options.outHeight;
                 rotatedHeight = options.outWidth;
-            } else {
+            }
+            else {
                 rotatedWidth = options.outWidth;
                 rotatedHeight = options.outHeight;
             }
@@ -362,7 +357,8 @@ public class ChatUtils {
                 options.inSampleSize = (int) Math.round(maxRatio);
                 SurespotLog.v(TAG, "Rotated width: " + rotatedWidth + ", height: " + rotatedHeight + ", insamplesize: " + options.inSampleSize);
                 srcBitmap = BitmapFactory.decodeStream(is, null, options);
-            } else {
+            }
+            else {
                 srcBitmap = BitmapFactory.decodeStream(is);
             }
 
@@ -381,7 +377,8 @@ public class ChatUtils {
             }
 
             return srcBitmap;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "decodeSampledBitmapFromUri");
         }
         return null;
@@ -466,7 +463,8 @@ public class ChatUtils {
                     if (rotation2 != 0) {
                         return rotation2;
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     //fallback to old code
                 }
             }
@@ -480,13 +478,15 @@ public class ChatUtils {
                     SurespotLog.d(TAG, "Image orientation: %d", c.getInt(0));
                     return c.getInt(0);
                 }
-            } finally {
+            }
+            finally {
                 if (c != null && !c.isClosed()) {
                     c.close();
                 }
             }
 
-        } else if (uri.getScheme().equals("file")) {
+        }
+        else if (uri.getScheme().equals("file")) {
             return getRotationFromPath(uri.getPath());
         }
         return 0f;
@@ -497,7 +497,8 @@ public class ChatUtils {
             ExifInterface exif = new ExifInterface(path);
             int rotation = (int) exifOrientationToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL));
             return rotation;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.e(TAG, e, "Error checking exif");
         }
         return 0;
@@ -511,6 +512,19 @@ public class ChatUtils {
         else {
             return getRealPathFromURI_API11to18(context, contentUri);
         }
+    }
+
+    public static void setImageViewLayout(ImageView imageView, int width, int height) {
+     //   double widthRatio = (double) SurespotConfiguration.getImageDisplayHeight() / height;
+//        double heightRatio = (double) SurespotConfiguration.getImageDisplayWidth() - widthOffset / width
+        //SurespotLog.d(TAG, "widthMultiplier %f for iv %s", widthMultiplier,message.getIv());
+
+
+        ViewGroup.LayoutParams params = imageView.getLayoutParams();
+        if (params != null) {
+            params.height = SurespotConfiguration.getImageDisplayHeight();
+        }
+   //     imageView.getLayoutParams().width = height > width ? width : SurespotConfiguration.getImageDisplaWidth();
     }
 
     @android.annotation.SuppressLint("NewApi")
@@ -554,10 +568,12 @@ public class ChatUtils {
 
         if (cursor.moveToFirst()) {
             filePath = cursor.getString(columnIndex);
-        } else {
+        }
+        else {
             if (wholeID.startsWith("primary:")) {
                 filePath = wholeID.replace("primary:", "");
-            } else {
+            }
+            else {
                 return wholeID;
             }
         }
@@ -568,9 +584,11 @@ public class ChatUtils {
     private static float exifOrientationToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+        }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
             return 180;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+        }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
             return 270;
         }
         return 0;
@@ -597,11 +615,11 @@ public class ChatUtils {
             for (int i = 0; i < jsonUM.length(); i++) {
                 messages.add(SurespotMessage.toSurespotMessage(jsonUM.getJSONObject(i)));
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "jsonStringToChatMessages");
         }
         return messages;
-
     }
 
     public static ArrayList<SurespotMessage> jsonStringsToMessages(String jsonMessageString) {
@@ -612,7 +630,8 @@ public class ChatUtils {
             for (int i = 0; i < jsonUM.length(); i++) {
                 messages.add(SurespotMessage.toSurespotMessage(new JSONObject(jsonUM.getString(i))));
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.w(TAG, e, "jsonStringsToMessages");
         }
         return messages;
@@ -651,9 +670,11 @@ public class ChatUtils {
     public static String unicodeEscaped(int ch) {
         if (ch < 0x10) {
             return "\\u000" + Integer.toHexString(ch);
-        } else if (ch < 0x100) {
+        }
+        else if (ch < 0x100) {
             return "\\u00" + Integer.toHexString(ch);
-        } else if (ch < 0x1000) {
+        }
+        else if (ch < 0x1000) {
             return "\\u0" + Integer.toHexString(ch);
         }
         return "\\u" + Integer.toHexString(ch);

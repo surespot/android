@@ -24,20 +24,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotConfiguration;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.SurespotConfiguration;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -82,12 +80,15 @@ public class MessageImageDownloader {
         if (bitmap == null) {
             SurespotLog.d(TAG, "bitmap not in memory cache: " + uri);
             forceDownload(imageView, message);
+            //imageView.setImageDrawable(null);
         }
         else {
             SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
             cancelPotentialDownload(imageView, message);
-            imageView.clearAnimation();
+            //     imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
+
+            ChatUtils.setImageViewLayout(imageView, bitmap.getWidth(), bitmap.getHeight());
             message.setLoaded(true);
             message.setLoading(false);
 
@@ -185,7 +186,7 @@ public class MessageImageDownloader {
             String messageString = null;
             if (!TextUtils.isEmpty(messageData)) {
 
-                SurespotLog.d(TAG, "BitmapDownloaderTask getting %s,", messageData);
+                SurespotLog.d(TAG, "MessageImageDownloaderTask getting %s,", messageData);
 
                 InputStream encryptedImageStream = NetworkManager.getNetworkController(mChatAdapter.getContext(), mUsername).getFileStream(messageData);
 
@@ -292,36 +293,34 @@ public class MessageImageDownloader {
                         @Override
                         public void run() {
 
-                            if (finalBitmap != null) {
+                            if (!mCancelled) {
+                                if (finalBitmap != null) {
 
-                                if (!TextUtils.isEmpty(messageData)) {
-                                    MessageImageDownloader.addBitmapToCache(messageData, finalBitmap);
+                                    if (!TextUtils.isEmpty(messageData)) {
+                                        MessageImageDownloader.addBitmapToCache(messageData, finalBitmap);
+                                    }
+
+                                    if (!TextUtils.isEmpty(finalMessageString)) {
+                                        MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
+                                    }
+
+                                    //    Drawable drawable = imageView.getDrawable();
+                                    //       if (drawable instanceof DownloadedDrawable) {
+
+                                    //   imageView.clearAnimation();
+                                    //   Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
+                                    // imageView.startAnimation(fadeIn);
+                                    //       }
+
+                                    imageView.setImageBitmap(finalBitmap);
+                                    ChatUtils.setImageViewLayout(imageView, finalBitmap.getWidth(), finalBitmap.getHeight());
+                                    UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
+                                    mChatAdapter.checkLoaded();
                                 }
-
-                                if (!TextUtils.isEmpty(finalMessageString)) {
-                                    MessageImageDownloader.addBitmapToCache(finalMessageString, finalBitmap);
+                                else {
+                                    //TODO set error image
+                                    imageView.setImageDrawable(null);
                                 }
-
-
-                                Drawable drawable = imageView.getDrawable();
-                                if (drawable instanceof DownloadedDrawable) {
-
-                                    imageView.clearAnimation();
-                                    Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
-                                    // AlphaAnimation(0,
-                                    // 1);
-                                    imageView.startAnimation(fadeIn);
-                                }
-
-                                imageView.setImageBitmap(finalBitmap);
-                                imageView.getLayoutParams().height = SurespotConfiguration.getImageDisplayHeight();
-
-                                UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());
-                                mChatAdapter.checkLoaded();
-                            }
-                            else {
-                                //TODO set error image
-                                imageView.setImageDrawable(null);
                             }
                         }
                     });

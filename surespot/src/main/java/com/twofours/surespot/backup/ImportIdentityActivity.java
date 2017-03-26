@@ -35,6 +35,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
@@ -769,7 +770,7 @@ public class ImportIdentityActivity extends Activity {
             // see if identities directory exists
 
             FileList identityDir = mDriveHelper.getDriveService().files().list()
-                    .setQ("name = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false and mimeType='application/vnd.google-apps.folder'").execute();
+                    .setQ("name = '" + SurespotConfiguration.DRIVE_IDENTITY_FOLDER + "' and trashed = false and mimeType='application/vnd.google-apps.folder'").execute();
             List<File> items = identityDir.getFiles();
 
             if (items.size() > 0) {
@@ -779,8 +780,10 @@ public class ImportIdentityActivity extends Activity {
             }
 
             if (identityDirId == null) {
+
                 File file = new File();
-                file.setName(SurespotConstants.DRIVE_IDENTITY_FOLDER);
+                file.setName(SurespotConfiguration.DRIVE_IDENTITY_FOLDER);
+
                 file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
                 File insertedFile = mDriveHelper.getDriveService().files().create(file).execute();

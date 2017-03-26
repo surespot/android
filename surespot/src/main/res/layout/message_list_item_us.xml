@@ -95,7 +95,7 @@
             android:textSize="16sp"
             android:visibility="gone" />
 
-        <ImageView
+        <pl.droidsonroids.gif.GifImageView
             android:id="@+id/messageImage"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -103,8 +103,8 @@
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2sp"
-            android:adjustViewBounds="false"
-            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
             android:visibility="gone" />
 
         <LinearLayout

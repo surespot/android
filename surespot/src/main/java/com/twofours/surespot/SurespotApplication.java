@@ -80,7 +80,7 @@ public class SurespotApplication extends Application {
 
         try {
             info = manager.getPackageInfo(this.getPackageName(), 0);
-            mVersion = info.versionName;
+            mVersion = Integer.toString(info.versionCode);
         } catch (PackageManager.NameNotFoundException e) {
             mVersion = "unknown";
         }

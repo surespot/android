@@ -1,8 +1,8 @@
-<com.twofours.surespot.chat.SoftKeyboardLayout android:id="@+id/chatLayout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+<com.twofours.surespot.chat.SoftKeyboardLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                               xmlns:app="http://schemas.android.com/apk/res-auto"
+                                               android:id="@+id/chatLayout"
+                                               android:layout_width="match_parent"
+                                               android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/backgroundImage"
@@ -27,20 +27,32 @@
 
     <com.twofours.surespot.ui.FixedViewPager
         android:id="@+id/pager"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/editTexts"
         android:layout_below="@+id/indicator"/>
 
     <FrameLayout
         android:id="@+id/fButtons"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
         android:layout_height="match_parent"
         android:layout_above="@+id/fEmoji"
         android:layout_alignTop="@+id/editTexts"
         android:layout_alignWithParentIfMissing="true">
 
+
+        <TextView
+            android:id="@+id/tvGIF"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="@string/gif"
+            android:textSize="@dimen/abc_text_size_large_material"
+            android:textStyle="bold"/>
+
         <ImageView
+
             android:id="@+id/bEmoji"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -72,9 +84,10 @@
             android:imeOptions="actionDone|flagNoExtractUi"
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:maxHeight="150dp"
-            android:minHeight="45dp"
-            android:singleLine="true">
+            android:maxLines="1"
+            android:minHeight="45dp">
         </EditText>
+
 
         <com.rockerhieu.emojicon.EmojiconEditText
             android:id="@+id/etMessage"
@@ -87,10 +100,23 @@
             android:maxLines="5"
             android:minHeight="45dp"
             android:scrollbars="vertical"
-            app:emojiconSize="30dp"
-            android:singleLine="false"
-            android:visibility="gone">
+            android:visibility="gone"
+            app:emojiconSize="30dp">
         </com.rockerhieu.emojicon.EmojiconEditText>
+
+
+        <EditText
+            android:id="@+id/etGiphy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
+            android:maxHeight="150dp"
+            android:maxLines="1"
+            android:minHeight="45dp"
+            android:visibility="gone"
+            >
+        </EditText>
     </FrameLayout>
 
     <FrameLayout
@@ -138,11 +164,11 @@
     </FrameLayout>
 
     <!--<io.github.rockerhieu.emojicon.EmojiconsView-->
-        <!--android:id="@+id/emojicons_view"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="200dp"-->
-        <!--android:visibility="gone"-->
-        <!--android:layout_alignParentBottom="true" />-->
+    <!--android:id="@+id/emojicons_view"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="200dp"-->
+    <!--android:visibility="gone"-->
+    <!--android:layout_alignParentBottom="true" />-->
 
     <RelativeLayout
         android:id="@+id/voiceHeader"

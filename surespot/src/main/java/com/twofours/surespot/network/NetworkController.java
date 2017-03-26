@@ -72,7 +72,6 @@ public class NetworkController {
         mBaseUrl = SurespotConfiguration.getBaseUrl();
         mCookieStore = new SurespotCookieJar();
 
-
         if (mUsername != null) {
             Cookie cookie = IdentityController.getCookieForUser(mUsername);
             if (cookie != null) {
@@ -87,7 +86,7 @@ public class NetworkController {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(String message) {
-                SurespotLog.d("okhttp", message);
+                SurespotLog.v("okhttp", message);
             }
         });
         logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -123,7 +122,8 @@ public class NetworkController {
                 //TODO exponential backoff
                 if (NetworkHelper.reLoginSync(mContext, NetworkController.this, mUsername)) {
                     return response.request().newBuilder().build();
-                } else {
+                }
+                else {
                     m401RetryCount = 0;
                     setUnauthorized(true, true);
                     if (m401Handler != null) {
@@ -144,11 +144,11 @@ public class NetworkController {
                 .addInterceptor(new UserAgentInterceptor(SurespotApplication.getUserAgent()))
                 .authenticator(authenticator);
 
+
         if (SurespotConfiguration.isSslCheckingStrict()) {
-
-
             mClient = builder.build();
-        } else {
+        }
+        else {
             try {
                 // Create a trust manager that does not validate certificate chains
                 final TrustManager[] trustAllCerts = new TrustManager[]{
@@ -181,7 +181,8 @@ public class NetworkController {
                     }
                 };
                 mClient = builder.sslSocketFactory(sslSocketFactory).hostnameVerifier(mHostnameVerifier).build();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -319,7 +320,8 @@ public class NetworkController {
                 params.put("gcmId", gcmIdReceived);
                 gcmUpdatedTemp = true;
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(e, 500, "error creating user");
             return;
         }
@@ -345,7 +347,8 @@ public class NetworkController {
                 if (cookie == null) {
                     SurespotLog.w(TAG, "did not get cookie from signup");
                     responseHandler.onFailure(new IOException("Did not get cookie."), 401, "Did not get cookie.");
-                } else {
+                }
+                else {
                     setUnauthorized(false, false);
                     // update shared prefs
                     if (gcmUpdated) {
@@ -367,7 +370,8 @@ public class NetworkController {
             json.put("username", username);
             json.put("password", password);
             json.put("authSig", authSignature);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             jsonHttpResponseHandler.onFailure(null, new IOException(e));
             return;
         }
@@ -383,7 +387,8 @@ public class NetworkController {
             json.put("username", username);
             json.put("password", password);
             json.put("authSig", authSignature);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             asyncHttpResponseHandler.onFailure(null, new IOException(e));
             return;
         }
@@ -398,7 +403,8 @@ public class NetworkController {
             json.put("username", username);
             json.put("password", password);
             json.put("authSig", authSignature);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
             return;
         }
@@ -420,7 +426,8 @@ public class NetworkController {
 
             Call call = mClient.newCall(request);
             call.enqueue(responseHandler);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.v(TAG, "getShortUrl", e);
             responseHandler.onFailure(null, new IOException(e));
         }
@@ -428,7 +435,7 @@ public class NetworkController {
     }
 
     public void updateKeys3(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
-                           String keyVersion, String clientSig, Callback asyncHttpResponseHandler) {
+                            String keyVersion, String clientSig, Callback asyncHttpResponseHandler) {
         JSONObject params = new JSONObject();
         try {
             params.put("username", username);
@@ -447,7 +454,8 @@ public class NetworkController {
             if (gcmIdReceived != null) {
                 params.put("gcmId", gcmIdReceived);
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             asyncHttpResponseHandler.onFailure(null, new IOException(e));
             return;
         }
@@ -498,7 +506,8 @@ public class NetworkController {
                     gcmUpdatedTemp = true;
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             responseHandler.onFailure(e, 500, "JSON Error");
             return;
         }
@@ -522,7 +531,8 @@ public class NetworkController {
                     if (cookie == null) {
                         SurespotLog.w(TAG, "Did not get cookie from login.");
                         responseHandler.onFailure(new Exception("Did not get cookie."), 401, "Did not get cookie.");
-                    } else {
+                    }
+                    else {
                         setUnauthorized(false, false);
                         // update shared prefs
                         if (gcmUpdated) {
@@ -531,7 +541,8 @@ public class NetworkController {
 
                         responseHandler.onSuccess(response.code(), responseString, cookie);
                     }
-                } else {
+                }
+                else {
                     responseHandler.onFailure(new Exception("Error logging in."), response.code(), String.format("Error logging in, code: %d", response.code()));
                 }
             }
@@ -566,7 +577,8 @@ public class NetworkController {
                     gcmUpdatedTemp = true;
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
@@ -578,9 +590,11 @@ public class NetworkController {
         Response response = null;
         try {
             response = postJSONSync("/login", json);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             return null;
-        } finally {
+        }
+        finally {
             if (response != null) {
                 response.body().close();
             }
@@ -591,7 +605,8 @@ public class NetworkController {
             if (cookie == null) {
                 SurespotLog.w(TAG, "Did not get cookie from login.");
                 return null;
-            } else {
+            }
+            else {
                 // update shared prefs
                 if (gcmUpdated) {
                     Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
@@ -625,7 +640,8 @@ public class NetworkController {
         JSONObject params = new JSONObject();
         try {
             params.put("spotIds", spotIds.toString());
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
         }
 
@@ -645,9 +661,11 @@ public class NetworkController {
             if (response.code() == 200) {
                 return response.body().string();
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "Error: getPublicKeysSync.");
-        } finally {
+        }
+        finally {
             if (response != null) {
                 response.body().close();
             }
@@ -664,9 +682,11 @@ public class NetworkController {
             if (response.code() == 200) {
                 return response.body().string();
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "Error: getKeyVersionSync.");
-        } finally {
+        }
+        finally {
             if (response != null) {
                 response.body().close();
             }
@@ -691,7 +711,8 @@ public class NetworkController {
         }
         try {
             params.put("messages", jsonArray);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.e(TAG, e, "postMessages");
         }
         postJSON("/messages", params, responseHandler);
@@ -719,7 +740,8 @@ public class NetworkController {
         JSONObject params = new JSONObject();
         try {
             params.put("gcmId", id);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
             return;
         }
@@ -733,10 +755,12 @@ public class NetworkController {
         Response response = null;
         try {
             response = mClient.newCall(request).execute();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.i(TAG, e, "Error saving gcmId on surespot server");
             return;
-        } finally {
+        }
+        finally {
             if (response != null) {
                 response.body().close();
             }
@@ -760,7 +784,8 @@ public class NetworkController {
             json.put("password", password);
             json.put("authSig", signature);
 
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
         }
 
@@ -817,10 +842,12 @@ public class NetworkController {
                 default:
                     SurespotLog.w(TAG, "error uploading file, response code: %d", statusCode);
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "error uploading file");
             return new Tuple<>(500, null);
-        } finally {
+        }
+        finally {
             if (response != null) {
                 response.body().close();
             }
@@ -868,12 +895,15 @@ public class NetworkController {
             int statusCode = response.code();
             if (statusCode == 200) {
                 responseBody = response.body().string();
-            } else {
+            }
+            else {
                 SurespotLog.w(TAG, "error uploading friend image, response code: %d", statusCode);
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "error uploading friend image");
-        } finally {
+        }
+        finally {
             if (response != null) {
                 response.body().close();
             }
@@ -893,10 +923,11 @@ public class NetworkController {
         try {
             InputStream encryptedImageStream = SurespotApplication.getFileCacheController().getEntry(url);
             if (encryptedImageStream != null) {
-                SurespotLog.d(TAG, "getFileStream: returning cached file entry for: %s,", url);
+                SurespotLog.v(TAG, "getFileStream: returning cached file entry for: %s,", url);
                 return encryptedImageStream;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SurespotLog.w(TAG, e, "error getting cached file entry for: %s,", url);
         }
 
@@ -905,14 +936,16 @@ public class NetworkController {
         try {
             Request request = new Request.Builder().url(url).build();
             response = mClient.newCall(request).execute();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return null;
         }
 
         if (response != null) {
             if (response.code() == 200) {
                 return response.body().byteStream();
-            } else {
+            }
+            else {
                 response.body().close();
             }
         }
@@ -952,7 +985,8 @@ public class NetworkController {
         try {
             params.put("shareable", shareable);
 
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
         }
 
@@ -977,7 +1011,8 @@ public class NetworkController {
             params.put("authSig", authSig);
             params.put("tokenSig", tokenSig);
             params.put("keyVersion", keyVersion);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             asyncHttpResponseHandler.onFailure(null, new IOException(e));
         }
 
@@ -995,7 +1030,8 @@ public class NetworkController {
             params.put("tokenSig", tokenSig);
             params.put("keyVersion", keyVersion);
             params.put("newPassword", newPassword);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             asyncHttpResponseHandler.onFailure(null, new IOException(e));
         }
         putJSON("/users/password", params, asyncHttpResponseHandler);
@@ -1014,7 +1050,8 @@ public class NetworkController {
                     it.remove();
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.i(TAG, e, "error removing cache entry");
         }
     }
@@ -1023,7 +1060,8 @@ public class NetworkController {
 
         try {
             mClient.cache().evictAll();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SurespotLog.w(TAG, e, "could not delete okhttp cache");
         }
     }
@@ -1037,7 +1075,8 @@ public class NetworkController {
             params.put("iv", iv);
             params.put("version", version);
 
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
             return;
         }
@@ -1058,7 +1097,8 @@ public class NetworkController {
         JSONObject params = new JSONObject();
         try {
             params.put("sigs2", sigs);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             responseHandler.onFailure(null, new IOException(e));
             return;
         }
@@ -1075,5 +1115,27 @@ public class NetworkController {
 
     public HostnameVerifier getHostnameVerifier() {
         return mHostnameVerifier;
+    }
+
+    public void searchGiphy(String query, Callback responseHandler) {
+
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme("https")
+                .host("api.giphy.com")
+                .addPathSegment("v1")
+                .addPathSegment("gifs")
+                .addPathSegment("search")
+                .addQueryParameter("q",query)
+                .addQueryParameter("api_key", SurespotConfiguration.getGiphyApiKey())
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        Call call = mClient.newCall(request);
+        call.enqueue(responseHandler);
+
+
     }
 }

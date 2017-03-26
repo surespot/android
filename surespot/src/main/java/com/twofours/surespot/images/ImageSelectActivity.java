@@ -21,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatController;
@@ -392,7 +393,7 @@ public class ImageSelectActivity extends Activity {
         }
 
         // scale, compress and save the image
-        int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConstants.MESSAGE_IMAGE_DIMENSION : SurespotConstants.FRIEND_IMAGE_DIMENSION);
+        int maxDimension = (mSize == IMAGE_SIZE_LARGE ? SurespotConfiguration.MESSAGE_IMAGE_DIMENSION : SurespotConfiguration.FRIEND_IMAGE_DIMENSION);
 
         Bitmap bitmap = ChatUtils.decodeSampledBitmapFromUri(ImageSelectActivity.this, finalUri, rotate, maxDimension);
         try {
