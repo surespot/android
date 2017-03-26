@@ -2,7 +2,6 @@ package com.twofours.surespot.filetransfer;
 
 import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -44,19 +43,19 @@ public class FileTransferUtils {
     private static HashMap<String, String> mDataDirIdMap = new HashMap<>(SurespotConstants.MAX_IDENTITIES);
 
     public static void uploadFileAsync(final Activity activity, final ChatController chatController,
-                                       final Uri localFileUri, final String from, final String to) {
+                                       final String path, final String from, final String to) {
 
         Runnable runnable = new Runnable() {
 
             @Override
             public void run() {
-                SurespotLog.d(TAG, "uploadFileAsync");
+                SurespotLog.d(TAG, "uploadFileAsync, path: %s", path);
 
                 String iv = EncryptionController.getStringIv();
 
                 //will need local url, filename, remote url if
 
-                SurespotMessage message = ChatUtils.buildPlainMessage(from, to, SurespotConstants.MimeTypes.FILE, "file://dummy", iv);
+                SurespotMessage message = ChatUtils.buildPlainMessage(from, to, SurespotConstants.MimeTypes.FILE,path, iv);
                 final SurespotMessage finalMessage = message;
 
                 activity.runOnUiThread(new Runnable() {
@@ -158,7 +157,7 @@ public class FileTransferUtils {
         try {
 
             SurespotLog.d(TAG, "createFile, before open resource, thread: %s", Thread.currentThread().getName());
-            final InputStreamContent mediaContent = new InputStreamContent(SurespotConstants.MimeTypes.FILE, new BufferedInputStream(activity.getResources().openRawResource(R.raw.test_image)));
+            final InputStreamContent mediaContent = new InputStreamContent(SurespotConstants.MimeTypes.FILE, new BufferedInputStream(plainContentStream));
 
             //create.xecute needs to execute on a different thread than the stream apparently
             Runnable runnable = new Runnable() {

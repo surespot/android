@@ -503,6 +503,16 @@ public class ChatUtils {
         return 0;
     }
 
+    public static String getRealPathFromURI(Context context, Uri contentUri) {
+        if (Build.VERSION.SDK_INT >= 19) {
+
+            return getRealPathFromURI_API19(context, contentUri);
+        }
+        else {
+            return getRealPathFromURI_API11to18(context, contentUri);
+        }
+    }
+
     @android.annotation.SuppressLint("NewApi")
     public static String getRealPathFromURI_API11to18(Context context, Uri contentUri) {
         String[] proj = {MediaStore.Images.Media.DATA};
@@ -523,16 +533,6 @@ public class ChatUtils {
         return result;
     }
 
-    public static String getRealPathFromURI_BelowAPI11(Context context, Uri contentUri) {
-        String[] proj = {MediaStore.Images.Media.DATA};
-        Cursor cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
-        int column_index
-                = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        String result = cursor.getString(column_index);
-        cursor.close();
-        return result;
-    }
 
     @android.annotation.SuppressLint("NewApi")
     public static String getRealPathFromURI_API19(Context context, Uri uri) {

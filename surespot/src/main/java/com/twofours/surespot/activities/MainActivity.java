@@ -692,7 +692,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         launch();
     }
 
-    private void    setupGlobal() {
+    private void setupGlobal() {
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
             Intent intent = new Intent(this, RegistrationIntentService.class);
@@ -1042,6 +1042,39 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
                 break;
 
+            case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE:
+                if (resultCode == RESULT_OK) {
+                    if (requestCode == SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && data.getClipData() != null) {
+                            //    handleMultipleImageSelection(data);
+                        }
+                        else if (data.getData() != null) {
+
+                            //String realPath = ChatUtils.getRealPathFromURI(this, data.getData());
+                            SurespotLog.d(TAG, "chose, data: %s", data);
+//                            mPath = data.getDataString();
+//                            sendImage();
+                            final ChatController cc = ChatManager.getChatController(mUser);
+                            if (cc == null) {
+                                SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
+                                return;
+                            }
+
+                            String currentChat = cc.getCurrentChat();
+                            if (mUser != null && currentChat != null) {
+                                FileTransferUtils.uploadFileAsync(this, cc, data.getDataString(), mUser, currentChat);
+                            }
+                        }
+                        else {
+                            SurespotLog.i(TAG, "Not able to support multiple file selection and no appropriate data returned from file picker");
+                            Utils.makeLongToast(this, getString(R.string.could_not_select_image));
+                            //finish();
+                        }
+                    }
+                }
+                break;
+
+
             case SurespotConstants.IntentRequestCodes.PURCHASE:
                 // Pass on the activity result to the helper for handling
                 if (!SurespotApplication.getBillingController().getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
@@ -1185,9 +1218,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         startActivity(intent);
                         return null;
                     }
-
-                    ;
-
                 }.execute();
 
                 return true;
@@ -1211,7 +1241,31 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 return true;
             case R.id.menu_send_file_bar:
-                FileTransferUtils.uploadFileAsync(this, cc, null, mUser, currentChat);
+                if (currentChat == null || mCurrentFriend == null) {
+                    return true;
+                }
+
+                // can't send images to deleted folk
+                if (mCurrentFriend.isDeleted()) {
+                    return true;
+                }
+
+
+                String plural = "";
+                Intent intent = new Intent();
+                intent.setType("*/*");
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    plural = "s";
+                }
+
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                SurespotLog.d(TAG, "startActivityForResult");
+                startActivityForResult(Intent.createChooser(intent, getString(R.string.select_file) + plural), SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE);
+
+
                 return true;
             case R.id.menu_settings_bar:
 

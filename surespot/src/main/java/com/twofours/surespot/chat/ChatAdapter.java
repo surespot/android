@@ -396,8 +396,10 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.tvText.setText(item.getPlainData());
             }
             else {
-                chatMessageViewHolder.tvText.setText("");
-                mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
+                if (!TextUtils.isEmpty(item.getData())) {
+                    chatMessageViewHolder.tvText.setText("");
+                    mMessageDecryptor.decrypt(chatMessageViewHolder.tvText, item);
+                }
             }
             chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
             chatMessageViewHolder.ivShareable.setVisibility(View.GONE);

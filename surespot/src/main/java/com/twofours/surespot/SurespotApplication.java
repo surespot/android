@@ -106,7 +106,7 @@ public class SurespotApplication extends Application {
             SurespotLog.w(TAG, e, "could not create file cache controller");
         }
 
-        boolean oneTimeGotNoCase = Utils.getSharedPrefsBoolean(this, "72onetime");
+        boolean oneTimeGotNoCase = Utils.getSharedPrefsBoolean(this, "73onetime");
         if (!oneTimeGotNoCase) {
 
 
@@ -117,7 +117,7 @@ public class SurespotApplication extends Application {
                 @Override
                 public void handleResponse(Void result) {
                     SurespotLog.d(TAG, "cache cleared");
-                    Utils.putSharedPrefsBoolean(SurespotApplication.this, "72onetime", true);
+                    Utils.putSharedPrefsBoolean(SurespotApplication.this, "73onetime", true);
                 }
             });
 

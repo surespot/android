@@ -373,4 +373,5 @@
     <string name="could_not_record_audio">Could not record audio, is the microphone permission enabled?</string>
     <string name="remove_title_right">Remove</string>
     <string name="send_file">Send file</string>
+    <string name="select_file">Select file</string>
 </resources>

@@ -152,6 +152,7 @@
             android:name="com.twofours.surespot.images.ImageSelectActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:windowSoftInputMode="stateAlwaysHidden" />
+
         <activity android:name="com.twofours.surespot.activities.SettingsActivity"/>
         <activity android:name="com.twofours.surespot.backup.ExportIdentityActivity">
             <intent-filter>

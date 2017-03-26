@@ -134,7 +134,9 @@ public class ChatFragment extends Fragment {
 
                 SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
                 try {
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK)) {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) ||
+                            message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) ||
+                            message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
 
                         DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
                         dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");

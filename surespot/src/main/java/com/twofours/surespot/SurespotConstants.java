@@ -15,7 +15,7 @@ public class SurespotConstants {
 			+ "Z/aaRkB1bwl9eCNojpw=\n" + "-----END PUBLIC KEY-----";
 
 	// PROD
-	public static final String SERVER_PUBLIC_KEY = SERVER_PUBLIC_KEY_PROD;
+	public static final String SERVER_PUBLIC_KEY = SERVER_PUBLIC_KEY_LOCAL;
 
 	public class IntentFilters {
 		public static final String INVITE_REQUEST = "invite_request_intent";
@@ -110,6 +110,8 @@ public class SurespotConstants {
 		public final static int UNSENT_MESSAGE_NOTIFICATION = 18;
 		public final static int READ_EXTERNAL_STORAGE = 19;
 		public final static int WRITE_EXTERNAL_STORAGE = 20;
+		public final static int REQUEST_SELECT_FILE = 21;
+
 	}
 	
 	

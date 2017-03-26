@@ -55,6 +55,7 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -295,10 +296,16 @@ public class ChatController {
 
                         // substitute emoji
                         if (plainText != null) {
-                            // set plaintext in message so we don't have to decrypt again
-                            SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
-                            EmojiconHandler.addEmojis(mContext, builder, 30);
-                            message.setPlainData(builder.toString());
+                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
+                                message.setPlainData(plainText);
+                            }
+                            else {
+
+                                // set plaintext in message so we don't have to decrypt again
+                                SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
+                                EmojiconHandler.addEmojis(mContext, builder, 30);
+                                message.setPlainData(builder.toString());
+                            }
                         }
                         else {
                             // error decrypting
@@ -3333,41 +3340,44 @@ public class ChatController {
     private void prepAndSendCloudMessage(final SurespotMessage message) {
         SurespotLog.d(TAG, "prepAndSendCloudMessage, current thread: %s", Thread.currentThread().getName());
         if (!isMessageReadyToSend(message)) {
-           Runnable runnable = new Runnable() {
-               @Override
-               public void run() {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
 
-                   //make sure it's pointing to a local file
+                    //make sure it's pointing to a local file
 
-                   synchronized (ChatController.this) {
-                       //could be null because it's already being processed
-                       CharSequence cs = message.getPlainData();
-                       SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData: %s", cs);
-                       if (cs == null) {
-                           SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData null, already processed, doing nothing");
-                           return;
-                       }
+                    synchronized (ChatController.this) {
+                        //could be null because it's already being processed
+                        CharSequence cs = message.getPlainData();
+                        SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData: %s", cs);
+                        if (cs == null) {
+                            SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData null, already processed, doing nothing");
+                            return;
+                        }
 
-                       final String plainData = cs.toString();
+                        //lock
+                        message.setPlainData(null);
 
-                       if (!plainData.startsWith("file")) {
-                           //processing TODO check queue
-                           SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData doesn't start with file, currently processing, doing nothing");
-                           return;
-                       }
+                        final String plainData = cs.toString();
+//
+//                       if (!plainData.startsWith("file")) {
+//                           //processing TODO check queue
+//                           SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData doesn't start with file, currently processing, doing nothing");
+//                           return;
+//                       }
 
-                       //    try {
+                        //    try {
 
-                       final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
-                       final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+                        final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
+                        final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
 
-                       if (theirVersion == null) {
-                           SurespotLog.d(TAG, "prepAndSendCloudMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
-                           //retry
-                           message.setErrorStatus(0);
-                           return;
-                       }
-                       final String iv = message.getIv();
+                        if (theirVersion == null) {
+                            SurespotLog.d(TAG, "prepAndSendCloudMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
+                            //retry
+                            message.setErrorStatus(0);
+                            return;
+                        }
+                        final String iv = message.getIv();
 
 
 //                            // save encrypted image to disk
@@ -3406,47 +3416,66 @@ public class ChatController {
 //                            SurespotLog.d(TAG, "prepAndSendCloudMessage: deleting unencrypted file %s, iv: %s, success: %b", plainData, iv, deleted);
 
 
-                       FileTransferUtils.createFile(mContext, mDriveHelper, message.getFrom(), iv, null, new IAsyncCallback<String>() {
-                           @Override
-                           public void handleResponse(String driveUrl) {
-                               if (driveUrl != null) {
-                                   //set the url to the encrypted drive data
-                                   message.setPlainData(driveUrl);
-                                   message.setFromVersion(ourVersion);
-                                   message.setToVersion(theirVersion);
+                        InputStream is;
+                        try {
+                            is = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
+                        }
+                        catch (FileNotFoundException e) {
+                            SurespotLog.w(TAG, "file not found: %s", plainData);
+                            //TODO error?
+                            message.setPlainData(plainData);
+                            messageSendCompleted(message);
+                            if (!scheduleResendTimer()) {
+                                errorMessageQueue();
+                            }
+                            ChatController.this.deleteMessage(message, false);
+                            return;
+                        }
+
+                        FileTransferUtils.createFile(mContext, mDriveHelper, message.getFrom(), iv, is, new IAsyncCallback<String>() {
+                            @Override
+                            public void handleResponse(final String driveUrl) {
+                                if (driveUrl != null) {
 
 
-                                   //TODO pass to/from version to encrypt message so the file and message are encrypted with the same key
-                                   //encrypt the url to the encrypted drive data
-                                   final Boolean success = encryptMessage(message);
+                                    message.setFromVersion(ourVersion);
+                                    message.setToVersion(theirVersion);
 
-                                   if (success != null) {
-                                       mHandler.post(new Runnable() {
-                                           @Override
-                                           public void run() {
-                                               addMessage(message);
-                                               if (success) {
-                                                   //save the link to the local file so we can open it
-                                                   message.setPlainData(plainData);
-                                                   sendTextMessage(message);
-                                               }
-                                               else {
-                                                   messageSendCompleted(message);
-                                                   if (!scheduleResendTimer()) {
-                                                       errorMessageQueue();
-                                                   }
-                                               }
-                                           }
-                                       });
-                                   }
-                               }
-                           }
-                       });
-                   }
-               }
-           };
 
-           SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+                                    //TODO pass to/from version to encrypt message so the file and message are encrypted with the same key
+                                    //encrypt the url to the encrypted drive data
+                                    final Boolean success = encryptMessage(message);
+
+                                    if (success != null) {
+                                        mHandler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                addMessage(message);
+                                                if (success) {
+
+                                                    //set the url to the encrypted drive data
+                                                    message.setPlainData(driveUrl);
+                                                    sendTextMessage(message);
+                                                }
+                                                else {
+                                                    //save the link to the local file so we can open it
+                                                    message.setPlainData(plainData);
+                                                    messageSendCompleted(message);
+                                                    if (!scheduleResendTimer()) {
+                                                        errorMessageQueue();
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            };
+
+            SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
         }
         else {
             sendTextMessage(message);
