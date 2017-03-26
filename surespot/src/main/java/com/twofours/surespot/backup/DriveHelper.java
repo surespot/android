@@ -1,9 +1,5 @@
 package com.twofours.surespot.backup;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-
 import android.accounts.Account;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,14 +8,17 @@ import android.text.TextUtils;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.utils.Utils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 
 public class DriveHelper {
 
@@ -94,17 +93,14 @@ public class DriveHelper {
 
 	}
 
-	public byte[] getFileContent(String url) {
-		if (url != null && url.length() > 0) {
+	public byte[] getFileContent(String id) {
+		if (id != null && id.length() > 0) {
 			try {
-				GenericUrl downloadUrl = new GenericUrl(url);
-
-				HttpResponse resp = mService.getRequestFactory().buildGetRequest(downloadUrl).execute();
+				HttpResponse resp = mService.files().get(id).executeMedia();
 				InputStream inputStream = resp.getContent();
 				if (inputStream != null) {
 					return Utils.inputStreamToBytes(inputStream);
 				}
-
 			}
 			catch (IOException e) {
 				SurespotLog.w(TAG, e, "getFileContent");

@@ -50,23 +50,31 @@ dependencies {
     compile project(':androidkeystore')
     compile project(":ColorPickerPreference")
     compile project(':libs:emojicon')
+
+    compile 'com.android.support:appcompat-v7:25.3.0'
+    compile 'com.google.android.gms:play-services-auth:10.2.0'
+    compile 'pub.devrel:easypermissions:0.2.1'
+    compile('com.google.api-client:google-api-client-android:1.22.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    compile('com.google.apis:google-api-services-drive:v3-rev65-1.22.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    compile('com.google.android.gms:play-services-auth:9.8.0')
-    compile('com.google.android.gms:play-services-gcm:9.8.0')
-    compile('com.google.android.gms:play-services-drive:9.8.0')
+    compile 'com.google.android.gms:play-services-auth:10.2.0'
+    compile 'com.google.android.gms:play-services-gcm:10.2.0'
+    compile 'com.google.android.gms:play-services-analytics:10.2.0'
     compile 'com.google.http-client:google-http-client-gson:1.19.0'
-    compile 'com.google.code.gson:gson:2.4'
-    compile 'com.google.guava:guava:18.0'
-    compile 'com.google.protobuf:protobuf-java:2.4.1'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.google.guava:guava:20.0'
+
     compile 'com.android.support:multidex:1.0.1'
-    compile files('libs/google-api-client-1.17.0-rc.jar')
-    compile files('libs/google-api-client-android-1.17.0-rc.jar')
-    compile files('libs/google-api-services-drive-v2-rev103-1.17.0-rc.jar')
-    compile files('libs/google-http-client-android-1.17.0-rc.jar')
-    compile files('libs/google-oauth-client-1.17.0-rc.jar')
     compile 'io.socket:socket.io-client:0.8.3'
     compile 'ch.acra:acra:4.8.5'
-    compile 'com.android.support:support-v4:25.2.0'
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
+    compile 'com.android.support:recyclerview-v7:25.3.0'
+    compile 'com.android.support:support-v4:25.3.0'
 }

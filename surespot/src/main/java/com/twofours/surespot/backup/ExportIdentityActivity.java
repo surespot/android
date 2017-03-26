@@ -40,10 +40,8 @@ import com.google.android.gms.common.AccountPicker;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.ChildList;
-import com.google.api.services.drive.model.ChildReference;
+import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
-import com.google.api.services.drive.model.ParentReference;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
@@ -56,9 +54,8 @@ import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -113,7 +110,7 @@ public class ExportIdentityActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                String identityFile = identityDir + File.separator + IdentityController.caseInsensitivize(adapter.getItem(position))
+                String identityFile = identityDir + java.io.File.separator + IdentityController.caseInsensitivize(adapter.getItem(position))
                         + IdentityController.IDENTITY_EXTENSION;
                 tvPath.setText(identityFile);
             }
@@ -410,28 +407,24 @@ public class ExportIdentityActivity extends Activity {
             // see if identities directory exists
 
             FileList identityDir = mDriveHelper.getDriveService().files().list()
-                    .setQ("title = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
-            List<com.google.api.services.drive.model.File> items = identityDir.getItems();
+                    .setQ("name = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
+            List<com.google.api.services.drive.model.File> items = identityDir.getFiles();
 
             if (items.size() > 0) {
-                for (com.google.api.services.drive.model.File file : items) {
-                    if (!file.getLabels().getTrashed()) {
-                        SurespotLog.d(TAG, "identity folder already exists");
-                        identityDirId = file.getId();
-                    }
-                }
+                File file = items.get(0);
+
+                SurespotLog.d(TAG, "identity folder already exists");
+                identityDirId = file.getId();
             }
             if (identityDirId == null) {
                 com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-                file.setTitle(SurespotConstants.DRIVE_IDENTITY_FOLDER);
+                file.setName(SurespotConstants.DRIVE_IDENTITY_FOLDER);
                 file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
-                com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file).execute();
+                com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().create(file).execute();
 
                 identityDirId = insertedFile.getId();
-
             }
-
         }
         catch (UserRecoverableAuthIOException e) {
             try {
@@ -479,13 +472,13 @@ public class ExportIdentityActivity extends Activity {
             String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
 
             // see if identity exists
-            com.google.api.services.drive.model.File file = null;
-            ChildReference idFile = getIdentityFile(idDirId, caseInsensitiveUsername);
+            File file = null;
+            File idFile = getIdentityFile(idDirId, caseInsensitiveUsername);
             if (idFile != null) {
 
                 // update
                 file = mDriveHelper.getDriveService().files().get(idFile.getId()).execute();
-                if (file != null && !file.getLabels().getTrashed()) {
+                if (file != null) {
                     SurespotLog.d(TAG, "updateIdentityDriveFile, updating existing identity file: %s", filename);
                     mDriveHelper.getDriveService().files().update(file.getId(), file, content).execute();
                     return true;
@@ -496,15 +489,11 @@ public class ExportIdentityActivity extends Activity {
             SurespotLog.d(TAG, "updateIdentityDriveFile, inserting new identity file: %s", filename);
 
             file = new com.google.api.services.drive.model.File();
-            ParentReference pr = new ParentReference();
-            pr.setId(idDirId);
-            ArrayList<ParentReference> parent = new ArrayList<ParentReference>(1);
-            parent.add(pr);
-            file.setParents(parent);
-            file.setTitle(filename);
+            file.setParents(Arrays.asList(idDirId));
+            file.setName(filename);
             file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
 
-            com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file, content).execute();
+            File insertedFile = mDriveHelper.getDriveService().files().create(file, content).execute();
             return true;
 
         }
@@ -533,23 +522,19 @@ public class ExportIdentityActivity extends Activity {
         return false;
     }
 
-    private ChildReference getIdentityFile(String identityDirId, String username) throws IOException {
-        ChildReference idFile = null;
+    private File getIdentityFile(String identityDirId, String username) throws IOException {
+        File idFile = null;
 
-        // "title = '" + username + "'";
-        ChildList identityFileList = mDriveHelper.getDriveService().children().list(identityDirId)
-                .setQ("title='" + username + IdentityController.IDENTITY_EXTENSION + "' and trashed = false").execute();
-        List<ChildReference> items = identityFileList.getItems();
+        String caseInsensitiveUsername = IdentityController.caseInsensitivize(username);
+        String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
+
+        FileList identityFileList = mDriveHelper.getDriveService().files().list()
+                .setQ(String.format("name='%s' and '%s' in parents and trashed = false",filename + IdentityController.IDENTITY_EXTENSION, identityDirId)).execute();
+        List<com.google.api.services.drive.model.File> items = identityFileList.getFiles();
 
         if (items.size() == 1) {
             SurespotLog.d(TAG, "getIdentityFile, found identity file for: %s", username);
             idFile = items.get(0);
-            // for (ChildReference file : items) {
-            // if (!file.getLabels().getTrashed()) {
-            // SurespotLog.d(TAG, "identity folder already exists");
-            // identityDirId = file.getId();
-            // }
-            // }
         }
         else {
             if (items.size() > 1) {

@@ -32,8 +32,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.ChildList;
-import com.google.api.services.drive.model.ChildReference;
+import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotConstants;
@@ -47,7 +46,6 @@ import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,13 +157,13 @@ public class ImportIdentityActivity extends Activity {
                                     }
                                     mSpd.show();
 
-                                    final String url = map.get("url");
+                                    final String id = map.get("id");
 
                                     new AsyncTask<Void, Void, Void>() {
 
                                         @Override
                                         protected Void doInBackground(Void... params) {
-                                            byte[] identityBytes = mDriveHelper.getFileContent(url);
+                                            byte[] identityBytes = mDriveHelper.getFileContent(id);
                                             identityBytes = FileUtils.gunzipIfNecessary(identityBytes);
 
                                             IdentityController.importIdentityBytes(ImportIdentityActivity.this, user, password, identityBytes,
@@ -339,24 +337,24 @@ public class ImportIdentityActivity extends Activity {
         List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
 
         // query the filesystem for identities
-        final File exportDir = FileUtils.getIdentityExportDir();
+        final java.io.File exportDir = FileUtils.getIdentityExportDir();
         SurespotLog.d(TAG, "exportDir: %s", exportDir.getAbsolutePath());
-        File[] files = IdentityController.getExportIdentityFiles(this, exportDir.getPath());
+        java.io.File[] files = IdentityController.getExportIdentityFiles(this, exportDir.getPath());
         SurespotLog.d(TAG, "files: %s", Arrays.toString(files));
         TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 
         if (files != null) {
-            TreeMap<Long, File> sortedFiles = new TreeMap<Long, File>(new Comparator<Long>() {
+            TreeMap<Long, java.io.File> sortedFiles = new TreeMap<Long, java.io.File>(new Comparator<Long>() {
                 public int compare(Long o1, Long o2) {
                     return o2.compareTo(o1);
                 }
             });
 
-            for (File file : files) {
+            for (java.io.File file : files) {
                 sortedFiles.put(file.lastModified(), file);
             }
 
-            for (File file : sortedFiles.values()) {
+            for (java.io.File file : sortedFiles.values()) {
                 long lastModTime = file.lastModified();
                 String date = DateFormat.getDateFormat(this).format(lastModTime) + " " + DateFormat.getTimeFormat(this).format(lastModTime);
 
@@ -508,19 +506,19 @@ public class ImportIdentityActivity extends Activity {
 
         List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
         try {
-            com.google.api.services.drive.model.File file = mDriveHelper.getDriveService().files().get(mFileId).execute();
+            File file = mDriveHelper.getDriveService().files().get(mFileId).execute();
 
-            if (!file.getLabels().getTrashed()) {
+            if (file != null && file.getTrashed() != null && !file.getTrashed()) {
 
-                DateTime lastModTime = file.getModifiedDate();
+                DateTime lastModTime = file.getModifiedTime();
 
                 String date = DateFormat.getDateFormat(this).format(lastModTime.getValue()) + " "
                         + DateFormat.getTimeFormat(this).format(lastModTime.getValue());
                 HashMap<String, String> map = new HashMap<String, String>();
-                String name = IdentityController.getIdentityNameFromFilename(file.getTitle());
+                String name = IdentityController.getIdentityNameFromFilename(file.getName());
                 map.put("name", name);
                 map.put("date", date);
-                map.put("url", file.getDownloadUrl());
+                map.put("id", mFileId);
                 items.add(map);
             }
             else {
@@ -620,24 +618,24 @@ public class ImportIdentityActivity extends Activity {
 
         String identityDirId = ensureDriveIdentityDirectory();
         if (identityDirId == null) {
-            if (!firstAttempt) {
+            //   if (!firstAttempt) {
 
-                this.runOnUiThread(new Runnable() {
+            this.runOnUiThread(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        mSpdLoadIdentities.hide();
-                        Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_list_identities_from_google_drive));
-                    }
-                });
-            }
+                @Override
+                public void run() {
+                    mSpdLoadIdentities.hide();
+                    Utils.makeToast(ImportIdentityActivity.this, getString(R.string.could_not_list_identities_from_google_drive));
+                }
+            });
+            //     }
             return;
         }
 
         List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
         try {
             // query the drive for identities
-            ChildList fileList = getIdentityFiles(identityDirId);
+            FileList fileList = getIdentityFiles(identityDirId);
             if (fileList == null) {
                 SurespotLog.v(TAG, "no identity backup files found on google drive");
                 this.runOnUiThread(new Runnable() {
@@ -651,9 +649,9 @@ public class ImportIdentityActivity extends Activity {
 
             }
 
-            List<ChildReference> refs = fileList.getItems();
+            List<File> files = fileList.getFiles();
 
-            if (refs.size() == 0) {
+            if (files.size() == 0) {
                 SurespotLog.v(TAG, "no identity backup files found on google drive");
                 this.runOnUiThread(new Runnable() {
 
@@ -665,31 +663,27 @@ public class ImportIdentityActivity extends Activity {
                 return;
             }
 
-            if (refs.size() > 0) {
-                TreeMap<Long, com.google.api.services.drive.model.File> sortedFiles = new TreeMap<Long, com.google.api.services.drive.model.File>(
+            if (files.size() > 0) {
+                TreeMap<Long, File> sortedFiles = new TreeMap<Long, File>(
                         new Comparator<Long>() {
                             public int compare(Long o1, Long o2) {
                                 return o2.compareTo(o1);
                             }
                         });
-                for (ChildReference ref : refs) {
-                    com.google.api.services.drive.model.File file = mDriveHelper.getDriveService().files().get(ref.getId()).execute();
-
-                    if (!file.getLabels().getTrashed()) {
-                        DateTime lastModTime = file.getModifiedDate();
-                        sortedFiles.put(lastModTime.getValue(), file);
-                    }
+                for (File file : files) {
+                    DateTime lastModTime = file.getModifiedTime();
+                    sortedFiles.put(lastModTime.getValue(), file);
                 }
 
-                for (com.google.api.services.drive.model.File file : sortedFiles.values()) {
-                    DateTime lastModTime = file.getModifiedDate();
+                for (File file : sortedFiles.values()) {
+                    DateTime lastModTime = file.getModifiedTime();
                     String date = DateFormat.getDateFormat(this).format(lastModTime.getValue()) + " "
                             + DateFormat.getTimeFormat(this).format(lastModTime.getValue());
                     HashMap<String, String> map = new HashMap<String, String>();
-                    String name = IdentityController.getIdentityNameFromFilename(file.getTitle());
+                    String name = IdentityController.getIdentityNameFromFilename(file.getOriginalFilename());
                     map.put("name", name);
                     map.put("date", date);
-                    map.put("url", file.getDownloadUrl());
+                    map.put("id", file.getId());
                     items.add(map);
                 }
 
@@ -756,15 +750,12 @@ public class ImportIdentityActivity extends Activity {
 
     }
 
-    private ChildList getIdentityFiles(String identityDirId) {
-        ChildList identityFileList = null;
-        try {
-            identityFileList = mDriveHelper.getDriveService().children().list(identityDirId).execute();
-        }
-        catch (IOException e) {
-            SurespotLog.w(TAG, e, "getIdentityFiles");
-        }
-        return identityFileList;
+    private FileList getIdentityFiles(String identityDirId) throws IOException {
+        return mDriveHelper.getDriveService().files().list()
+                .setQ(String.format("trashed = false and '%s' in parents", identityDirId))
+                .setFields("files(id, modifiedTime, originalFilename)")
+                .execute();
+
     }
 
     public String ensureDriveIdentityDirectory() {
@@ -773,29 +764,23 @@ public class ImportIdentityActivity extends Activity {
             // see if identities directory exists
 
             FileList identityDir = mDriveHelper.getDriveService().files().list()
-                    .setQ("title = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false").execute();
-            List<com.google.api.services.drive.model.File> items = identityDir.getItems();
+                    .setQ("name = '" + SurespotConstants.DRIVE_IDENTITY_FOLDER + "' and trashed = false and mimeType='application/vnd.google-apps.folder'").execute();
+            List<File> items = identityDir.getFiles();
 
             if (items.size() > 0) {
-                for (com.google.api.services.drive.model.File file : items) {
-                    if (!file.getLabels().getTrashed()) {
-                        SurespotLog.d(TAG, "identity folder already exists");
-                        identityDirId = file.getId();
-                        break;
-                    }
-                }
+                File file = items.get(0);
+                SurespotLog.d(TAG, "identity folder already exists");
+                identityDirId = file.getId();
             }
+
             if (identityDirId == null) {
-                com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-                file.setTitle(SurespotConstants.DRIVE_IDENTITY_FOLDER);
+                File file = new File();
+                file.setName(SurespotConstants.DRIVE_IDENTITY_FOLDER);
                 file.setMimeType(SurespotConstants.MimeTypes.DRIVE_FOLDER);
 
-                com.google.api.services.drive.model.File insertedFile = mDriveHelper.getDriveService().files().insert(file).execute();
-
+                File insertedFile = mDriveHelper.getDriveService().files().create(file).execute();
                 identityDirId = insertedFile.getId();
-
             }
-
         }
         catch (UserRecoverableAuthIOException e) {
             SurespotLog.w(TAG, e, "createDriveIdentityDirectory");
