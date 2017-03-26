@@ -9,7 +9,7 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.HttpResponse;
-import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.twofours.surespot.SurespotLog;
@@ -44,7 +44,7 @@ public class DriveHelper {
 				scopes.add("https://www.googleapis.com/auth/drive.install");
 				GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, scopes);
 				credential.setSelectedAccountName(mAccount.name);
-				mService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), credential).build();
+				mService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new JacksonFactory().getDefaultInstance(), credential).build();
 
 			}
 

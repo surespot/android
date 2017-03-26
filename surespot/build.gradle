@@ -67,12 +67,13 @@ dependencies {
     compile 'com.google.android.gms:play-services-auth:10.2.0'
     compile 'com.google.android.gms:play-services-gcm:10.2.0'
     compile 'com.google.android.gms:play-services-analytics:10.2.0'
-    compile 'com.google.http-client:google-http-client-gson:1.19.0'
-    compile 'com.google.code.gson:gson:2.7'
+
     compile 'com.google.guava:guava:20.0'
 
     compile 'com.android.support:multidex:1.0.1'
-    compile 'io.socket:socket.io-client:0.8.3'
+    compile('io.socket:socket.io-client:0.8.3') {
+        exclude group: 'org.json', module: 'json'
+    }
     compile 'ch.acra:acra:4.8.5'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
     compile 'com.android.support:recyclerview-v7:25.3.0'
