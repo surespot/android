@@ -55,7 +55,6 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -2442,6 +2441,41 @@ public class ChatController {
         }
     }
 
+    private Boolean encryptCloudMessage(SurespotMessage message) {
+        //if plain data is null, already being handled, do nothing
+        CharSequence plainData = message.getPlainData();
+        if (plainData == null) {
+            return null;
+        }
+
+        String ourLatestVersion = message.getOurVersion(message.getFrom());
+        String theirLatestVersion = message.getTheirVersion(message.getFrom());
+        synchronized (ChatController.this) {
+
+            if (theirLatestVersion == null) {
+                SurespotLog.d(TAG, "could not encrypt message - could not get latest version, iv: %s", message.getIv());
+                //retry
+                message.setErrorStatus(0);
+                return false;
+            }
+
+
+            byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
+            String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
+
+            if (result != null) {
+                //update unsent message
+                message.setData(result);
+                return true;
+            }
+            else {
+                SurespotLog.d(TAG, "could not encrypt message, iv: %s", message.getIv());
+                message.setErrorStatus(500);
+                return false;
+            }
+        }
+    }
+
     private synchronized void sendTextMessage(SurespotMessage message) {
         if (getConnectionState() == STATE_CONNECTED) {
             SurespotLog.d(TAG, "sendTextMessage, mSocket: %s", mSocket);
@@ -3346,7 +3380,7 @@ public class ChatController {
 
                     //make sure it's pointing to a local file
 
-                    synchronized (ChatController.this) {
+                    synchronized (message) {
                         //could be null because it's already being processed
                         CharSequence cs = message.getPlainData();
                         SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData: %s", cs);
@@ -3356,7 +3390,7 @@ public class ChatController {
                         }
 
                         //lock
-                        message.setPlainData(null);
+                     //   message.setPlainData(null);
 
                         final String plainData = cs.toString();
 //
@@ -3420,15 +3454,21 @@ public class ChatController {
                         try {
                             is = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
                         }
-                        catch (FileNotFoundException e) {
+                        catch (Exception e) {
                             SurespotLog.w(TAG, "file not found: %s", plainData);
                             //TODO error?
-                            message.setPlainData(plainData);
-                            messageSendCompleted(message);
-                            if (!scheduleResendTimer()) {
-                                errorMessageQueue();
-                            }
-                            ChatController.this.deleteMessage(message, false);
+//                            message.setPlainData(plainData);
+//                            messageSendCompleted(message);
+//                            if (!scheduleResendTimer()) {
+//                                errorMessageQueue();
+//                            }
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ChatController.this.deleteMessage(message, false);
+                                }
+                            });
+
                             return;
                         }
 
@@ -3436,16 +3476,16 @@ public class ChatController {
                             @Override
                             public void handleResponse(final String driveUrl) {
                                 if (driveUrl != null) {
+                                    SurespotLog.d("received drive url: %s", driveUrl);
 
-
+                                    message.setPlainData(driveUrl);
                                     message.setFromVersion(ourVersion);
                                     message.setToVersion(theirVersion);
 
-
-                                    //TODO pass to/from version to encrypt message so the file and message are encrypted with the same key
                                     //encrypt the url to the encrypted drive data
-                                    final Boolean success = encryptMessage(message);
+                                    final Boolean success = encryptCloudMessage(message);
 
+                                    SurespotLog.d(TAG, "success: %b", success);
                                     if (success != null) {
                                         mHandler.post(new Runnable() {
                                             @Override
@@ -3454,12 +3494,12 @@ public class ChatController {
                                                 if (success) {
 
                                                     //set the url to the encrypted drive data
-                                                    message.setPlainData(driveUrl);
+
                                                     sendTextMessage(message);
                                                 }
                                                 else {
                                                     //save the link to the local file so we can open it
-                                                    message.setPlainData(plainData);
+                                                 //   message.setPlainData(plainData);
                                                     messageSendCompleted(message);
                                                     if (!scheduleResendTimer()) {
                                                         errorMessageQueue();
