@@ -19,6 +19,7 @@ import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.encryption.MessageDecryptor;
+import com.twofours.surespot.filetransfer.FileTransferManager;
 import com.twofours.surespot.gifs.GifMessageDownloader;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -329,8 +330,12 @@ public class ChatAdapter extends BaseAdapter {
             chatMessageViewHolder.voiceStop = (ImageView) convertView.findViewById(R.id.voiceStop);
 
             chatMessageViewHolder.mFileDownloadButton = (Button) convertView.findViewById(R.id.fileDownload);
+            chatMessageViewHolder.mFileDownloadButton.setTag("download");
+            chatMessageViewHolder.mFileDownloadButton.setOnClickListener(FileClickListener);
             chatMessageViewHolder.mFilename = (TextView) convertView.findViewById(R.id.fileFilename);
             chatMessageViewHolder.mFileOpenButton = (Button) convertView.findViewById(R.id.fileOpen);
+            chatMessageViewHolder.mFileOpenButton.setTag("open");
+            chatMessageViewHolder.mFileOpenButton.setOnClickListener(FileClickListener);
             chatMessageViewHolder.mFileView = convertView.findViewById(R.id.fileLayout);
 
 
@@ -516,6 +521,11 @@ public class ChatAdapter extends BaseAdapter {
                     chatMessageViewHolder.mFilename.setText("");
                     mMessageDecryptor.decrypt(chatMessageViewHolder.mFilename, item);
                 }
+
+                //set the tag in the parent
+                chatMessageViewHolder.mFileView.setTag(item.getIv());
+
+
                 break;
 
         }
@@ -578,6 +588,19 @@ public class ChatAdapter extends BaseAdapter {
 
 
     }
+
+
+    private View.OnClickListener FileClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String iv = ((View) v.getParent()).getTag().toString();
+            SurespotMessage message = getMessageByIv(iv);
+            if (ChatUtils.isMyMessage(mOurUsername,message)) {
+
+                FileTransferManager.download(mContext, mOurUsername, message);
+            }
+        }
+    };
 
     public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {
         boolean added = addOrUpdateMessage(message, checkSequence, sort);

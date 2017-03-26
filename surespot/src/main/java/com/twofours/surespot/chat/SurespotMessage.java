@@ -16,6 +16,14 @@ import java.util.Observable;
 public class SurespotMessage extends Observable implements Comparable<SurespotMessage> {
     private static final String TAG = "SurespotMessage";
 
+    public final static String STATE_CREATED = "created";
+    public final static String STATE_TRANSFERRING = "transferring";
+    public final static String STATE_COMPLETE = "complete";
+    public final static String STATE_ERRORED = "errored";
+    public final static String STATE_FATALITY_ERRORED = "fatalityerrored";
+
+
+    private String mState;
     private String mFrom;
     private String mTo;
     private String mIv;
@@ -39,6 +47,15 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     private boolean mPlayVoice = false;
     private boolean mVoicePlayed = false;
     private boolean mHashed;
+
+
+    public String getState() {
+        return mState;
+    }
+
+    public void setState(String state) {
+        mState = state;
+    }
 
 
     public String getFrom() {

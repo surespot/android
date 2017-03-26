@@ -70,8 +70,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-gcm:10.2.0'
     compile 'com.google.android.gms:play-services-analytics:10.2.0'
 
-    //compile 'com.google.guava:guava:20.0'
-
     compile 'com.android.support:multidex:1.0.1'
     compile('io.socket:socket.io-client:0.8.3') {
         exclude group: 'org.json', module: 'json'

@@ -287,7 +287,9 @@ public class ChatController {
                 @Override
                 protected Void doInBackground(Void... params) {
                     SurespotLog.d(TAG, "ChatAdapter open for user: %s", otherUser);
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) || message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) || message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
+                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) ||
+                            message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) ||
+                            message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
 
                         // decrypt it before adding
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
@@ -295,23 +297,15 @@ public class ChatController {
 
 
                         if (plainText != null) {
-
-                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
-                                message.setPlainData(plainText);
+                            // set plaintext in message so we don't have to decrypt again
+                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
+                                // substitute emoji
+                                SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
+                                EmojiconHandler.addEmojis(mContext, builder, 30);
+                                message.setPlainData(builder.toString());
                             }
                             else {
-
-                                // set plaintext in message so we don't have to decrypt again
-                                // set plaintext in message so we don't have to decrypt again
-                                if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-                                    // substitute emoji
-                                    SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
-                                    EmojiconHandler.addEmojis(mContext, builder, 30);
-                                    message.setPlainData(builder.toString());
-                                }
-                                else {
-                                    message.setPlainData(plainText);
-                                }
+                                message.setPlainData(plainText);
                             }
                         }
                         else {
@@ -320,7 +314,9 @@ public class ChatController {
                             message.setPlainData(mContext.getString(R.string.message_error_decrypting_message));
                         }
                     }
-                    else {
+                    else
+
+                    {
                         if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE) ||
                                 message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
                             // if it's an image that i sent
@@ -386,7 +382,9 @@ public class ChatController {
                 }
             }.execute();
         }
-        else {
+        else
+
+        {
             SurespotLog.d(TAG, "ChatAdapter not open for user: %s", otherUser);
 
             Friend friend = mFriendAdapter.getFriend(otherUser);
@@ -3066,6 +3064,7 @@ public class ChatController {
             SurespotLog.d(TAG, "ProcessNextMessage task run.");
             processNextMessage();
         }
+
     }
 
 

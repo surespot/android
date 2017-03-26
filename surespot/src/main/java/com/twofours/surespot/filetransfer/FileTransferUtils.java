@@ -55,7 +55,7 @@ public class FileTransferUtils {
 
                 //will need local url, filename, remote url if
 
-                SurespotMessage message = ChatUtils.buildPlainMessage(from, to, SurespotConstants.MimeTypes.FILE,path, iv);
+                SurespotMessage message = ChatUtils.buildPlainMessage(from, to, SurespotConstants.MimeTypes.FILE, path, iv);
                 final SurespotMessage finalMessage = message;
 
                 activity.runOnUiThread(new Runnable() {
