@@ -48,6 +48,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     private boolean mVoicePlayed = false;
     private boolean mHashed;
 
+    private FileMessageData mFileMessageData;
 
     public String getState() {
         return mState;
@@ -201,6 +202,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         chatMessage.setVoicePlayed(jsonMessage.optBoolean("voicePlayed", false));
         chatMessage.setHashed(jsonMessage.optBoolean("hashed", false));
 
+
         chatMessage.setGcm(jsonMessage.optBoolean("gcm", false));
 
         Integer id = jsonMessage.optInt("id");
@@ -226,6 +228,11 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         //set plain data if encrypted data not present
         if (TextUtils.isEmpty(chatMessage.getData())) {
             chatMessage.setPlainData(jsonMessage.optString("plainData", null));
+        }
+
+        JSONObject joFileMessageData = jsonMessage.optJSONObject("fileMessageData");
+        if (joFileMessageData != null) {
+            chatMessage.setFileMessageData(FileMessageData.fromJSONObject(joFileMessageData));
         }
 
         return chatMessage;
@@ -266,6 +273,10 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             //if we don't have encrypted data, save plain data (for unsent messages only)
             if (TextUtils.isEmpty(this.getData()) && withPlain) {
                 message.put("plainData", this.getPlainData());
+            }
+
+            if (this.getFileMessageData() != null) {
+                message.put("fileMessageData", this.getFileMessageData().toJSONObject());
             }
 
 
@@ -485,6 +496,10 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         sb.append("\tdatetime: " + getDateTime() + "\n");
         sb.append("\tgcm: " + isGcm() + "\n");
         sb.append("\tvoicePlayed: " + isVoicePlayed() + "\n");
+
+        if (getFileMessageData() != null) {
+            sb.append(getFileMessageData());
+        }
         //sb.append("\thashed: " + isHashed() + "\n");
 
         return sb.toString();
@@ -492,5 +507,159 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
     public static boolean areMessagesEqual(SurespotMessage lastMessage, SurespotMessage message) {
         return lastMessage.getIv() != null && lastMessage.getIv().equals(message.getIv());
+    }
+
+    public FileMessageData getFileMessageData() {
+        return mFileMessageData;
+    }
+
+    public void setFileMessageData(FileMessageData fileMessageData) {
+        mFileMessageData = fileMessageData;
+    }
+
+    public static class FileMessageData {
+        private String mMimeType;
+        private String mFilename;
+        private String mOriginalPath;
+        private String mCloudUrl;
+        private long mSize;
+
+        public String getOriginalPath() {
+            return mOriginalPath;
+        }
+
+        public void setOriginalPath(String originalPath) {
+            mOriginalPath = originalPath;
+        }
+
+
+        public long getSize() {
+            return mSize;
+        }
+
+        public void setSize(long size) {
+            mSize = size;
+        }
+
+        public void setFilename(String filename) {
+            mFilename = filename;
+        }
+
+        public String getFilename() {
+            return mFilename;
+        }
+
+        String toJSONStringSocket() {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("filename", getFilename());
+                jo.put("url", mCloudUrl);
+                jo.put("size", mSize);
+                jo.put("mimeType", mMimeType);
+
+                return jo.toString();
+            }
+            catch (JSONException e) {
+                SurespotLog.e(TAG, e, "toJSONString error");
+                return null;
+            }
+
+        }
+
+        public static FileMessageData fromJSONString(String jsonString) {
+            try {
+                JSONObject jo = new JSONObject(jsonString);
+
+                FileMessageData fmd = new FileMessageData();
+
+                fmd.setFilename(jo.optString("filename"));
+                fmd.setOriginalPath(jo.optString("path"));
+                fmd.setCloudUrl(jo.optString("url"));
+                fmd.setSize(jo.optInt("size"));
+                fmd.setMimeType(jo.optString("mimeType"));
+
+                return fmd;
+
+            }
+            catch (JSONException e) {
+                SurespotLog.e(TAG, e, "fromJSONString error");
+                return null;
+            }
+
+        }
+
+
+
+        JSONObject toJSONObject() {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("filename", mFilename);
+                jo.put("path", mOriginalPath);
+                jo.put("url", mCloudUrl);
+                jo.put("size", mSize);
+                jo.put("mimeType", mMimeType);
+
+                return jo;
+            }
+            catch (JSONException e) {
+                SurespotLog.e(TAG, e, "toJSONString error");
+                return null;
+            }
+
+        }
+
+
+        static FileMessageData fromJSONObject(JSONObject jsonObject) {
+            if (jsonObject == null) {
+                return null;
+            }
+            //   try {
+            JSONObject jo = jsonObject;
+
+            FileMessageData fmd = new FileMessageData();
+
+            fmd.setSize(jo.optLong("size"));
+            fmd.setFilename(jo.optString("filename"));
+            fmd.setOriginalPath(jo.optString("path"));
+            fmd.setCloudUrl(jo.optString("url"));
+            fmd.setMimeType(jo.optString("mimeType"));
+
+            return fmd;
+
+//            }
+//            catch (JSONException e) {
+//                SurespotLog.e(TAG, e, "fromJSONString error");
+//                return null;
+//            }
+
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("\nFileMessageData:\n");
+            sb.append("\tfilename: " + getFilename() + "\n");
+            sb.append("\tpath: " + getOriginalPath() + "\n");
+            sb.append("\tsize: " + getSize() + "\n");
+            sb.append("\turl: " + getCloudUrl() + "\n");
+            sb.append("\tmimeType: " + getMimeType() + "\n");
+            return sb.toString();
+        }
+
+        public String getMimeType() {
+            return mMimeType;
+        }
+
+        public void setMimeType(String mimeType) {
+            mMimeType = mimeType;
+        }
+
+        public String getCloudUrl() {
+            return mCloudUrl;
+        }
+
+        public void setCloudUrl(String cloudUrl) {
+            mCloudUrl = cloudUrl;
+        }
     }
 }

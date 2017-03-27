@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
+import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.ViewGroup;
@@ -83,6 +84,19 @@ public class ChatUtils {
         chatMessage.setFrom(from);
         chatMessage.setTo(to);
         chatMessage.setPlainData(plainData);
+        chatMessage.setIv(iv);
+        chatMessage.setHashed(true);
+        // store the mime type outside teh encrypted envelope, this way we can offload resources
+        // by mime type
+        chatMessage.setMimeType(mimeType);
+        return chatMessage;
+    }
+
+    public static SurespotMessage buildPlainFileMessage(String from, String to, String mimeType, SurespotMessage.FileMessageData fileMessageData, String iv) {
+        SurespotMessage chatMessage = new SurespotMessage();
+        chatMessage.setFrom(from);
+        chatMessage.setTo(to);
+        chatMessage.setFileMessageData(fileMessageData);
         chatMessage.setIv(iv);
         chatMessage.setHashed(true);
         // store the mime type outside teh encrypted envelope, this way we can offload resources
@@ -579,6 +593,29 @@ public class ChatUtils {
         }
         cursor.close();
         return filePath;
+    }
+
+    public static String getFilenameFromContentResolver(Activity activity, Uri uri) {
+
+        String uriString = uri.toString();
+        File myFile = new File(uriString);
+      //  String path = myFile.getAbsolutePath();
+        String displayName = null;
+
+        if (uriString.startsWith("content://")) {
+            Cursor cursor = null;
+            try {
+                cursor = activity.getContentResolver().query(uri, null, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        } else if (uriString.startsWith("file://")) {
+            displayName = myFile.getName();
+        }
+        return displayName;
     }
 
     private static float exifOrientationToDegrees(int exifOrientation) {

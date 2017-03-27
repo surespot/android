@@ -18,7 +18,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.encryption.MessageDecryptor;
+import com.twofours.surespot.filetransfer.FileMessageDecryptor;
 import com.twofours.surespot.filetransfer.FileTransferManager;
 import com.twofours.surespot.gifs.GifMessageDownloader;
 import com.twofours.surespot.images.MessageImageDownloader;
@@ -46,14 +46,19 @@ public class ChatAdapter extends BaseAdapter {
     private boolean mCheckingSequence;
     private boolean mDebugMode;
     private int mCurrentScrollPositionId = -1;
-    private MessageDecryptor mMessageDecryptor;
-    private MessageImageDownloader mMessageImageDownloader;
+
     private boolean mLoaded;
-    private VoiceMessageDownloader mMessageVoiceDownloader;
+
     private CopyOnWriteArrayList<SurespotControlMessage> mControlMessages = new CopyOnWriteArrayList<>();
     private String mOurUsername;
-    private GifMessageDownloader mGifDownloader;
+
     private int mSelectedTop;
+
+    private MessageDecryptor mMessageDecryptor;
+    private MessageImageDownloader mMessageImageDownloader;
+    private VoiceMessageDownloader mMessageVoiceDownloader;
+    private GifMessageDownloader mGifDownloader;
+    private FileMessageDecryptor mFileMessageDecryptor;
 
     public ChatAdapter(Context context, String ourUsername, String theirUsername) {
         TAG = String.format("ChatAdapter:%s:%s", ourUsername, theirUsername);
@@ -68,6 +73,7 @@ public class ChatAdapter extends BaseAdapter {
         mMessageImageDownloader = new MessageImageDownloader(mOurUsername, this);
         mMessageVoiceDownloader = new VoiceMessageDownloader(mOurUsername, this);
         mGifDownloader = new GifMessageDownloader(ourUsername, this);
+        mFileMessageDecryptor = new FileMessageDecryptor(ourUsername, this);
     }
 
     public void doneCheckingSequence() {
@@ -385,7 +391,7 @@ public class ChatAdapter extends BaseAdapter {
 //                }
             }
             else {
-                if (item.getPlainData() == null && item.getPlainBinaryData() == null) {
+                if (item.getPlainData() == null && item.getPlainBinaryData() == null && item.getFileMessageData() == null) {
                     chatMessageViewHolder.tvTime.setText(R.string.message_loading_and_decrypting);
                 }
                 else {
@@ -506,20 +512,26 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.tvText.setVisibility(View.GONE);
                 chatMessageViewHolder.imageView.setVisibility(View.GONE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
-                chatMessageViewHolder.messageSize.setVisibility(View.VISIBLE);
+                chatMessageViewHolder.messageSize.setVisibility(View.GONE);
                 chatMessageViewHolder.mFileView.setVisibility(View.VISIBLE);
 
                 //chatMessageViewHolder.tvText.clearAnimation();
 
                 chatMessageViewHolder.tvText.setText("");
 
-                if (item.getPlainData() != null) {
+                if (item.getFileMessageData() != null) {
+//                    if (item.getFileMessageData().getOriginalPath() == null) {
+//                        chatMessageViewHolder.mFileDownloadButton.setEnabled(true);
+//                        chatMessageViewHolder.mFileOpenButton.setEnabled(false);
+//                    }
+
+
                     chatMessageViewHolder.mFilename.clearAnimation();
-                    chatMessageViewHolder.mFilename.setText(item.getPlainData());
+                    chatMessageViewHolder.mFilename.setText(item.getFileMessageData().getFilename());
                 }
                 else {
                     chatMessageViewHolder.mFilename.setText("");
-                    mMessageDecryptor.decrypt(chatMessageViewHolder.mFilename, item);
+                    mFileMessageDecryptor.decrypt(chatMessageViewHolder.mFileView, item);
                 }
 
                 //set the tag in the parent

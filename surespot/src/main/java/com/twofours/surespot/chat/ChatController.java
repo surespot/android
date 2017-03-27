@@ -291,21 +291,37 @@ public class ChatController {
                             message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) ||
                             message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
 
+
                         // decrypt it before adding
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
                                 message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
+                        SurespotLog.d(TAG, "handle message, decrypted plain text: %s", plainText);
 
                         if (plainText != null) {
                             // set plaintext in message so we don't have to decrypt again
-                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {
-                                // substitute emoji
-                                SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
-                                EmojiconHandler.addEmojis(mContext, builder, 30);
-                                message.setPlainData(builder.toString());
-                            }
-                            else {
-                                message.setPlainData(plainText);
+                            switch (message.getMimeType()) {
+                                case SurespotConstants.MimeTypes.TEXT:
+                                    // substitute emoji
+                                    SpannableStringBuilder builder = new SpannableStringBuilder(plainText);
+                                    EmojiconHandler.addEmojis(mContext, builder, 30);
+                                    message.setPlainData(builder.toString());
+                                    break;
+                                case SurespotConstants.MimeTypes.GIF_LINK:
+                                    message.setPlainData(plainText);
+                                    break;
+                                case SurespotConstants.MimeTypes.FILE:
+                                    SurespotMessage.FileMessageData fcm = SurespotMessage.FileMessageData.fromJSONString(plainText);
+                                    SurespotLog.d(TAG, "handleMessage, server FileMessageData: %s", fcm);
+                                    if (message.getFileMessageData() == null) {
+                                        message.setFileMessageData(new SurespotMessage.FileMessageData());
+                                    }
+                                    message.getFileMessageData().setCloudUrl(fcm.getCloudUrl());
+                                    message.getFileMessageData().setFilename(fcm.getFilename());
+                                    message.getFileMessageData().setSize(fcm.getSize());
+                                    message.getFileMessageData().setMimeType(fcm.getMimeType());
+                                    SurespotLog.d(TAG, "handleMessage, after FileMessageData: %s", message.getFileMessageData());
+                                    break;
                             }
                         }
                         else {
@@ -2447,8 +2463,8 @@ public class ChatController {
 
     private Boolean encryptCloudMessage(SurespotMessage message) {
         //if plain data is null, already being handled, do nothing
-        CharSequence plainData = message.getPlainData();
-        if (plainData == null) {
+        SurespotMessage.FileMessageData fmd = message.getFileMessageData();
+        if (fmd == null) {
             return null;
         }
 
@@ -2465,7 +2481,7 @@ public class ChatController {
 
 
             byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
-            String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
+            String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, fmd.toJSONStringSocket(), iv);
 
             if (result != null) {
                 //update unsent message
@@ -3387,25 +3403,17 @@ public class ChatController {
 
                     synchronized (message) {
                         //could be null because it's already being processed
-                        CharSequence cs = message.getPlainData();
-                        SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData: %s", cs);
-                        if (cs == null) {
-                            SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData null, already processed, doing nothing");
+                        SurespotMessage.FileMessageData fmd = message.getFileMessageData();
+                        SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData: %s", fmd.toString());
+                        if (fmd == null) {
+                            SurespotLog.d(TAG, "prepAndSendCloudMessage: fmd null");
                             return;
                         }
 
-                        //lock
-                        //   message.setPlainData(null);
-
-                        final String plainData = cs.toString();
-//
-//                       if (!plainData.startsWith("file")) {
-//                           //processing TODO check queue
-//                           SurespotLog.d(TAG, "prepAndSendCloudMessage: plainData doesn't start with file, currently processing, doing nothing");
-//                           return;
-//                       }
-
-                        //    try {
+                        if (!TextUtils.isEmpty(fmd.getCloudUrl())) {
+                            SurespotLog.d(TAG, "prepAndSendCloudMessage: data already encrypted, doing nothing");
+                            return;
+                        }
 
                         final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
                         final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
@@ -3421,7 +3429,7 @@ public class ChatController {
                         PipedInputStream encryptionInputStream;
                         InputStream fileInputStream;
                         try {
-                            fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(plainData));
+                            fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(fmd.getOriginalPath()));
                             //encrypt
                             PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                             encryptionInputStream = new PipedInputStream(encryptionOutputStream);
@@ -3430,7 +3438,7 @@ public class ChatController {
                         }
                         catch (Exception e) {
                             //TODO this could be ugly, don't have access to the content anymore ie if process stops which is how we'd end up here
-                            SurespotLog.w(TAG, "exception opening data: %s", plainData);
+                            SurespotLog.w(TAG, "exception opening data: %s", fmd.getOriginalPath());
                             //TODO error?
 //                            message.setPlainData(plainData);
 //                            messageSendCompleted(message);
@@ -3447,13 +3455,20 @@ public class ChatController {
                             return;
                         }
 
-                        FileTransferUtils.createFile(mContext, mDriveHelper, message.getFrom(), iv, encryptionInputStream, new IAsyncCallback<String>() {
-                            @Override
-                            public void handleResponse(final String driveUrl) {
-                                if (driveUrl != null) {
-                                    SurespotLog.d("received drive url: %s", driveUrl);
+                        FileTransferUtils.createFile(
+                                mContext,
+                                mDriveHelper,
+                                message.getFrom(),
+                                encryptionInputStream,
+                                new IAsyncCallback<SurespotMessage.FileMessageData>() {
 
-                                    message.setPlainData(driveUrl);
+                            @Override
+                            public void handleResponse(final SurespotMessage.FileMessageData fileMessageData) {
+                                if (fileMessageData != null) {
+                                    SurespotLog.d(TAG,"received file message data: %s", fileMessageData);
+
+                                    message.getFileMessageData().setCloudUrl(fileMessageData.getCloudUrl());
+                                    message.getFileMessageData().setSize(fileMessageData.getSize());
                                     message.setFromVersion(ourVersion);
                                     message.setToVersion(theirVersion);
 
@@ -3496,6 +3511,4 @@ public class ChatController {
             sendTextMessage(message);
         }
     }
-
-
 }

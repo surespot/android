@@ -9,6 +9,7 @@ import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.network.IAsyncCallback;
 
+import org.nick.androidkeystore.Crypto;
 import org.spongycastle.crypto.InvalidCipherTextException;
 import org.spongycastle.crypto.digests.SHA256Digest;
 import org.spongycastle.crypto.engines.AESLightEngine;
@@ -42,6 +43,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -62,6 +64,7 @@ public class EncryptionController {
 
     private static ECParameterSpec curve = ECNamedCurveTable.getParameterSpec("secp521r1");
     private static SecureRandom mSecureRandom = new SurespotSecureRandom();
+    private static Random mRandom = new Random();
 
     public static final PublicKey ServerPublicKey = recreatePublicKey("ecdsa", SurespotConstants.SERVER_PUBLIC_KEY);
 
@@ -858,6 +861,12 @@ public class EncryptionController {
         }
         return null;
 
+    }
+
+    public static String getPsuedoRandomKey() {
+        byte[] random = new byte[16];
+        mRandom.nextBytes(random);
+        return Crypto.toHex(random);
     }
 
 }

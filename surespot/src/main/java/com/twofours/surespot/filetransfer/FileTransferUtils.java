@@ -43,19 +43,24 @@ public class FileTransferUtils {
     private static HashMap<String, String> mDataDirIdMap = new HashMap<>(SurespotConstants.MAX_IDENTITIES);
 
     public static void uploadFileAsync(final Activity activity, final ChatController chatController,
-                                       final String path, final String from, final String to) {
+                                       final String filename,  final String path, final String mimeType, final String from, final String to) {
 
         Runnable runnable = new Runnable() {
 
             @Override
             public void run() {
-                SurespotLog.d(TAG, "uploadFileAsync, path: %s", path);
+
 
                 String iv = EncryptionController.getStringIv();
 
                 //will need local url, filename, remote url if
+                SurespotMessage.FileMessageData fmd = new SurespotMessage.FileMessageData();
+                fmd.setFilename(filename);
+                fmd.setOriginalPath(path);
+                fmd.setMimeType(mimeType);
 
-                SurespotMessage message = ChatUtils.buildPlainMessage(from, to, SurespotConstants.MimeTypes.FILE, path, iv);
+
+                SurespotMessage message = ChatUtils.buildPlainFileMessage(from, to, SurespotConstants.MimeTypes.FILE, fmd, iv);
                 final SurespotMessage finalMessage = message;
 
                 activity.runOnUiThread(new Runnable() {
@@ -146,8 +151,8 @@ public class FileTransferUtils {
     }
 
     //must be called from non UI thread
-    public static void createFile(final Activity activity, final DriveHelper driveHelper, final String from, final String filename, InputStream encryptedContentStream, final IAsyncCallback<String> callback) {
-        SurespotLog.d(TAG, "createFile, filename: %s, thread: %s", filename, Thread.currentThread().getName());
+    public static void createFile(final Activity activity, final DriveHelper driveHelper, final String from, InputStream encryptedContentStream, final IAsyncCallback<SurespotMessage.FileMessageData> callback) {
+        SurespotLog.d(TAG, "createFile,  thread: %s", Thread.currentThread().getName());
 
 //        if (TextUtils.isEmpty(dataDir)) {
 //            SurespotLog.d(TAG, "createFile, couldn't get data dir");
@@ -158,7 +163,7 @@ public class FileTransferUtils {
 
             SurespotLog.d(TAG, "createFile, before open resource, thread: %s", Thread.currentThread().getName());
             final InputStreamContent mediaContent = new InputStreamContent(SurespotConstants.MimeTypes.FILE, new BufferedInputStream(encryptedContentStream));
-
+            final String filename = EncryptionController.getPsuedoRandomKey();
             //create.xecute needs to execute on a different thread than the stream apparently
             Runnable runnable = new Runnable() {
                 @Override
@@ -181,7 +186,7 @@ public class FileTransferUtils {
                         create.getMediaHttpUploader().setProgressListener(new CustomProgressListener());
                         File created = create
                                 //.set("permissions", Arrays. permission)
-                                .setFields("id, webContentLink, permissions")
+                                .setFields("id,size, webContentLink, permissions")
                                 .execute();
 
                      //   SurespotLog.d(TAG, "createFile, filename: %s, created file: %s", filename, created.toPrettyString());
@@ -192,8 +197,12 @@ public class FileTransferUtils {
                                 .create(created.getId(), permission)
                                 .execute();
 
+
                         SurespotLog.d(TAG, "createFile, filename: %s, file: %s, permission: %s", filename, created.toPrettyString(), createdPermission.toPrettyString());
-                        callback.handleResponse(created.getWebContentLink());
+                        SurespotMessage.FileMessageData fmd = new SurespotMessage.FileMessageData();
+                        fmd.setCloudUrl(created.getWebContentLink());
+                        fmd.setSize(created.getSize());
+                        callback.handleResponse(fmd);
                     }
                     catch (UserRecoverableAuthIOException e) {
                         try {

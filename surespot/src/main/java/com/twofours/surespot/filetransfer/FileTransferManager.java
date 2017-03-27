@@ -50,6 +50,7 @@ public class FileTransferManager {
         private String mOurVersion;
         private String mTheirUsername;
         private String mTheirVersion;
+        private String mFilename;
         private String mIv;
         private String mUrl;
         private Context mContext;
@@ -62,7 +63,8 @@ public class FileTransferManager {
             mOurVersion = message.getOurVersion(mOurUsername);
             mTheirVersion = message.getTheirVersion(mOurUsername);
             mIv = message.getIv();
-            mUrl = message.getPlainData().toString();
+            mUrl = message.getFileMessageData().getCloudUrl();
+            mFilename = message.getFileMessageData().getFilename();
         }
 
         public String getIv() {
@@ -85,7 +87,7 @@ public class FileTransferManager {
                 EncryptionController.runDecryptTask(mOurUsername, mOurVersion, mTheirUsername, mTheirVersion, mIv, true,
                         new BufferedInputStream(encryptedFileStream), out);
 
-                Utils.copyStreamToFile(inputStream, new File("/sdcard/Download/afile"));
+                Utils.copyStreamToFile(inputStream, new File(String.format("/sdcard/Download/%s", mFilename)));
                 SurespotLog.d(TAG, "Stream downloaded and decrypted to file.");
             }
             catch (IOException e) {
