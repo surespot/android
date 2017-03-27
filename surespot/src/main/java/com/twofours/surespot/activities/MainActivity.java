@@ -1117,7 +1117,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                             String currentChat = cc.getCurrentChat();
                             if (mUser != null && currentChat != null) {
                                 String filename = ChatUtils.getFilenameFromContentResolver(this, data.getData());
-                                FileTransferUtils.uploadFileAsync(this, cc, filename, data.getDataString(),"mimeType", mUser, currentChat);
+                                String mimeType = ChatUtils.getMimeType(this, data.getData());
+                                FileTransferUtils.uploadFileAsync(this, cc, filename, data.getDataString(),mimeType, mUser, currentChat);
                             }
                         }
                         else {

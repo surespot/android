@@ -148,8 +148,8 @@ public class ChatAdapter extends BaseAdapter {
             SurespotMessage updateMessage = mMessages.get(index);
 
             if (updateMessage != null) {
-                //        SurespotLog.v(TAG, "updating message: %s", updateMessage);
-                //        SurespotLog.v(TAG, "new message: %s", message);
+                        SurespotLog.v(TAG, "updating message: %s", updateMessage);
+                        SurespotLog.v(TAG, "new message: %s", message);
 
                 // don't update unless we have an id
                 if (message.getId() != null) {
@@ -168,6 +168,21 @@ public class ChatAdapter extends BaseAdapter {
                     }
                     if (message.getDataSize() != null) {
                         updateMessage.setDataSize(message.getDataSize());
+                    }
+
+                    if (message.getFileMessageData() != null) {
+                        if (message.getFileMessageData().getSize() > 0) {
+                            updateMessage.getFileMessageData().setSize(message.getFileMessageData().getSize());
+                        }
+                        if (message.getFileMessageData().getMimeType() != null) {
+                            updateMessage.getFileMessageData().setMimeType(message.getFileMessageData().getMimeType());
+                        }
+                        if (message.getFileMessageData().getCloudUrl() != null) {
+                            updateMessage.getFileMessageData().setCloudUrl(message.getFileMessageData().getCloudUrl());
+                        }
+                        if (message.getFileMessageData().getFilename() != null) {
+                            updateMessage.getFileMessageData().setFilename(message.getFileMessageData().getFilename());
+                        }
                     }
 
                     // clear error status
@@ -640,9 +655,10 @@ public class ChatAdapter extends BaseAdapter {
                     String path = fmd.getOriginalPath();
                     if (path != null) {
                         File file = new File(path);
+                        Uri uri = Uri.fromFile(file);
                         Intent i = new Intent();
                         i.setAction(android.content.Intent.ACTION_VIEW);
-                        i.setDataAndType(Uri.fromFile(file), SurespotConstants.MimeTypes.FILE);
+                        i.setDataAndType(uri, fmd.getMimeType());
                         mContext.startActivity(i);
                     }
                 }

@@ -45,6 +45,7 @@ public class FileTransferUtils {
     public static void uploadFileAsync(final Activity activity, final ChatController chatController,
                                        final String filename,  final String path, final String mimeType, final String from, final String to) {
 
+        SurespotLog.d(TAG, "uploadFileAsync, filename: %s, path: %s, mimeType: %s", filename,path,mimeType);
         Runnable runnable = new Runnable() {
 
             @Override
