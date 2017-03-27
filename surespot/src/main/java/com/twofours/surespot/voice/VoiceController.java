@@ -17,7 +17,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.utils.UIUtils;

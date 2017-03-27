@@ -30,7 +30,7 @@ import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.NetworkManager;

@@ -3,6 +3,7 @@ package com.twofours.surespot.chat;
 import android.text.TextUtils;
 
 import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.ChatUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -520,16 +521,16 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     public static class FileMessageData {
         private String mMimeType;
         private String mFilename;
-        private String mOriginalPath;
+        private String mLocalUri;
         private String mCloudUrl;
         private long mSize;
 
-        public String getOriginalPath() {
-            return mOriginalPath;
+        public String getLocalUri() {
+            return mLocalUri;
         }
 
-        public void setOriginalPath(String originalPath) {
-            mOriginalPath = originalPath;
+        public void setLocalUri(String localUri) {
+            mLocalUri = localUri;
         }
 
 
@@ -553,7 +554,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             JSONObject jo = new JSONObject();
             try {
                 jo.put("filename", getFilename());
-                jo.put("url", mCloudUrl);
+                jo.put("cloudUrl", mCloudUrl);
                 jo.put("size", mSize);
                 jo.put("mimeType", mMimeType);
 
@@ -573,8 +574,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
                 FileMessageData fmd = new FileMessageData();
 
                 fmd.setFilename(jo.optString("filename"));
-                fmd.setOriginalPath(jo.optString("path"));
-                fmd.setCloudUrl(jo.optString("url"));
+                fmd.setLocalUri(jo.optString("localUri"));
+                fmd.setCloudUrl(jo.optString("cloudUrl"));
                 fmd.setSize(jo.optInt("size"));
                 fmd.setMimeType(jo.optString("mimeType"));
 
@@ -594,8 +595,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             JSONObject jo = new JSONObject();
             try {
                 jo.put("filename", mFilename);
-                jo.put("path", mOriginalPath);
-                jo.put("url", mCloudUrl);
+                jo.put("localUri", mLocalUri);
+                jo.put("cloudUrl", mCloudUrl);
                 jo.put("size", mSize);
                 jo.put("mimeType", mMimeType);
 
@@ -620,8 +621,8 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
 
             fmd.setSize(jo.optLong("size"));
             fmd.setFilename(jo.optString("filename"));
-            fmd.setOriginalPath(jo.optString("path"));
-            fmd.setCloudUrl(jo.optString("url"));
+            fmd.setLocalUri(jo.optString("localUri"));
+            fmd.setCloudUrl(jo.optString("cloudUrl"));
             fmd.setMimeType(jo.optString("mimeType"));
 
             return fmd;
@@ -639,9 +640,9 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             StringBuilder sb = new StringBuilder();
             sb.append("\nFileMessageData:\n");
             sb.append("\tfilename: " + getFilename() + "\n");
-            sb.append("\tpath: " + getOriginalPath() + "\n");
+            sb.append("\tlocalUri: " + getLocalUri() + "\n");
             sb.append("\tsize: " + getSize() + "\n");
-            sb.append("\turl: " + getCloudUrl() + "\n");
+            sb.append("\tcloudUrl: " + getCloudUrl() + "\n");
             sb.append("\tmimeType: " + getMimeType() + "\n");
             return sb.toString();
         }

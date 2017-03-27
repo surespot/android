@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;

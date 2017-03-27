@@ -27,7 +27,7 @@ import android.widget.LinearLayout;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;

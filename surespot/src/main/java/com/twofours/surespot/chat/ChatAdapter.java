@@ -25,6 +25,7 @@ import com.twofours.surespot.filetransfer.FileTransferManager;
 import com.twofours.surespot.gifs.GifMessageDownloader;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.PBFileUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
@@ -539,7 +540,7 @@ public class ChatAdapter extends BaseAdapter {
                 chatMessageViewHolder.tvText.setText("");
 
                 if (item.getFileMessageData() != null) {
-//                    if (item.getFileMessageData().getOriginalPath() == null) {
+//                    if (item.getFileMessageData().getLocalUri() == null) {
 //                        chatMessageViewHolder.mFileDownloadButton.setEnabled(true);
 //                        chatMessageViewHolder.mFileOpenButton.setEnabled(false);
 //                    }
@@ -634,7 +635,7 @@ public class ChatAdapter extends BaseAdapter {
                         if (sm != null) {
                             SurespotMessage.FileMessageData fmd = sm.getFileMessageData();
                             if (fmd != null) {
-                                fmd.setOriginalPath(uri);
+                                fmd.setLocalUri(uri);
                                 v.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -653,7 +654,7 @@ public class ChatAdapter extends BaseAdapter {
 
                 if (fmd != null) {
                     SurespotLog.d(TAG,"Opening file message, data: %s", fmd);
-                    String path = fmd.getOriginalPath();
+                    String path = fmd.getLocalUri();
 
 
                     if (path != null) {

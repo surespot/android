@@ -45,6 +45,7 @@ import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkHelper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.Utils;
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -2330,7 +2331,7 @@ public class ChatController {
         processNextMessage();
     }
 
-    synchronized void processNextMessage() {
+    public synchronized void processNextMessage() {
 
         //if we're ERRORED do nothing
         if (mErrored) {
@@ -3429,7 +3430,7 @@ public class ChatController {
                         PipedInputStream encryptionInputStream;
                         InputStream fileInputStream;
                         try {
-                            fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(fmd.getOriginalPath()));
+                            fileInputStream = mContext.getContentResolver().openInputStream(Uri.parse(fmd.getLocalUri()));
                             //encrypt
                             PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                             encryptionInputStream = new PipedInputStream(encryptionOutputStream);
@@ -3438,7 +3439,7 @@ public class ChatController {
                         }
                         catch (Exception e) {
                             //TODO this could be ugly, don't have access to the content anymore ie if process stops which is how we'd end up here
-                            SurespotLog.w(TAG, "exception opening data: %s", fmd.getOriginalPath());
+                            SurespotLog.w(TAG, "exception opening data: %s", fmd.getLocalUri());
                             //TODO error?
 //                            message.setPlainData(plainData);
 //                            messageSendCompleted(message);

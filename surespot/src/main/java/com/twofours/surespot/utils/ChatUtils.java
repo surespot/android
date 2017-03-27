@@ -1,7 +1,6 @@
-package com.twofours.surespot.chat;
+package com.twofours.surespot.utils;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -14,11 +13,9 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
-import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,14 +24,15 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.chat.ChatController;
+import com.twofours.surespot.chat.ChatManager;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.IAsyncCallbackTriplet;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.utils.FileUtils;
-import com.twofours.surespot.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -597,43 +595,6 @@ public class ChatUtils {
         return filePath;
     }
 
-    public static String getFilenameFromContentResolver(Activity activity, Uri uri) {
-
-        String uriString = uri.toString();
-        File myFile = new File(uriString);
-      //  String path = myFile.getAbsolutePath();
-        String displayName = null;
-
-        if (uriString.startsWith("content://")) {
-            Cursor cursor = null;
-            try {
-                cursor = activity.getContentResolver().query(uri, null, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally {
-                cursor.close();
-            }
-        } else if (uriString.startsWith("file://")) {
-            displayName = myFile.getName();
-        }
-        return displayName;
-    }
-
-    public static String getMimeType(Context context, Uri uri) {
-        String mimeType = null;
-        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            ContentResolver cr = context.getContentResolver();
-            mimeType = cr.getType(uri);
-        } else {
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString());
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    fileExtension.toLowerCase());
-        }
-        return mimeType;
-    }
-
     private static float exifOrientationToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
@@ -829,6 +790,8 @@ public class ChatUtils {
             }
         };
     }
+
+
 
 }
 

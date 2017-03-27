@@ -6,7 +6,7 @@ import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.network.IAsyncCallback;
 
 import org.nick.androidkeystore.Crypto;

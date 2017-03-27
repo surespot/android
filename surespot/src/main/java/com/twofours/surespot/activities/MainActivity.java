@@ -71,7 +71,6 @@ import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.chat.ChatUtils;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
 import com.twofours.surespot.filetransfer.FileTransferUtils;
@@ -90,6 +89,7 @@ import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
@@ -1097,36 +1097,33 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
 
             case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE:
+
                 if (resultCode == RESULT_OK) {
-                    if (requestCode == SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && data.getClipData() != null) {
-                            //    handleMultipleImageSelection(data);
-                        }
-                        else if (data.getData() != null) {
-
-                            //String realPath = ChatUtils.getRealPathFromURI(this, data.getData());
-                            SurespotLog.d(TAG, "chose, data: %s", data);
-//                            mPath = data.getDataString();
-//                            sendImage();
-                            final ChatController cc = ChatManager.getChatController(mUser);
-                            if (cc == null) {
-                                SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
-                                return;
-                            }
-
-                            String currentChat = cc.getCurrentChat();
-                            if (mUser != null && currentChat != null) {
-                                String filename = ChatUtils.getFilenameFromContentResolver(this, data.getData());
-                                String mimeType = ChatUtils.getMimeType(this, data.getData());
-                                FileTransferUtils.uploadFileAsync(this, cc, filename, data.getDataString(),mimeType, mUser, currentChat);
-                            }
-                        }
-                        else {
-                            SurespotLog.i(TAG, "Not able to support multiple file selection and no appropriate data returned from file picker");
-                            Utils.makeLongToast(this, getString(R.string.could_not_select_image));
-                            //finish();
+                    final ChatController cc = ChatManager.getChatController(mUser);
+                    if (cc == null) {
+                        SurespotLog.w(TAG, "onOptionItemSelected select File: chat controller null, bailing");
+                        return;
+                    }
+                    String currentChat = cc.getCurrentChat();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && data.getClipData() != null) {
+                        SurespotLog.d(TAG, "chose, clip data: %s", data.getClipData());
+                        if (mUser != null && currentChat != null) {
+                            FileTransferUtils.handleClipDataFileSelection(this, cc, mUser, currentChat, data);
                         }
                     }
+                    else if (data.getData() != null) {
+                        SurespotLog.d(TAG, "chose, data: %s", data);
+
+                        if (mUser != null && currentChat != null) {
+
+                            FileTransferUtils.uploadFileAsync(this, cc, mUser, currentChat, data.getData());
+                        }
+                    }
+                    else {
+                        SurespotLog.i(TAG, "Not able to support multiple file selection and no appropriate data returned from file picker");
+                        Utils.makeLongToast(this, getString(R.string.could_not_select_image));
+                    }
+
                 }
                 break;
 
@@ -2252,7 +2249,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (mEtGifSearch != null) {
                         mEtGifSearch.setText(result + " ");
                         mEtGifSearch.setSelection(mEtGifSearch.getText().length());
-                        hideGifDrawer(true,true);
+                        hideGifDrawer(true, true);
                     }
                 }
             });

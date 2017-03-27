@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.chat.ChatUtils;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.identity.SurespotIdentity;
