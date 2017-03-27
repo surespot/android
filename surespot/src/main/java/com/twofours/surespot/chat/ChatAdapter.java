@@ -597,20 +597,15 @@ public class ChatAdapter extends BaseAdapter {
         public TextView mFilesize;
         public Button mFileOpenButton;
         public Button mFileDownloadButton;
-
-
     }
-
 
     private View.OnClickListener FileClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             String iv = ((View) v.getParent()).getTag().toString();
             SurespotMessage message = getMessageByIv(iv);
-            if (ChatUtils.isMyMessage(mOurUsername,message)) {
-
-                FileTransferManager.download(mContext, mOurUsername, message);
-            }
+            SurespotLog.d(TAG, "FileClickListener, downloading file message: %s", message);
+            FileTransferManager.download(mContext, mOurUsername, message);
         }
     };
 

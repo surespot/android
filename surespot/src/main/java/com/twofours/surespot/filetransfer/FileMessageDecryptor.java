@@ -132,6 +132,7 @@ public class FileMessageDecryptor {
 
                         @Override
                         public void run() {
+                            SurespotLog.d(TAG, "setting filename: %s", mMessage.getFileMessageData().getFilename());
                             TextView filenameView = (TextView) view.findViewById(R.id.fileFilename);
                             filenameView.setText(mMessage.getFileMessageData().getFilename());
                             UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, view);

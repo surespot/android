@@ -404,30 +404,31 @@ public class UIUtils {
     }
 
     public static void updateDateAndSize(Context context, SurespotMessage message, View parentView) {
+        SurespotLog.d(TAG,"updateDateAndSize, message: %s", message);
         if (message.getDateTime() != null) {
             TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
             tvTime.setText(DateFormat.getDateFormat(context).format(message.getDateTime()) + " "
                     + DateFormat.getTimeFormat(context).format(message.getDateTime()));
 
         }
-        TextView voiceTime = (TextView) parentView.findViewById(R.id.messageSize);
+        TextView tvMessageSize = (TextView) parentView.findViewById(R.id.messageSize);
         if (message.getDataSize() != null && message.getDataSize() > 0) {
 
-            voiceTime.setVisibility(View.VISIBLE);
+            tvMessageSize.setVisibility(View.VISIBLE);
 
             // use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
             float kb = (float) message.getDataSize() / 1000;
-            voiceTime.setText(String.format("%d KB", (int) Math.ceil(kb)));
+            tvMessageSize.setText(String.format("%d KB", (int) Math.ceil(kb)));
         } else {
             if (message.getFileMessageData() != null && message.getFileMessageData().getSize() > 0) {
-                voiceTime.setVisibility(View.VISIBLE);
+                tvMessageSize.setVisibility(View.VISIBLE);
 
                 // use base 10 definition of kB: http://en.wikipedia.org/wiki/Kilobyte
                 float kb = (float) message.getFileMessageData().getSize() / 1000;
-                voiceTime.setText(String.format("%d KB", (int) Math.ceil(kb)));
+                tvMessageSize.setText(String.format("%d KB", (int) Math.ceil(kb)));
             }
             else {
-                voiceTime.setVisibility(View.GONE);
+                tvMessageSize.setVisibility(View.GONE);
             }
         }
     }
