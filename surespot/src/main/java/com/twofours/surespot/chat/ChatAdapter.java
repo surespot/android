@@ -1,7 +1,9 @@
 package com.twofours.surespot.chat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -26,6 +28,7 @@ import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -601,12 +604,51 @@ public class ChatAdapter extends BaseAdapter {
 
     private View.OnClickListener FileClickListener = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {
-            String iv = ((View) v.getParent()).getTag().toString();
-            SurespotMessage message = getMessageByIv(iv);
-            SurespotLog.d(TAG, "FileClickListener, downloading file message: %s", message);
-            FileTransferManager.download(mContext, mOurUsername, message);
+        public void onClick(final View v) {
+            final String iv = ((View) v.getParent()).getTag().toString();
+            final SurespotMessage message = getMessageByIv(iv);
+
+            if (v.getTag().equals("download")) {
+                SurespotLog.d(TAG, "FileClickListener, downloading file message: %s", message);
+                FileTransferManager.download(mContext, mOurUsername, message, new IAsyncCallback<String>() {
+
+                    @Override
+                    public void handleResponse(String localPath) {
+                        SurespotMessage sm = getMessageByIv(iv);
+                        if (sm != null) {
+                            SurespotMessage.FileMessageData fmd = sm.getFileMessageData();
+                            if (fmd != null) {
+                                fmd.setOriginalPath(localPath);
+                                v.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyDataSetChanged();
+                                    }
+                                });
+
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (v.getTag().equals("open")) {
+                SurespotMessage.FileMessageData fmd = message.getFileMessageData();
+
+                if (fmd != null) {
+                    SurespotLog.d(TAG,"Opening file message, data: %s", fmd);
+                    String path = fmd.getOriginalPath();
+                    if (path != null) {
+                        File file = new File(path);
+                        Intent i = new Intent();
+                        i.setAction(android.content.Intent.ACTION_VIEW);
+                        i.setDataAndType(Uri.fromFile(file), SurespotConstants.MimeTypes.FILE);
+                        mContext.startActivity(i);
+                    }
+                }
+            }
         }
+
     };
 
     public boolean addOrUpdateMessage(SurespotMessage message, boolean checkSequence, boolean sort, boolean notify) {

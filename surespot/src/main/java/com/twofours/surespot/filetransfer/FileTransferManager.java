@@ -6,6 +6,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.Utils;
 
@@ -34,11 +35,11 @@ public class FileTransferManager {
     }
 
 
-    public static void download(Context context, String ourUsername, SurespotMessage message) {
+    public static void download(Context context, String ourUsername, SurespotMessage message, IAsyncCallback<String> callback) {
         FileTransferTask task = mTasks.get(message.getIv());
 
         if (task == null) {
-            task = new FileTransferTask(context, ourUsername, message);
+            task = new FileTransferTask(context, ourUsername, message, callback);
             mTasks.put(message.getIv(), task);
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
         }
@@ -46,6 +47,9 @@ public class FileTransferManager {
     }
 
     public static class FileTransferTask implements Runnable{
+        private String TAG = "FileTransferTask";
+        private Context mContext;
+
         private String mOurUsername;
         private String mOurVersion;
         private String mTheirUsername;
@@ -53,10 +57,12 @@ public class FileTransferManager {
         private String mFilename;
         private String mIv;
         private String mUrl;
-        private Context mContext;
-        private String TAG = "FileTransferTask";
 
-        public FileTransferTask(Context context, String ourUsername, SurespotMessage message) {
+        private IAsyncCallback<String> mCallback;
+
+
+
+        public FileTransferTask(Context context, String ourUsername, SurespotMessage message, IAsyncCallback<String> callback) {
             mContext = context;
             mOurUsername = ourUsername;
             mTheirUsername = message.getOtherUser(mOurUsername);
@@ -65,6 +71,7 @@ public class FileTransferManager {
             mIv = message.getIv();
             mUrl = message.getFileMessageData().getCloudUrl();
             mFilename = message.getFileMessageData().getFilename();
+            mCallback = callback;
         }
 
         public String getIv() {
@@ -87,8 +94,11 @@ public class FileTransferManager {
                 EncryptionController.runDecryptTask(mOurUsername, mOurVersion, mTheirUsername, mTheirVersion, mIv, true,
                         new BufferedInputStream(encryptedFileStream), out);
 
-                Utils.copyStreamToFile(inputStream, new File(String.format("/sdcard/Download/%s", mFilename)));
+                File file = new File(String.format("/sdcard/Download/%s", mFilename));
+                Utils.copyStreamToFile(inputStream, file);
                 SurespotLog.d(TAG, "Stream downloaded and decrypted to file.");
+                mCallback.handleResponse(file.getAbsolutePath());
+
             }
             catch (IOException e) {
                 e.printStackTrace();
