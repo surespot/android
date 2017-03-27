@@ -8,6 +8,7 @@ import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.PBFileUtils;
 import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
@@ -97,7 +98,7 @@ public class FileTransferManager {
                 File file = new File(String.format("/sdcard/Download/%s", mFilename));
                 Utils.copyStreamToFile(inputStream, file);
                 SurespotLog.d(TAG, "Stream downloaded and decrypted to file.");
-                mCallback.handleResponse(file.getAbsolutePath());
+                mCallback.handleResponse(PBFileUtils.getUri(file).toString());
 
             }
             catch (IOException e) {

@@ -9,6 +9,10 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled rootProject.ext.multiDexEnabled
+
+        def documentsAuthorityValue = "com.twofours.surespot.localstorage.documents"
+        manifestPlaceholders = [documentsAuthority: documentsAuthorityValue]
+        buildConfigField "String", "DOCUMENTS_AUTHORITY", "\"${documentsAuthorityValue}\""
     }
 
 

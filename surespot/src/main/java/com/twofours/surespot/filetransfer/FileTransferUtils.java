@@ -187,7 +187,7 @@ public class FileTransferUtils {
                         create.getMediaHttpUploader().setProgressListener(new CustomProgressListener());
                         File created = create
                                 //.set("permissions", Arrays. permission)
-                                .setFields("id,size, webContentLink, permissions")
+                                .setFields("id,size, webContentLink")
                                 .execute();
 
                      //   SurespotLog.d(TAG, "createFile, filename: %s, created file: %s", filename, created.toPrettyString());

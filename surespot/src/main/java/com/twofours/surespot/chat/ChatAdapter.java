@@ -25,6 +25,7 @@ import com.twofours.surespot.filetransfer.FileTransferManager;
 import com.twofours.surespot.gifs.GifMessageDownloader;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.PBFileUtils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
 
@@ -628,12 +629,12 @@ public class ChatAdapter extends BaseAdapter {
                 FileTransferManager.download(mContext, mOurUsername, message, new IAsyncCallback<String>() {
 
                     @Override
-                    public void handleResponse(String localPath) {
+                    public void handleResponse(String uri) {
                         SurespotMessage sm = getMessageByIv(iv);
                         if (sm != null) {
                             SurespotMessage.FileMessageData fmd = sm.getFileMessageData();
                             if (fmd != null) {
-                                fmd.setOriginalPath(localPath);
+                                fmd.setOriginalPath(uri);
                                 v.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -653,12 +654,16 @@ public class ChatAdapter extends BaseAdapter {
                 if (fmd != null) {
                     SurespotLog.d(TAG,"Opening file message, data: %s", fmd);
                     String path = fmd.getOriginalPath();
+
+
                     if (path != null) {
-                        File file = new File(path);
-                        Uri uri = Uri.fromFile(file);
+                        Uri uri = Uri.parse(path);
+                        File file = PBFileUtils.getFile(mContext, uri);
+                        SurespotLog.d(TAG, "Opening from uri: %s, file: %s", uri, file);
+
                         Intent i = new Intent();
                         i.setAction(android.content.Intent.ACTION_VIEW);
-                        i.setDataAndType(uri, fmd.getMimeType());
+                        i.setDataAndType(Uri.fromFile(file), fmd.getMimeType());
                         mContext.startActivity(i);
                     }
                 }
