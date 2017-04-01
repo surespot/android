@@ -660,7 +660,7 @@ public class ChatAdapter extends BaseAdapter {
                     if (path != null) {
                         Uri uri = Uri.parse(path);
                         File file = PBFileUtils.getFile(mContext, uri);
-                        SurespotLog.d(TAG, "Opening from uri: %s, file: %s", uri, file);
+                        SurespotLog.d(TAG, "Opening from file, uri: %s, file: %s", uri, file);
 
                         Intent i = new Intent();
                         i.setAction(android.content.Intent.ACTION_VIEW);
