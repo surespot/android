@@ -34,6 +34,7 @@ public class Friend implements Comparable<Friend> {
 	private String mAliasPlain;
 	private boolean mAliasHashed;
 	private boolean mImageHashed;
+	private boolean mMuted;
 
 	public Friend(String name) {
 		mName = name;
@@ -366,6 +367,8 @@ public class Friend implements Comparable<Friend> {
 		friend.setAvailableMessageId(jsonFriend.optInt("lastAvailableMessageId"), false);
 		friend.setLastViewedMessageId(jsonFriend.optInt("lastViewedMessageId"));
 
+		friend.setMuted(jsonFriend.optBoolean("muted"));
+
 		return friend;
 	}
 
@@ -387,6 +390,7 @@ public class Friend implements Comparable<Friend> {
 			jsonFriend.put("aliasIv", this.getAliasIv());
 			jsonFriend.put("aliasHashed", this.isAliasHashed());
 			jsonFriend.put("imageHashed", this.isImageHashed());
+			jsonFriend.put("muted", this.isMuted());
 			return jsonFriend;
 		}
 		catch (JSONException e) {
@@ -471,5 +475,13 @@ public class Friend implements Comparable<Friend> {
 
 	public void setImageHashed(boolean imageHashed) {
 		this.mImageHashed = imageHashed;
+	}
+
+	public boolean isMuted() {
+		return mMuted;
+	}
+
+	public void setMuted(boolean muted) {
+		mMuted = muted;
 	}
 };

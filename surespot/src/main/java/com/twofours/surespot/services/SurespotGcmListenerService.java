@@ -31,15 +31,18 @@ import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.twofours.surespot.R;
+import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
+import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.UIUtils;
 
 import java.util.ArrayList;
@@ -104,6 +107,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
             //if current chat controller is for to user
             boolean tabOpenToUser = false;
+            boolean muted = false;
+            Friend friend = null;
 
             if (chatController != null) {
                 if (to.equals(chatController.getUsername())) {
@@ -114,9 +119,13 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
                     chatControllerConnected = chatController.isConnected();
 
-
+                    friend = chatController.getFriendAdapter().getFriend(from);
+                    if (friend != null) {
+                        muted = friend.isMuted();
+                    }
                 }
             }
+
 
             boolean uiAttached = ChatManager.isUIAttached();
 
@@ -127,6 +136,16 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 SurespotLog.d(TAG, "not displaying gcm notification because the tab is open for it and the chat controller is connected.");
                 return;
             }
+
+            if (friend == null) {
+                StateController.FriendState friendState = SurespotApplication.getStateController().loadFriends(to);
+                friend = FriendAdapter.getFriend(friendState.friends, from);
+                if (friend != null) {
+                    muted = friend.isMuted();
+                }
+            }
+
+            SurespotLog.d(TAG, "muted: %b", muted);
 
             boolean tabVisibleButNotConnected = hasLoggedInUser && isScreenOn && sameUser && tabOpenToUser && uiAttached && !chatControllerConnected;
             String spot = ChatUtils.getSpot(from, to);
@@ -179,7 +198,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
                         }
 
-                        if (!notified) {
+                        if (!notified && !muted) {
                             //otherwise show notification
                             //String password = IdentityController.getStoredPasswordForIdentity(this, to);
                             //SurespotLog.d(TAG, "GOT PASSWORD: %s",  password);
@@ -261,16 +280,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     to,
                     SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
             return;
-        }
-
-        if ("system".equals(type)) {
-            String tag = bundle.getString("tag");
-            String title = bundle.getString("title");
-            String message = bundle.getString("message");
-
-            if (!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(message) && !TextUtils.isEmpty(title)) {
-                generateSystemNotification(this, title, message, tag, SurespotConstants.IntentRequestCodes.SYSTEM_NOTIFICATION);
-            }
         }
     }
     // [END receive_message]

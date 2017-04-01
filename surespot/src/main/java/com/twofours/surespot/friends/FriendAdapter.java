@@ -79,15 +79,21 @@ public class FriendAdapter extends BaseAdapter {
         mLoadingCallback = callback;
     }
 
-    public Friend getFriend(String friendName) {
-        synchronized (mFriends) {
-            for (Friend friend : mFriends) {
+    public static Friend getFriend( List<Friend> friends, String friendName) {
+        synchronized (friends) {
+            for (Friend friend : friends) {
                 if (friend.getName().equals(friendName)) {
                     return friend;
                 }
             }
         }
         return null;
+
+    }
+
+
+    public Friend getFriend(String friendName) {
+        return getFriend(mFriends, friendName);
     }
 
     public void addNewFriend(String name) {
@@ -235,6 +241,7 @@ public class FriendAdapter extends BaseAdapter {
             friendViewHolder.tvStatus = (TextView) convertView.findViewById(R.id.friendStatus);
             friendViewHolder.vgActivity = convertView.findViewById(R.id.messageActivity);
             friendViewHolder.avatarImage = (ImageView) convertView.findViewById(R.id.friendAvatar);
+            friendViewHolder.muteImage = (ImageView) convertView.findViewById(R.id.friendMute);
             convertView.setTag(friendViewHolder);
 
         } else {
@@ -259,6 +266,17 @@ public class FriendAdapter extends BaseAdapter {
         } else {
             friendViewHolder.avatarImage.setImageResource(android.R.color.transparent);
         }
+
+        if (friend.isMuted()) {
+            friendViewHolder.muteImage.setVisibility(View.VISIBLE);
+            if (friend.hasFriendImageAssigned()) {
+               friendViewHolder.avatarImage.setAlpha(0.5f);
+            }
+        } else {
+            friendViewHolder.avatarImage.setAlpha(1.0f);
+            friendViewHolder.muteImage.setVisibility(View.GONE);
+        }
+
 
         if (friend.isInvited() || friend.isNewFriend() || friend.isInviter() || friend.isDeleted()) {
             friendViewHolder.tvStatus.setTypeface(null, Typeface.ITALIC);
@@ -383,6 +401,7 @@ public class FriendAdapter extends BaseAdapter {
         public View friendActive;
         public View friendInactive;
         public Friend friend;
+        public ImageView muteImage;
     }
 
     public void sort() {

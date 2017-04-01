@@ -1167,6 +1167,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         mMenuOverflow = menu;
 
+    //    mMenuItems.add(menu.findItem(R.id.menu_mute_bar));
         mMenuItems.add(menu.findItem(R.id.menu_close_bar));
         mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
 
@@ -1241,6 +1242,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     cc.setCurrentChat(null);
                 }
                 return true;
+//            case R.id.menu_mute_bar:
+//                if (mCurrentFriend != null) {
+//                    mCurrentFriend.setMuted(!mCurrentFriend.isMuted());
+//                    cc.saveFriends();
+//                }
+//                return true;
             case R.id.menu_close_bar:
 
                 cc.closeTab();

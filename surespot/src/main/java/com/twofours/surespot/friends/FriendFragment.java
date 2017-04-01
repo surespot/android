@@ -1,6 +1,5 @@
 package com.twofours.surespot.friends;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -127,8 +126,8 @@ public class FriendFragment extends Fragment {
             if (!friend.isInviter()) {
                 FriendMenuFragment dialog = new FriendMenuFragment();
 
-                dialog.setActivityAndFriend(friend, new IAsyncCallbackTriplet<DialogInterface, Friend, String>() {
-                    public void handleResponse(DialogInterface dialogi, Friend friend, String selection) {
+                dialog.setActivityAndFriend(friend, new IAsyncCallbackTriplet<DialogInterface, Friend, Integer>() {
+                    public void handleResponse(DialogInterface dialogi, Friend friend, Integer selection) {
                         handleMenuSelection(dialogi, friend, selection);
                     }
 
@@ -137,7 +136,8 @@ public class FriendFragment extends Fragment {
 
                 try {
                     dialog.show(getActivity().getFragmentManager(), "FriendMenuFragment");
-                } catch (IllegalStateException e) {
+                }
+                catch (IllegalStateException e) {
                     //swallow this fucker
                     //AOSP bug
                     //https://stackoverflow.com/questions/27329913/dialogfragshow-from-a-fragment-throwing-illegalstateexception-can-not-perfo
@@ -150,86 +150,97 @@ public class FriendFragment extends Fragment {
 
     };
 
-    private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, String selection) {
+    private void handleMenuSelection(final DialogInterface dialogi, final Friend friend, int selection) {
         final MainActivity activity = this.getMainActivity();
 
         final ChatController cc = ChatManager.getChatController(mUsername);
 
-        if (selection.equals(getString(R.string.menu_close_tab))) {
-            if (cc != null) {
-                cc.closeTab(friend.getName());
-            }
-        } else {
-            if (selection.equals(getString(R.string.menu_assign_image))) {
+        switch (selection) {
+            case R.string.mute:
+                if (cc != null) {
+                    cc.mute(friend.getName());
+                }
+                break;
+            case R.string.unmute:
+                if (cc != null) {
+                    cc.unmute(friend.getName());
+                }
+                break;
+            case R.string.menu_close_tab:
+                if (cc != null) {
+                    cc.closeTab(friend.getName());
+                }
+                break;
+            case R.string.menu_assign_image:
                 activity.uploadFriendImage(friend.getName(), friend.getNameOrAlias());
-            } else {
-                if (selection.equals(getString(R.string.menu_remove_friend_image))) {
-                    activity.removeFriendImage(friend.getName());
-                } else {
-                    if (selection.equals(getString(R.string.menu_assign_alias))) {
-                        activity.assignFriendAlias(friend.getName());
-                    } else {
-                        if (selection.equals(getString(R.string.menu_remove_friend_alias))) {
-                            activity.removeFriendAlias(friend.getName());
-                        } else {
-                            if (selection.equals(getString(R.string.verify_key_fingerprints))) {
-                                UIUtils.showKeyFingerprintsDialog(activity, mUsername, friend.getName(), friend.getAliasPlain());
-                            } else {
+                break;
+            case R.string.menu_remove_friend_image:
+                activity.removeFriendImage(friend.getName());
+                break;
+            case R.string.menu_assign_alias:
+                activity.assignFriendAlias(friend.getName());
+                break;
+            case R.string.menu_remove_friend_alias:
+                activity.removeFriendAlias(friend.getName());
+                break;
+            case R.string.verify_key_fingerprints:
+                UIUtils.showKeyFingerprintsDialog(activity, mUsername, friend.getName(), friend.getAliasPlain());
+                break;
+            case R.string.menu_delete_all_messages:
 
-                                if (selection.equals(getString(R.string.menu_delete_all_messages))) {
-
-                                    SharedPreferences sp = activity.getSharedPreferences(mUsername, Context.MODE_PRIVATE);
-                                    boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
-                                    if (confirm) {
-                                        mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
-                                                getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
-                                                new IAsyncCallback<Boolean>() {
-                                                    public void handleResponse(Boolean result) {
-                                                        if (result) {
-                                                            if (cc != null) {
-                                                                cc.deleteMessages(friend);
-                                                            }
-                                                        }
-
-                                                    }
-
-                                                    ;
-                                                });
-                                    } else {
+                SharedPreferences sp = activity.getSharedPreferences(mUsername, Context.MODE_PRIVATE);
+                boolean confirm = sp.getBoolean("pref_delete_all_messages", true);
+                if (confirm) {
+                    mDialog = UIUtils.createAndShowConfirmationDialog(activity, getString(R.string.delete_all_confirmation),
+                            getMainActivity().getString(R.string.delete_all_title), getString(R.string.ok), getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
                                         if (cc != null) {
                                             cc.deleteMessages(friend);
                                         }
                                     }
-                                } else {
-                                    if (selection.equals(getString(R.string.menu_delete_friend))) {
-                                        mDialog = UIUtils.createAndShowConfirmationDialog(
-                                                activity,
-                                                getMainActivity().getString(R.string.delete_friend_confirmation,
-                                                        UIUtils.buildAliasString(friend.getName(), friend.getAliasPlain())),
-                                                getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
-                                                new IAsyncCallback<Boolean>() {
-                                                    public void handleResponse(Boolean result) {
-                                                        if (result) {
-                                                            if (cc != null) {
-                                                                cc.deleteFriend(friend);
-                                                            } else {
-                                                                dialogi.cancel();
-                                                            }
-                                                        } else {
-                                                            dialogi.cancel();
-                                                        }
-                                                    }
 
-                                                    ;
-                                                });
-                                    }
                                 }
-                            }
-                        }
+
+                                ;
+                            });
+                }
+                else {
+                    if (cc != null) {
+                        cc.deleteMessages(friend);
                     }
                 }
-            }
+
+                break;
+            case R.string.menu_delete_friend:
+                mDialog = UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getMainActivity().getString(R.string.delete_friend_confirmation,
+                                UIUtils.buildAliasString(friend.getName(), friend.getAliasPlain())),
+                        getMainActivity().getString(R.string.menu_delete_friend), getString(R.string.ok), getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    if (cc != null) {
+                                        cc.deleteFriend(friend);
+                                    }
+                                    else {
+                                        dialogi.cancel();
+                                    }
+                                }
+                                else {
+                                    dialogi.cancel();
+                                }
+                            }
+
+                            ;
+                        });
+                break;
+
+
         }
+
     }
 
     private MainActivity getMainActivity() {

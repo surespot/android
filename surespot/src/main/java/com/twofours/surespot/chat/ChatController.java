@@ -774,6 +774,21 @@ public class ChatController {
         }
     }
 
+    public void mute(String name) {
+        Friend friend = getFriendAdapter().getFriend(name);
+        friend.setMuted(true);
+        saveFriends();
+        getFriendAdapter().notifyDataSetChanged();
+    }
+
+    public void unmute(String name) {
+        Friend friend = getFriendAdapter().getFriend(name);
+        friend.setMuted(false);
+        saveFriends();
+        getFriendAdapter().notifyDataSetChanged();
+    }
+
+
     private class LatestIdPair {
         int latestMessageId;
         int latestControlMessageId;

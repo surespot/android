@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/friendItemLayout"
-              xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/friendItemLayout"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
@@ -29,15 +29,34 @@
             android:visibility="gone">
         </View>
 
-        <ImageView
-            android:id="@+id/friendAvatar"
+
+        <FrameLayout
+            android:id="@+id/friendAvatarFrame"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_gravity="left"
-
+            android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
-            android:scaleType="centerCrop">
-        </ImageView>
+            >
+
+            <ImageView
+                android:id="@+id/friendAvatar"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:scaleType="centerCrop">
+            </ImageView>
+
+            <ImageView
+                android:id="@+id/friendMute"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_volume_off_white_36dp"
+                android:visibility="gone">
+            </ImageView>
+        </FrameLayout>
+
 
         <TextView
             android:id="@+id/friendName"
@@ -45,6 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_weight="1"
             android:textSize="25sp">
         </TextView>
