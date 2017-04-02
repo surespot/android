@@ -139,9 +139,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
             if (friend == null) {
                 StateController.FriendState friendState = SurespotApplication.getStateController().loadFriends(to);
-                friend = FriendAdapter.getFriend(friendState.friends, from);
-                if (friend != null) {
-                    muted = friend.isMuted();
+                if (friendState != null) {
+                    friend = FriendAdapter.getFriend(friendState.friends, from);
+                    if (friend != null) {
+                        muted = friend.isMuted();
+                    }
                 }
             }
 
