@@ -164,7 +164,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
                         if (chatController.addMessageExternal(sm)) {
                             SurespotLog.d(TAG, "adding gcm message to controller");
                             chatController.saveMessages(from);
-
                             added = true;
                         }
                     }
@@ -191,15 +190,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
                     if (added) {
                         boolean notified = false;
-                        //added and tab's not
-                        if (tabVisibleButNotConnected) {
-                            //tab visible but not connected, and message added by the gcm, so just notify the chat adapter
-
-                            SurespotLog.d(TAG, "tab visible but not connected, not showing notification, notifying chat adapter data set changed");
-                            notified = chatController.notifyChatAdapterDataSetChanged(from);
-
+                        //tab visible but not connected, and message added by the gcm, so just notify the chat adapter
+                        //  SurespotLog.d(TAG, "tab visible but not connected, not showing notification, notifying chat adapter data set changed");
+                        if (chatController != null) {
+                            notified = chatController.notifyChatAdapterDataSetChanged(from) && tabVisibleButNotConnected;
                         }
-
                         if (!notified && !muted) {
                             //otherwise show notification
                             //String password = IdentityController.getStoredPasswordForIdentity(this, to);
