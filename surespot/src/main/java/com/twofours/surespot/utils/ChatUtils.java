@@ -245,15 +245,10 @@ public class ChatUtils {
             public void run() {
                 SurespotLog.v(TAG, "uploadVoiceMessageAsync");
                 try {
-                    final File localImageFile = getTempImageUploadFile(activity);
-                    final String localImageUri = Uri.fromFile(localImageFile).toString();
-                    SurespotLog.d(TAG, "saving copy of unencrypted voice to: %s", localImageFile.getAbsolutePath());
-
                     byte[] audioBytes = Utils.inputStreamToBytes(activity.getContentResolver().openInputStream(audioUri));
-                    Utils.bytesToFile(audioBytes, localImageFile);
 
                     String iv = EncryptionController.getStringIv();
-                    SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.M4A, localImageUri, iv);
+                    SurespotMessage message = buildPlainMessage(from, to, SurespotConstants.MimeTypes.M4A, audioUri.toString(), iv);
                     message.setPlainBinaryData(audioBytes);
                     final SurespotMessage finalMessage = message;
 
@@ -266,6 +261,7 @@ public class ChatUtils {
                     });
 
                     chatController.enqueueMessage(finalMessage);
+
 
                 } catch (IOException e) {
                     chatController.processNextMessage();
