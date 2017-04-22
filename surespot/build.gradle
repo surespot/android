@@ -50,7 +50,6 @@ android {
 
 dependencies {
     compile project(':viewpagerindicator')
-    compile project(':imageViewTouch')
     compile project(':androidkeystore')
     compile project(':libs:emojicon')
 
@@ -80,4 +79,5 @@ dependencies {
     compile 'ch.acra:acra:4.8.5'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
     compile 'net.margaritov.preference.colorpicker.ColorPickerPreference:ColorPickerPreference:1.0.0'
+    compile 'it.sephiroth.android.library.imagezoom:imagezoom:+'
 }

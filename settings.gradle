@@ -1,4 +1,3 @@
-include ':imageViewTouch'
 include ':androidkeystore'
 include ':viewpagerindicator'
 include ':surespot'
