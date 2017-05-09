@@ -43,19 +43,19 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.activities.MainActivity;
-import com.twofours.surespot.backup.ExportIdentityActivity;
-import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.ui.LetterOrDigitOrSpaceInputFilter;
-import com.twofours.surespot.ui.SingleProgressDialog;
+import com.twofours.surespot.activities.MainActivity;
+import com.twofours.surespot.backup.ExportIdentityActivity;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.identity.KeyFingerprintDialogFragment;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.qr.QRCodeEncoder;
 import com.twofours.surespot.qr.WriterException;
+import com.twofours.surespot.ui.LetterOrDigitOrSpaceInputFilter;
+import com.twofours.surespot.ui.SingleProgressDialog;
 
 import org.json.JSONObject;
 import org.spongycastle.util.encoders.Hex;
@@ -270,7 +270,7 @@ public class UIUtils {
 
     private static String buildExternalInviteUrl(String username) {
         try {
-            return "https://server.surespot.me/autoinvite/" + URLEncoder.encode(username, "UTF-8") + "/social";
+            return "https://invite.surespot.me/autoinvite/" + URLEncoder.encode(username, "UTF-8") + "/social";
         } catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
 
@@ -289,7 +289,7 @@ public class UIUtils {
 
         String inviteUrl = null;
         try {
-            inviteUrl = "https://server.surespot.me/autoinvite/" + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
+            inviteUrl = "https://invite.surespot.me/autoinvite/" + URLEncoder.encode(user, "UTF-8") + "/qr_droid";
         } catch (UnsupportedEncodingException e) {
             SurespotLog.w(TAG, e, "error encoding auto invite url");
             Utils.makeLongToast(activity, activity.getString(R.string.invite_no_application_found));

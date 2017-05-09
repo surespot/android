@@ -477,14 +477,15 @@ public class ExportIdentityActivity extends Activity {
 
             File file = getIdentityFile(idDirId, caseInsensitiveUsername);
             if (file != null) {
-//
-//                // update
-//             //   file = mDriveHelper.getDriveService().files().get(idFile.getId()).execute();
-//                if (file != null) {
-                    SurespotLog.d(TAG, "updateIdentityDriveFile, updating existing identity file: %s", filename);
-                    mDriveHelper.getDriveService().files().update(file.getId(), file, content).execute();
-                    return true;
-                //}
+                // update
+                String id = file.getId();
+
+                file = new File();
+                file.setName(filename);
+                file.setMimeType(SurespotConstants.MimeTypes.SURESPOT_IDENTITY);
+                SurespotLog.d(TAG, "updateIdentityDriveFile, updating existing identity file: %s", filename);
+                mDriveHelper.getDriveService().files().update(id, file, content).execute();
+                return true;
             }
 
             // create
@@ -531,7 +532,7 @@ public class ExportIdentityActivity extends Activity {
         String filename = caseInsensitiveUsername + IdentityController.IDENTITY_EXTENSION;
 
         FileList identityFileList = mDriveHelper.getDriveService().files().list()
-                .setQ(String.format("name='%s' and '%s' in parents and trashed = false",filename, identityDirId)).execute();
+                .setQ(String.format("name='%s' and '%s' in parents and trashed = false", filename, identityDirId)).execute();
         List<com.google.api.services.drive.model.File> items = identityFileList.getFiles();
 
         if (items.size() == 1) {

@@ -37,7 +37,7 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('/home/adam/dev/surespot/keystore/custom-debug.keystore')
+            storeFile file('/Users/adam/dev/surespot/keystore/custom-debug.keystore')
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
@@ -50,14 +50,12 @@ android {
 
 dependencies {
     compile project(':viewpagerindicator')
-    compile project(':imageViewTouch')
     compile project(':androidkeystore')
-    compile project(":ColorPickerPreference")
     compile project(':libs:emojicon')
 
-    compile 'com.android.support:support-v4:25.3.0'
-    compile 'com.android.support:appcompat-v7:25.3.0'
-    compile 'com.android.support:recyclerview-v7:25.3.0'
+    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:recyclerview-v7:25.3.1'
 
     compile 'pub.devrel:easypermissions:0.2.1'
     compile('com.google.api-client:google-api-client-android:1.22.0') {
@@ -70,9 +68,9 @@ dependencies {
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
-    compile 'com.google.android.gms:play-services-auth:10.2.0'
-    compile 'com.google.android.gms:play-services-gcm:10.2.0'
-    compile 'com.google.android.gms:play-services-analytics:10.2.0'
+    compile 'com.google.android.gms:play-services-auth:10.2.1'
+    compile 'com.google.android.gms:play-services-gcm:10.2.1'
+    compile 'com.google.android.gms:play-services-analytics:10.2.1'
 
     compile 'com.android.support:multidex:1.0.1'
     compile('io.socket:socket.io-client:0.8.3') {
@@ -80,4 +78,6 @@ dependencies {
     }
     compile 'ch.acra:acra:4.8.5'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
+    compile 'net.margaritov.preference.colorpicker.ColorPickerPreference:ColorPickerPreference:1.0.0'
+    compile 'it.sephiroth.android.library.imagezoom:imagezoom:+'
 }
