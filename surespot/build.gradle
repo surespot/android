@@ -49,8 +49,8 @@ android {
 }
 
 dependencies {
-    compile project(':viewpagerindicator')
-    compile project(':androidkeystore')
+    compile project(':libs:viewpagerindicator')
+    compile project(':libs:androidkeystore')
     compile project(':libs:emojicon')
 
     compile 'com.android.support:support-v4:25.3.1'
@@ -79,5 +79,5 @@ dependencies {
     compile 'ch.acra:acra:4.8.5'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
     compile 'net.margaritov.preference.colorpicker.ColorPickerPreference:ColorPickerPreference:1.0.0'
-    compile 'it.sephiroth.android.library.imagezoom:imagezoom:+'
+    compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
 }

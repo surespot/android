@@ -1,5 +1,4 @@
-include ':androidkeystore'
-include ':viewpagerindicator'
 include ':surespot'
 include ':libs:emojicon'
-
+include ':libs:androidkeystore'
+include ':libs:viewpagerindicator'
