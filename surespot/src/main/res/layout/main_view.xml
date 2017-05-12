@@ -41,15 +41,15 @@
         android:layout_alignWithParentIfMissing="true">
 
 
-        <TextView
-            android:id="@+id/tvGIF"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:padding="5dp"
-            android:text="@string/gif"
-            android:textSize="@dimen/abc_text_size_large_material"
-            android:textStyle="bold"/>
+        <!--<TextView-->
+            <!--android:id="@+id/tvGIF"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:gravity="center"-->
+            <!--android:padding="5dp"-->
+            <!--android:text="@string/gif"-->
+            <!--android:textSize="@dimen/abc_text_size_large_material"-->
+            <!--android:textStyle="bold"/>-->
 
         <ImageView
 
@@ -104,19 +104,32 @@
             app:emojiconSize="30dp">
         </com.rockerhieu.emojicon.EmojiconEditText>
 
-
-        <EditText
-            android:id="@+id/etGiphy"
+        <LinearLayout
+            android:id="@+id/giphySearchFieldLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionSearch|flagNoExtractUi"
-            android:inputType="text"
-            android:maxHeight="150dp"
-            android:maxLines="1"
-            android:minHeight="45dp"
-            android:visibility="gone"
-            >
-        </EditText>
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/etGiphy"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="100"
+                android:imeOptions="actionSearch|flagNoExtractUi"
+                android:inputType="text"
+                android:maxHeight="150dp"
+                android:maxLines="1"
+                android:minHeight="45dp">
+            </EditText>
+
+            <ImageView
+                android:id="@+id/poweredByGiphy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/powered_by_giphy"/>
+        </LinearLayout>
+
     </FrameLayout>
 
     <FrameLayout
