@@ -45,12 +45,8 @@ public class GifSearchHandler {
     public GifSearchHandler(Context context, String username, View parentView) {
         mContext = context;
         mUsername = username;
-        mRecyclerView = (RecyclerView) parentView.findViewById(R.id.rvGifs);
 
-        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mProgressBar = (ProgressBar) parentView.findViewById(R.id.gif_progress_bar);
-        mEmptyView = parentView.findViewById(R.id.tv_no_gifs);
+        refreshContextAndViews(context, parentView);
 
   //      final String sRecentlyUsed = mContext.getString(R.string.recently_used);
 //        mTvLastSearch = (TextView)  parentView.findViewById(R.id.tvLastSearch);
@@ -97,6 +93,17 @@ public class GifSearchHandler {
 //        }));
 
 
+    }
+
+    public void refreshContextAndViews(Context context, View parentView) {
+        mContext = context;
+        mRecyclerView = (RecyclerView) parentView.findViewById(R.id.rvGifs);
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mProgressBar = (ProgressBar) parentView.findViewById(R.id.gif_progress_bar);
+        mEmptyView = parentView.findViewById(R.id.tv_no_gifs);
+        mGifsAdapter = null;
+        showRecentlyUsed();
     }
 
 
@@ -174,7 +181,6 @@ public class GifSearchHandler {
                 callback.handleResponse(result);
             }
         };
-        showRecentlyUsed();
     }
 
     public void setGifSearchTextCallback(IAsyncCallback<String> callback) {

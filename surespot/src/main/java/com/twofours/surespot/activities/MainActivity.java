@@ -2238,6 +2238,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
 
 
+                mGifHandler.refreshContextAndViews(mContext, mActivityLayout);
+
                 //
                 // getActionBar().hide();
 
