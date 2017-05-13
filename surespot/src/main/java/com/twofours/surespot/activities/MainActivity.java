@@ -135,9 +135,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private EditText mEtInvite;
     private View mSendButton;
     private EmojiconsView mEmojiView;
-    private ImageView mEmojiButton;
-    private boolean mMessageModeActive;
     private ImageView mQRButton;
+    private ImageView mEmojiButton;
+    private TextView mGifButton;
+    private ImageView mCameraButton;
+    private ImageView mGalleryButton;
+    private ImageView mMoreButton;
+
     private Friend mCurrentFriend;
     private boolean mFriendHasBeenSet;
     private ImageView mIvInvite;
@@ -164,18 +168,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private DrawerLayout mDrawerLayout;
     private LayoutParams mWindowLayoutParams;
     private GifSearchHandler mGifHandler;
-    private boolean mGifShowing;
     private EditText mEtGifSearch;
-    // private TextView mTvGIF;
     private View mGiphySearchFieldLayout;
     private boolean mWaitingForKeyboardToShow = false;
-    private View mButtons;
     private View mMessageModeView;
     private String mCurrentMessageMode;
-    private TextView mGifButton;
-    private ImageView mCameraButton;
-    private ImageView mGalleryButton;
-    private ImageView mMoreButton;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -389,7 +386,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
         mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
         mSendButton = (View) mainView.findViewById(R.id.bSend);
-        mButtons = mainView.findViewById(R.id.fButtons);
+        //mButtons = mainView.findViewById(R.id.fButtons);
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -535,16 +532,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mMoreButton.setOnClickListener(drawerToggleListener);
         mMoreButton.setTag("more");
 
-        //setEmojiIcon();
+        mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
+        mQRButton.setOnClickListener(new View.OnClickListener() {
 
-//        mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
-//        mQRButton.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                mDialog = UIUtils.showQRDialog(MainActivity.this, mUser);
-//            }
-//        });
+            @Override
+            public void onClick(View v) {
+                mDialog = UIUtils.showQRDialog(MainActivity.this, mUser);
+            }
+        });
 
         mEtMessage = (EditText) mainView.findViewById(R.id.etMessage);
         mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
@@ -634,10 +629,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        mEtGifSearch.addTextChangedListener(    new TextWatcher() {
+        mEtGifSearch.addTextChangedListener(new TextWatcher() {
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -645,7 +641,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 //        mEtGifSearch.setOnTouchListener(new OnTouchListener() {
 //            @Override
@@ -1091,7 +1088,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mDialog.dismiss();
         }
 
-        if (mMessageModeActive) {
+        if (messageModeActive()) {
             disableMessageMode(false);
         }
 
@@ -1758,7 +1755,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     public boolean backButtonPressed() {
-        SurespotLog.d(TAG, "backButtonPressed, keyboardVisible: %b, mGifShowing: %b, emoji visible: %b", mActivityLayout.isKeyboardVisible(), mGifShowing, messageModeActive());
+        SurespotLog.d(TAG, "backButtonPressed, keyboardVisible: %b, message mode: %b, emoji visible: %b", mActivityLayout.isKeyboardVisible(), mCurrentMessageMode, messageModeActive());
 
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -1926,107 +1923,122 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void updateMessageBar() {
-        SurespotLog.d(TAG,"updateMessageBar");
+        SurespotLog.d(TAG, "updateMessageBar");
         SharedPreferences settings = getSharedPreferences("surespot_preferences", android.content.Context.MODE_PRIVATE);
         boolean black = settings.getBoolean("pref_black", false);
         int mSelectedMask = ContextCompat.getColor(this, com.rockerhieu.emojicon.R.color.selectedMask);
         int mUnselectedMask = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.unselectedMaskDark : com.rockerhieu.emojicon.R.color.unselectedMaskLight);
 
-        if (TextUtils.isEmpty(mCurrentMessageMode)) {
-            mEmojiButton.setSelected(false);
-            mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-            mGifButton.setSelected(false);
-            mGifButton.setTextColor(SurespotApplication.getTextColor());
+        //hide for now
+        mMoreButton.setVisibility(GONE);
 
-            //show all icons
-            if (!TextUtils.isEmpty(mEtMessage.getText())) {
-
-                mGifButton.setVisibility(GONE);
-                mCameraButton.setVisibility(GONE);
-                mGalleryButton.setVisibility(GONE);
-                mMoreButton.setVisibility(GONE);
-
-            }
-            else {
-                //show all icons
-                mEmojiButton.setVisibility(View.VISIBLE);
-                mGifButton.setVisibility(View.VISIBLE);
-                mCameraButton.setVisibility(View.VISIBLE);
-                mGalleryButton.setVisibility(View.VISIBLE);
-                mMoreButton.setVisibility(View.VISIBLE);
-            }
-            return;
+        //invite tab - show qr, hide others
+        if (mCurrentFriend == null) {
+            mQRButton.setVisibility(View.VISIBLE);
+            mEmojiButton.setVisibility(View.GONE);
+            mGifButton.setVisibility(GONE);
+            mCameraButton.setVisibility(GONE);
+            mGalleryButton.setVisibility(GONE);
+            mMoreButton.setVisibility(GONE);
         }
-        switch (mCurrentMessageMode) {
-            case MESSAGE_MODE_EMOJI:
-                //emoji icon visible
-                mEmojiButton.setVisibility(View.VISIBLE);
-                //highlight icon
-                mEmojiButton.setSelected(true);
-                mEmojiButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+        else {
+            mQRButton.setVisibility(GONE);
+            mEmojiButton.setVisibility(View.VISIBLE);
+            if (TextUtils.isEmpty(mCurrentMessageMode)) {
+                mEmojiButton.setSelected(false);
+                mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+                mGifButton.setSelected(false);
                 mGifButton.setTextColor(SurespotApplication.getTextColor());
 
-                //if message length > 0 only show emoji icon
+                //show all icons
                 if (!TextUtils.isEmpty(mEtMessage.getText())) {
+
                     mGifButton.setVisibility(GONE);
                     mCameraButton.setVisibility(GONE);
                     mGalleryButton.setVisibility(GONE);
                     mMoreButton.setVisibility(GONE);
-
                 }
                 else {
                     //show all icons
+
                     mGifButton.setVisibility(View.VISIBLE);
                     mCameraButton.setVisibility(View.VISIBLE);
                     mGalleryButton.setVisibility(View.VISIBLE);
-                    mMoreButton.setVisibility(View.VISIBLE);
+                    //mMoreButton.setVisibility(View.VISIBLE);
                 }
-                break;
-            case MESSAGE_MODE_GIF:
-                //gif icon visible
-                mGifButton.setVisibility(View.VISIBLE);
-                //highlight icon
-                mGifButton.setSelected(true);
-                mGifButton.setTextColor(mSelectedMask);
-                mEmojiButton.setSelected(false);
-                mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-
-                //if message length > 0 only show gif icon
-                if (!TextUtils.isEmpty(mEtGifSearch.getText())) {
-                    mEmojiButton.setVisibility(GONE);
-                    mCameraButton.setVisibility(GONE);
-                    mGalleryButton.setVisibility(GONE);
-                    mMoreButton.setVisibility(GONE);
-
-                }
-                else {
-                    //show all other icons
+                return;
+            }
+            switch (mCurrentMessageMode) {
+                case MESSAGE_MODE_EMOJI:
+                    //emoji icon visible
                     mEmojiButton.setVisibility(View.VISIBLE);
-                    mCameraButton.setVisibility(View.VISIBLE);
-                    mGalleryButton.setVisibility(View.VISIBLE);
-                    mMoreButton.setVisibility(View.VISIBLE);
-                }
-                break;
+                    //highlight icon
+                    mEmojiButton.setSelected(true);
+                    mEmojiButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+                    mGifButton.setTextColor(SurespotApplication.getTextColor());
+
+                    //if message length > 0 only show emoji icon
+                    if (!TextUtils.isEmpty(mEtMessage.getText())) {
+                        mGifButton.setVisibility(GONE);
+                        mCameraButton.setVisibility(GONE);
+                        mGalleryButton.setVisibility(GONE);
+                        mMoreButton.setVisibility(GONE);
+
+                    }
+                    else {
+                        //show all icons
+                        mGifButton.setVisibility(View.VISIBLE);
+                        mCameraButton.setVisibility(View.VISIBLE);
+                        mGalleryButton.setVisibility(View.VISIBLE);
+                     //   mMoreButton.setVisibility(View.VISIBLE);
+                    }
+                    break;
+                case MESSAGE_MODE_GIF:
+                    //gif icon visible
+                    mGifButton.setVisibility(View.VISIBLE);
+                    //highlight icon
+                    mGifButton.setSelected(true);
+                    mGifButton.setTextColor(mSelectedMask);
+                    mEmojiButton.setSelected(false);
+                    mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+
+                    //if message length > 0 only show gif icon
+                    if (!TextUtils.isEmpty(mEtGifSearch.getText())) {
+                        mEmojiButton.setVisibility(GONE);
+                        mCameraButton.setVisibility(GONE);
+                        mGalleryButton.setVisibility(GONE);
+                        mMoreButton.setVisibility(GONE);
+
+                    }
+                    else {
+                        //show all other icons
+                        mEmojiButton.setVisibility(View.VISIBLE);
+                        mCameraButton.setVisibility(View.VISIBLE);
+                        mGalleryButton.setVisibility(View.VISIBLE);
+                        //     mMoreButton.setVisibility(View.VISIBLE);
+                    }
+                    break;
+            }
         }
     }
 
     private void handleTabChange(Friend friend) {
-        SurespotLog
-                .v(TAG,
-                        "handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b",
-                        mFriendHasBeenSet, mCurrentFriend == null);
+        SurespotLog.v(TAG,
+                "handleTabChange, mFriendHasBeenSet: %b, currentFriend is null: %b",
+                mFriendHasBeenSet, mCurrentFriend == null);
 
         if (friend == null) {
-            mButtons.setVisibility(GONE);
+            if (messageModeActive()) {
+                disableMessageMode(false);
+            }
             mEtMessage.setVisibility(GONE);
-            //   mTvGIF.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
-            //  mEmojiView.setVisibility(View.GONE);
 
-            //mQRButton.setVisibility(View.VISIBLE);
 
-            SurespotLog.v(TAG, "handleTabChange requesting invite edit text focus");
-            requestFocus(mEtInvite);
+            if (mActivityLayout.isKeyboardVisible()) {
+                SurespotLog.v(TAG, "handleTabChange requesting invite edit text focus");
+                requestFocus(mEtInvite);
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
@@ -2039,8 +2051,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         // change the icon according to your needs
                         .setImageResource(R.drawable.ic_drawer);
             }
-
-
         }
         else {
 
@@ -2056,55 +2066,25 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
 
             if (friend.isDeleted()) {
-
-                mButtons.setVisibility(GONE);
                 mEtMessage.setVisibility(GONE);
 
 
             }
             else {
                 mEtMessage.setVisibility(View.VISIBLE);
-                mButtons.setVisibility(View.VISIBLE);
             }
 
             mEtInvite.setVisibility(GONE);
-            //mQRButton.setVisibility(View.GONE);
-            mEtMessage.requestFocus();
+            if (mActivityLayout.isKeyboardVisible()) {
+                requestFocus(mEtMessage);
+            }
         }
 
         // if keyboard is showing and we want to show emoji or vice versa, just toggle emoji
         mCurrentFriend = friend;
-
-        if (friend == null) {
-//            if (mActivityLayout.isKeyboardVisible()) {
-//                sendBackPressed();
-//            }
-//            else {
-            if (messageModeActive()) {
-                disableMessageMode(false);
-            }
-            //  }
-        }
-
         setButtonText();
-        //     setEmojiIcon();
         mFriendHasBeenSet = true;
     }
-//
-//    private void setEmojiIcon() {
-//        boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-//        if (!messageModeActive()) {
-//            //mEmojiButton.setImageResource(R.drawable.smiley);
-//        }
-//        else {
-//            if (black) {
-//               // mEmojiButton.setImageResource(R.drawable.ic_action_keyboard_grey);
-//            }
-//            else {
-//              //  mEmojiButton.setImageResource(R.drawable.ic_action_keyboard);
-//            }
-//        }
-//    }
 
     private void setBackgroundImage() {
         // reset preference config for adapters
@@ -2226,7 +2206,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
 
     public boolean messageModeActive() {
-        return mMessageModeActive;
+        return !TextUtils.isEmpty(mCurrentMessageMode);
     }
 
     private void toggleMessageMode(String mode) {
@@ -2249,7 +2229,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     private void setMessageMode(String messageMode) {
         SurespotLog.d(TAG, "setMessageMode, mode: %s", messageMode);
-        mMessageModeActive = true;
 
         int keyboardHeight = mActivityLayout.getKeyboardHeight();
         mWindowLayoutParams = new WindowManager.LayoutParams();
@@ -2407,7 +2386,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             wm.removeViewImmediate(mMessageModeView);
         }
 
-        mMessageModeActive = false;
         mCurrentMessageMode = null;
         if (showKeyboard) {
             if (!mActivityLayout.isKeyboardVisible()) {
@@ -2440,7 +2418,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         //getActionBar().show();
         updateMessageBar();
     }
-
 
 
     private void sendGifMessage(String result) {
