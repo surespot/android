@@ -376,7 +376,6 @@
     <string name="search_gifs">Search for GIFs</string>
     <string name="no_GIFS_found">No GIFs found</string>
     <string name="gif">GIF</string>
-    <string name="gif_terms">"HIGH FIVE:CLAPPING:THUMBS UP:NO:YES:YOU'RE WELCOME:SHRUG:MIC DROP:SORRY:CHEERS:THANK YOU:WINK:ANGRY:NERVOUS:DUH:OOPS:HUNGRY:HUGS:WOW:BORED:GOODNIGHT:AWKWARD:AWW:PLEASE:YIKES:OMG:BYE:WAITING:EYEROLL:IDK:KITTIES:PUPPIES:LOSER:COLD:PARTY:AGREE:DANCE:EXCUSE ME:WHAT:STOP:SLEEPY:CREEP:JK:SCARED:CHILL OUT:MISS YOU:DONE"</string>
     <string name="recently_used">RECENTLY USED</string>
     <string name="giphy_search_failed">GIPHY search failed.</string>
     <string name="no_recently_used_gifs">No recently used GIFs.</string>

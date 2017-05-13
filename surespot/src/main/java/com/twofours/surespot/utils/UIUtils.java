@@ -404,7 +404,7 @@ public class UIUtils {
     }
 
     public static void updateDateAndSize(Context context, SurespotMessage message, View parentView) {
-        SurespotLog.d(TAG,"updateDateAndSize, message: %s", message);
+        SurespotLog.v(TAG,"updateDateAndSize, message: %s", message);
         if (message.getDateTime() != null) {
             TextView tvTime = (TextView) parentView.findViewById(R.id.messageTime);
             tvTime.setText(DateFormat.getDateFormat(context).format(message.getDateTime()) + " "

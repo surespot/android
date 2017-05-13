@@ -1,16 +1,11 @@
 package com.twofours.surespot.gifs;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
@@ -26,7 +21,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.Call;
@@ -34,8 +28,8 @@ import okhttp3.Response;
 
 import static com.twofours.surespot.SurespotConstants.PrefNames.RECENTLY_USED_GIFS;
 
-public class GifSearchView extends RelativeLayout {
-    private static final String TAG="GifSearchView";
+public class GifSearchHandler {
+    private static final String TAG="GifSearchHandler";
     private static final String RECENT_GIFS = "recent_gifs";
     private RecyclerView mRecyclerView;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -43,83 +37,64 @@ public class GifSearchView extends RelativeLayout {
     private IAsyncCallback<GifDetails> mGifSelectedCallback;
     private ProgressBar mProgressBar;
     private View mEmptyView;
-    private TextView mTvLastSearch;
+ //   private TextView mTvLastSearch;
     private IAsyncCallback<String> mGifSearchTextCallback;
+    private Context mContext;
+    private String mUsername;
 
+    public GifSearchHandler(Context context, String username, View parentView) {
+        mContext = context;
+        mUsername = username;
+        mRecyclerView = (RecyclerView) parentView.findViewById(R.id.rvGifs);
 
-    public GifSearchView(Context context) {
-        super(context);
-    }
-
-    public GifSearchView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public GifSearchView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public GifSearchView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.rvGifs);
-        mLayoutManager = new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false);
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mProgressBar = (ProgressBar) findViewById(R.id.gif_progress_bar);
-        mEmptyView = findViewById(R.id.tv_no_gifs);
+        mProgressBar = (ProgressBar) parentView.findViewById(R.id.gif_progress_bar);
+        mEmptyView = parentView.findViewById(R.id.tv_no_gifs);
 
-        final String sRecentlyUsed = getContext().getString(R.string.recently_used);
-        mTvLastSearch = (TextView) findViewById(R.id.tvLastSearch);
-        mTvLastSearch.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!TextUtils.isEmpty(mTvLastSearch.getText())) {
-                    String lastSearchText = mTvLastSearch.getText().toString();
-                    if (!sRecentlyUsed.equals(lastSearchText)) {
-                        mGifSearchTextCallback.handleResponse(lastSearchText);
-                    }
-                }
-            }
-        });
+  //      final String sRecentlyUsed = mContext.getString(R.string.recently_used);
+//        mTvLastSearch = (TextView)  parentView.findViewById(R.id.tvLastSearch);
+//        mTvLastSearch.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (!TextUtils.isEmpty(mTvLastSearch.getText())) {
+//                    String lastSearchText = mTvLastSearch.getText().toString();
+//                    if (!sRecentlyUsed.equals(lastSearchText)) {
+//                        mGifSearchTextCallback.handleResponse(lastSearchText);
+//                    }
+//                }
+//            }
+//        });
 
-        RecyclerView keywordView = (RecyclerView) findViewById(R.id.rvGifKeywords);
-        keywordView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false));
+        //RecyclerView keywordView = (RecyclerView) findViewById(R.id.rvGifKeywords);
+        //keywordView.setLayoutManager(new LinearLayoutManager(this.getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-
-        String gifTerms = sRecentlyUsed + ":" + getContext().getString(R.string.gif_terms);
-        String[] terms = gifTerms.split(":");
-        List<String> keywords = Arrays.asList(terms);
-
-        keywordView.setAdapter(new GifKeywordAdapter(this.getContext(), keywords, new IAsyncCallback<String>() {
-            @Override
-            public void handleResponse(String result) {
-                CharSequence lastSearch = mTvLastSearch.getText();
-                if (TextUtils.isEmpty(lastSearch)) {
-                    return;
-                }
-
-                if (lastSearch.equals(result)) {
-                    return;
-                }
-
-                String sRecentlyUsed = getContext().getString(R.string.recently_used);
-                if (result.equals(sRecentlyUsed)) {
-                    showRecentlyUsed();
-                }
-                else {
-                    searchGifs(result);
-                }
-            }
-        }));
+//
+//        String gifTerms = sRecentlyUsed + ":" + getContext().getString(R.string.gif_terms);
+//        String[] terms = gifTerms.split(":");
+//        List<String> keywords = Arrays.asList(terms);
+//
+//        keywordView.setAdapter(new GifKeywordAdapter(this.getContext(), keywords, new IAsyncCallback<String>() {
+//            @Override
+//            public void handleResponse(String result) {
+//                CharSequence lastSearch = mTvLastSearch.getText();
+//                if (TextUtils.isEmpty(lastSearch)) {
+//                    return;
+//                }
+//
+//                if (lastSearch.equals(result)) {
+//                    return;
+//                }
+//
+//                String sRecentlyUsed = getContext().getString(R.string.recently_used);
+//                if (result.equals(sRecentlyUsed)) {
+//                    showRecentlyUsed();
+//                }
+//                else {
+//                    searchGifs(result);
+//                }
+//            }
+//        }));
 
 
     }
@@ -129,16 +104,16 @@ public class GifSearchView extends RelativeLayout {
     public void searchGifs(final String terms) {
         SurespotLog.d(TAG, "searchGifs terms: %s", terms);
 
-        mTvLastSearch.setText(terms);
+     //   mTvLastSearch.setText(terms);
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
 
-        NetworkManager.getNetworkController(GifSearchView.this.getContext()).searchGiphy(terms, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        NetworkManager.getNetworkController(mContext).searchGiphy(terms, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 clearGifs();
-                mTvLastSearch.setText(R.string.giphy_search_failed);
+      //          mTvLastSearch.setText(R.string.giphy_search_failed);
             }
 
             @Override
@@ -154,7 +129,7 @@ public class GifSearchView extends RelativeLayout {
         mProgressBar.setVisibility(View.GONE);
         mEmptyView.setVisibility(View.VISIBLE);
         if (mGifsAdapter == null) {
-            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), new ArrayList<GifDetails>(0), mGifSelectedCallback);
+            mGifsAdapter = new GifSearchAdapter(mContext, new ArrayList<GifDetails>(0), mGifSelectedCallback);
             mRecyclerView.setAdapter(mGifsAdapter);
             mRecyclerView.scrollToPosition(0);
             mGifsAdapter.notifyDataSetChanged();
@@ -165,7 +140,8 @@ public class GifSearchView extends RelativeLayout {
     }
 
     private void setGifs(String terms, List<GifDetails> gifs) {
-        mTvLastSearch.setText(terms);
+        SurespotLog.d(TAG, "setGifs");
+    //    mTvLastSearch.setText(terms);
         if (mGifsAdapter != null) {
             mGifsAdapter.clearGifs();
         }
@@ -175,7 +151,7 @@ public class GifSearchView extends RelativeLayout {
         }
 
         if (mGifsAdapter == null) {
-            mGifsAdapter = new GifSearchAdapter(GifSearchView.this.getContext(), gifs, mGifSelectedCallback);
+            mGifsAdapter = new GifSearchAdapter(mContext, gifs, mGifSelectedCallback);
             mRecyclerView.setAdapter(mGifsAdapter);
             mGifsAdapter.notifyDataSetChanged();
         }
@@ -245,14 +221,14 @@ public class GifSearchView extends RelativeLayout {
 
         recentlyUsed.add(0, gifToAdd);
         setRecentlyUsed(recentlyUsed);
-        String sRecentlyUsed = getContext().getString(R.string.recently_used);
-        if (sRecentlyUsed.equals(mTvLastSearch.getText())) {
-            setGifs(sRecentlyUsed, recentlyUsed);
-        }
+//        String sRecentlyUsed = mContext.getString(R.string.recently_used);
+//        if (sRecentlyUsed.equals(mTvLastSearch.getText())) {
+//            setGifs(sRecentlyUsed, recentlyUsed);
+//        }
     }
 
     private List<GifDetails> getRecentlyUsed() {
-        String recentJSON = Utils.getUserSharedPrefsString(getContext(), IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS);
+        String recentJSON = Utils.getUserSharedPrefsString(mContext, mUsername, RECENTLY_USED_GIFS);
         ArrayList<GifDetails> gifs = new ArrayList<GifDetails>();
         JSONObject jRecentGifs = null;
         if (!TextUtils.isEmpty(recentJSON)) {
@@ -264,7 +240,7 @@ public class GifSearchView extends RelativeLayout {
             }
         }
         if (jRecentGifs == null) {
-            Utils.putUserSharedPrefsString(getContext(), IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, null);
+            Utils.putUserSharedPrefsString(mContext, mUsername, RECENTLY_USED_GIFS, null);
         }
         else {
             try {
@@ -276,7 +252,7 @@ public class GifSearchView extends RelativeLayout {
                 }
             }
             catch (JSONException e) {
-                Utils.putUserSharedPrefsString(getContext(), IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, null);
+                Utils.putUserSharedPrefsString(mContext, IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, null);
             }
         }
         return gifs;
@@ -294,17 +270,17 @@ public class GifSearchView extends RelativeLayout {
                     o.put(RECENT_GIFS, a);
                 }
             }
-            Utils.putUserSharedPrefsString(getContext(), IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, o.toString());
+            Utils.putUserSharedPrefsString(mContext, IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, o.toString());
 
         }
         catch (JSONException e) {
             SurespotLog.w(TAG, e, "could not set recently used GIFs");
-            Utils.putUserSharedPrefsString(getContext(), IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, null);
+            Utils.putUserSharedPrefsString(mContext, IdentityController.getLoggedInUser(), RECENTLY_USED_GIFS, null);
         }
     }
 
     private void showRecentlyUsed() {
-        String sRecentlyUsed = getContext().getString(R.string.recently_used);
+        String sRecentlyUsed = mContext.getString(R.string.recently_used);
         List<GifDetails> gifs = getRecentlyUsed();
         setGifs(sRecentlyUsed, gifs);
     }
