@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.AudioManager;
@@ -23,6 +24,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -106,6 +108,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Response;
 
+import static android.view.View.GONE;
 import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
 
 public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
@@ -169,6 +172,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mButtons;
     private View mMessageModeView;
     private String mCurrentMessageMode;
+    private TextView mGifButton;
+    private ImageView mCameraButton;
+    private ImageView mGalleryButton;
+    private ImageView mMoreButton;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -512,21 +519,21 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEmojiButton.setOnClickListener(drawerToggleListener);
         mEmojiButton.setTag("emoji");
 
-        TextView mTvGIF = (TextView) findViewById(R.id.tvGIF);
-        mTvGIF.setOnClickListener(drawerToggleListener);
-        mTvGIF.setTag("gif");
+        mGifButton = (TextView) findViewById(R.id.tvGIF);
+        mGifButton.setOnClickListener(drawerToggleListener);
+        mGifButton.setTag("gif");
 
-        ImageView cameraButton = (ImageView) mainView.findViewById(R.id.bCamera);
-        cameraButton.setOnClickListener(drawerToggleListener);
-        cameraButton.setTag("camera");
+        mCameraButton = (ImageView) mainView.findViewById(R.id.bCamera);
+        mCameraButton.setOnClickListener(drawerToggleListener);
+        mCameraButton.setTag("camera");
 
-        ImageView galleryButton = (ImageView) mainView.findViewById(R.id.bGallery);
-        galleryButton.setOnClickListener(drawerToggleListener);
-        galleryButton.setTag("gallery");
+        mGalleryButton = (ImageView) mainView.findViewById(R.id.bGallery);
+        mGalleryButton.setOnClickListener(drawerToggleListener);
+        mGalleryButton.setTag("gallery");
 
-        ImageView moreButton = (ImageView) mainView.findViewById(R.id.bPlus);
-        moreButton.setOnClickListener(drawerToggleListener);
-        moreButton.setTag("more");
+        mMoreButton = (ImageView) mainView.findViewById(R.id.bPlus);
+        mMoreButton.setOnClickListener(drawerToggleListener);
+        mMoreButton.setTag("more");
 
         //setEmojiIcon();
 
@@ -565,20 +572,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
-        OnTouchListener editTouchListener = new OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-                if (mMessageModeActive) {
-                    return true;
-                }
-
-                return false;
-            }
-        };
-
-        mEtMessage.setOnTouchListener(editTouchListener);
+//        OnTouchListener editTouchListener = new OnTouchListener() {
+//
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//
+//                if (mMessageModeActive) {
+//                    return true;
+//                }
+//
+//                return false;
+//            }
+//        };
+//
+//        mEtMessage.setOnTouchListener(editTouchListener);
 
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
@@ -627,6 +634,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
+        mEtGifSearch.addTextChangedListener(    new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                setButtonText();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
 //        mEtGifSearch.setOnTouchListener(new OnTouchListener() {
 //            @Override
 //            public boolean onTouch(View v, MotionEvent event) {
@@ -1865,48 +1885,133 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     public void setButtonText() {
         if (mCurrentFriend == null) {
             mIvInvite.setVisibility(View.VISIBLE);
-            mIvVoice.setVisibility(View.GONE);
-            mIvHome.setVisibility(View.GONE);
-            mIvSend.setVisibility(View.GONE);
+            mIvVoice.setVisibility(GONE);
+            mIvHome.setVisibility(GONE);
+            mIvSend.setVisibility(GONE);
         }
         else {
             if (mCurrentFriend.isDeleted()) {
-                mIvInvite.setVisibility(View.GONE);
-                mIvVoice.setVisibility(View.GONE);
+                mIvInvite.setVisibility(GONE);
+                mIvVoice.setVisibility(GONE);
                 mIvHome.setVisibility(View.VISIBLE);
-                mIvSend.setVisibility(View.GONE);
+                mIvSend.setVisibility(GONE);
             }
             else {
                 if (mEtMessage.getText().length() > 0) {
-                    mIvInvite.setVisibility(View.GONE);
-                    mIvVoice.setVisibility(View.GONE);
-                    mIvHome.setVisibility(View.GONE);
+                    mIvInvite.setVisibility(GONE);
+                    mIvVoice.setVisibility(GONE);
+                    mIvHome.setVisibility(GONE);
                     mIvSend.setVisibility(View.VISIBLE);
-
-                    //hide buttons
-                    mButtons.setVisibility(View.GONE);
                 }
                 else {
-                    //show buttons
-                    mButtons.setVisibility(View.VISIBLE);
-
-                    mIvInvite.setVisibility(View.GONE);
+                    mIvInvite.setVisibility(GONE);
                     SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
                     boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
 
                     if (disableVoice) {
-                        mIvVoice.setVisibility(View.GONE);
+                        mIvVoice.setVisibility(GONE);
                         mIvHome.setVisibility(View.VISIBLE);
                     }
                     else {
                         mIvVoice.setVisibility(View.VISIBLE);
-                        mIvHome.setVisibility(View.GONE);
+                        mIvHome.setVisibility(GONE);
                     }
 
-                    mIvSend.setVisibility(View.GONE);
+                    mIvSend.setVisibility(GONE);
                 }
             }
 
+        }
+        updateMessageBar();
+    }
+
+    private void updateMessageBar() {
+        SurespotLog.d(TAG,"updateMesageBar");
+        SharedPreferences settings = getSharedPreferences("surespot_preferences", android.content.Context.MODE_PRIVATE);
+        boolean black = settings.getBoolean("pref_black", false);
+        int mSelectedMask = ContextCompat.getColor(this, com.rockerhieu.emojicon.R.color.selectedMask);
+        int mUnselectedMask = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.unselectedMaskDark : com.rockerhieu.emojicon.R.color.unselectedMaskLight);
+        //int setBackgroundColor = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.emojiBackgroundDark : com.rockerhieu.emojicon.R.color.emojiBackgroundLight);
+
+//        mEmojiTabs[mEmojiTabLastSelectedIndex].setSelected(false);
+//        //mEmojiTabs[mEmojiTabLastSelectedIndex].clearColorFilter();
+//        mEmojiTabs[mEmojiTabLastSelectedIndex].setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+//    }
+//    mEmojiTabs[i].setSelected(true);
+//    mEmojiTabs[i].setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+//
+        if (TextUtils.isEmpty(mCurrentMessageMode)) {
+            mEmojiButton.setSelected(false);
+            mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+
+            //show all icons
+            if (!TextUtils.isEmpty(mEtMessage.getText())) {
+
+                mGifButton.setVisibility(GONE);
+                mCameraButton.setVisibility(GONE);
+                mGalleryButton.setVisibility(GONE);
+                mMoreButton.setVisibility(GONE);
+
+            }
+            else {
+                //show all icons
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mGifButton.setVisibility(View.VISIBLE);
+                mCameraButton.setVisibility(View.VISIBLE);
+                mGalleryButton.setVisibility(View.VISIBLE);
+                mMoreButton.setVisibility(View.VISIBLE);
+            }
+            return;
+        }
+        switch (mCurrentMessageMode) {
+            case MESSAGE_MODE_EMOJI:
+                //emoji icon visible
+                mEmojiButton.setVisibility(View.VISIBLE);
+                //highlight icon
+                mEmojiButton.setSelected(true);
+                mEmojiButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+
+                //if message length > 0 only show emoji icon
+                if (!TextUtils.isEmpty(mEtMessage.getText())) {
+                    mGifButton.setVisibility(GONE);
+                    mCameraButton.setVisibility(GONE);
+                    mGalleryButton.setVisibility(GONE);
+                    mMoreButton.setVisibility(GONE);
+
+                }
+                else {
+                    //show all icons
+                    mGifButton.setVisibility(View.VISIBLE);
+                    mCameraButton.setVisibility(View.VISIBLE);
+                    mGalleryButton.setVisibility(View.VISIBLE);
+                    mMoreButton.setVisibility(View.VISIBLE);
+                }
+                break;
+            case MESSAGE_MODE_GIF:
+                //gif icon visible
+                mGifButton.setVisibility(View.VISIBLE);
+                //highlight icon
+                mGifButton.setSelected(true);
+                //mGifButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+                mEmojiButton.setSelected(false);
+                mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+
+                //if message length > 0 only show gif icon
+                if (!TextUtils.isEmpty(mEtGifSearch.getText())) {
+                    mEmojiButton.setVisibility(GONE);
+                    mCameraButton.setVisibility(GONE);
+                    mGalleryButton.setVisibility(GONE);
+                    mMoreButton.setVisibility(GONE);
+
+                }
+                else {
+                    //show all other icons
+                    mEmojiButton.setVisibility(View.VISIBLE);
+                    mCameraButton.setVisibility(View.VISIBLE);
+                    mGalleryButton.setVisibility(View.VISIBLE);
+                    mMoreButton.setVisibility(View.VISIBLE);
+                }
+                break;
         }
     }
 
@@ -1917,8 +2022,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         mFriendHasBeenSet, mCurrentFriend == null);
 
         if (friend == null) {
-            mButtons.setVisibility(View.GONE);
-            mEtMessage.setVisibility(View.GONE);
+            mButtons.setVisibility(GONE);
+            mEtMessage.setVisibility(GONE);
             //   mTvGIF.setVisibility(View.GONE);
             mEtInvite.setVisibility(View.VISIBLE);
             //  mEmojiView.setVisibility(View.GONE);
@@ -1957,8 +2062,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             if (friend.isDeleted()) {
 
-                mButtons.setVisibility(View.GONE);
-                mEtMessage.setVisibility(View.GONE);
+                mButtons.setVisibility(GONE);
+                mEtMessage.setVisibility(GONE);
 
 
             }
@@ -1967,7 +2072,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mButtons.setVisibility(View.VISIBLE);
             }
 
-            mEtInvite.setVisibility(View.GONE);
+            mEtInvite.setVisibility(GONE);
             //mQRButton.setVisibility(View.GONE);
             mEtMessage.requestFocus();
         }
@@ -2170,10 +2275,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             case MESSAGE_MODE_EMOJI:
 
 
-                gifFrame.setVisibility(View.GONE);
-                mGiphySearchFieldLayout.setVisibility(View.GONE);
+                gifFrame.setVisibility(GONE);
+                mGiphySearchFieldLayout.setVisibility(GONE);
                 mEtMessage.setVisibility(View.VISIBLE);
                 mSendButton.setVisibility(View.VISIBLE);
+                requestFocus(mEtMessage);
 
                 if (mEmojiView == null) {
                     mEmojiView = (EmojiconsView) LayoutInflater
@@ -2263,7 +2369,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mGiphySearchFieldLayout.setVisibility(View.VISIBLE);
                 mEtInvite.setVisibility(View.INVISIBLE);
                 mEtMessage.setVisibility(View.INVISIBLE);
-                mSendButton.setVisibility(View.GONE);
+                mSendButton.setVisibility(GONE);
                 gifFrame.setVisibility(View.VISIBLE);
 
                 requestFocus(mEtGifSearch);
@@ -2286,15 +2392,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
 
         mCurrentMessageMode = messageMode;
-
+        updateMessageBar();
 
     }
 
     public void disableMessageMode(boolean showKeyboard) {
 
         View gifFrame = findViewById(R.id.gifFrame);
-        gifFrame.setVisibility(View.GONE);
-        mGiphySearchFieldLayout.setVisibility(View.GONE);
+        gifFrame.setVisibility(GONE);
+        mGiphySearchFieldLayout.setVisibility(GONE);
         mEtMessage.setVisibility(View.VISIBLE);
         mSendButton.setVisibility(View.VISIBLE);
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
@@ -2337,7 +2443,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mActivityLayout.setPadding(0, 0, 0, 0);
         }
         //getActionBar().show();
+        updateMessageBar();
     }
+
+
 
     private void sendGifMessage(String result) {
         if (mUser == null) {
