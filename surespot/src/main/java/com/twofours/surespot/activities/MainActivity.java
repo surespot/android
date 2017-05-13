@@ -111,10 +111,10 @@ import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
 public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private static final String DRAWER_MODE_EMOJI = "emoji";
-    private static final String DRAWER_MODE_GIF = "gif";
-    private static final String DRAWER_MODE_GALLERY = "gallery";
-    private static final String DRAWER_MODE_MORE = "more";
+    private static final String MESSAGE_MODE_EMOJI = "emoji";
+    private static final String MESSAGE_MODE_GIF = "gif";
+    private static final String MESSAGE_MODE_GALLERY = "gallery";
+    private static final String MESSAGE_MODE_MORE = "more";
 
     private Context mContext = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
@@ -133,7 +133,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mSendButton;
     private EmojiconsView mEmojiView;
     private ImageView mEmojiButton;
-    private boolean mDrawerShowing;
+    private boolean mMessageModeActive;
     private ImageView mQRButton;
     private Friend mCurrentFriend;
     private boolean mFriendHasBeenSet;
@@ -167,8 +167,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mGiphySearchFieldLayout;
     private boolean mWaitingForKeyboardToShow = false;
     private View mButtons;
-    private View mDrawerView;
-    private String mCurrentDrawerMode;
+    private View mMessageModeView;
+    private String mCurrentMessageMode;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -504,7 +504,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         View.OnClickListener drawerToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleEmojiDrawer(v.getTag().toString());
+                toggleMessageMode(v.getTag().toString());
             }
         };
 
@@ -570,7 +570,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if (mDrawerShowing) {
+                if (mMessageModeActive) {
                     return true;
                 }
 
@@ -792,8 +792,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
                 if (slideOffset > 0.5) {
 
-                    if (isEmojiVisible()) {
-                        hideEmojiDrawer(false);
+                    if (messageModeActive()) {
+                        disableMessageMode(false);
                     }
 
 //                    if (mGifShowing) {
@@ -853,15 +853,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 //gif doesn't have a drawer so don't hide it
                 if (!visible &&
                         mActivityLayout.getPaddingBottom() == 0 &&
-                        isEmojiVisible() && mCurrentDrawerMode != null &&
-                        !mCurrentDrawerMode.equals(DRAWER_MODE_GIF)) {
+                        messageModeActive() && mCurrentMessageMode != null &&
+                        !mCurrentMessageMode.equals(MESSAGE_MODE_GIF)) {
                     SurespotLog.d(TAG, "OnKeyboardShown: hiding emoji drawer");
-                    hideEmojiDrawer(false);
+                    disableMessageMode(false);
                 }
                 else {
                     if (visible && mWaitingForKeyboardToShow) {
                         SurespotLog.d(TAG, "OnKeyboardShown: hiding emoji drawer waiting for keyboard to show");
-                        hideEmojiDrawer(false);
+                        disableMessageMode(false);
                         mWaitingForKeyboardToShow = false;
                     }
                 }
@@ -1071,8 +1071,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mDialog.dismiss();
         }
 
-        if (mDrawerShowing) {
-            hideEmojiDrawer(false);
+        if (mMessageModeActive) {
+            disableMessageMode(false);
         }
 
         try {
@@ -1738,7 +1738,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     public boolean backButtonPressed() {
-        SurespotLog.d(TAG, "backButtonPressed, keyboardVisible: %b, mGifShowing: %b, emoji visible: %b", mActivityLayout.isKeyboardVisible(), mGifShowing, isEmojiVisible());
+        SurespotLog.d(TAG, "backButtonPressed, keyboardVisible: %b, mGifShowing: %b, emoji visible: %b", mActivityLayout.isKeyboardVisible(), mGifShowing, messageModeActive());
 
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -1760,11 +1760,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //
 //            }
 
-            if (isEmojiVisible()) {
+            if (messageModeActive()) {
                 mActivityLayout.post(new Runnable() {
                     @Override
                     public void run() {
-                        hideEmojiDrawer(false);
+                        disableMessageMode(false);
                     }
                 });
             }
@@ -1779,8 +1779,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             return false;
         }
 
-        if (isEmojiVisible()) {
-            hideEmojiDrawer(false);
+        if (messageModeActive()) {
+            disableMessageMode(false);
             //     setEmojiIcon();
             SurespotLog.d(TAG, "emoji showing and keyboard not visible, backButtonPressed returning true");
             return true;
@@ -1980,8 +1980,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                sendBackPressed();
 //            }
 //            else {
-            if (isEmojiVisible()) {
-                hideEmojiDrawer(false);
+            if (messageModeActive()) {
+                disableMessageMode(false);
             }
             //  }
         }
@@ -1993,7 +1993,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //
 //    private void setEmojiIcon() {
 //        boolean black = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.BLACK);
-//        if (!isEmojiVisible()) {
+//        if (!messageModeActive()) {
 //            //mEmojiButton.setImageResource(R.drawable.smiley);
 //        }
 //        else {
@@ -2125,31 +2125,31 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
 
-    public boolean isEmojiVisible() {
-        return mDrawerShowing;
+    public boolean messageModeActive() {
+        return mMessageModeActive;
     }
 
-    private void toggleEmojiDrawer(String mode) {
-        SurespotLog.d(TAG, "toggleEmojiDrawer, mode: %s, currentMode: %s, emoji visible: %b", mode, mCurrentDrawerMode, isEmojiVisible());
+    private void toggleMessageMode(String mode) {
+        SurespotLog.d(TAG, "toggleMessageMode, mode: %s, currentMode: %s, emoji visible: %b", mode, mCurrentMessageMode, messageModeActive());
 
-        if (isEmojiVisible()) {
-            if (mode.equals(mCurrentDrawerMode)) {
+        if (messageModeActive()) {
+            if (mode.equals(mCurrentMessageMode)) {
 
 
                 mWaitingForKeyboardToShow = true;
-                hideEmojiDrawer(true);
+                disableMessageMode(true);
                 return;
 
             }
         }
-        changeMode(mode);
+        setMessageMode(mode);
 
         //setEmojiIcon(mode);
     }
 
-    private void changeMode(String drawerMode) {
-        SurespotLog.d(TAG, "changeMode, mode: %s", drawerMode);
-        mDrawerShowing = true;
+    private void setMessageMode(String messageMode) {
+        SurespotLog.d(TAG, "setMessageMode, mode: %s", messageMode);
+        mMessageModeActive = true;
 
         int keyboardHeight = mActivityLayout.getKeyboardHeight();
         mWindowLayoutParams = new WindowManager.LayoutParams();
@@ -2163,11 +2163,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         final WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
-        final View oldView = mDrawerView;
+        final View oldView = mMessageModeView;
         final View gifFrame = findViewById(R.id.gifFrame);
 
-        switch (drawerMode) {
-            case DRAWER_MODE_EMOJI:
+        switch (messageMode) {
+            case MESSAGE_MODE_EMOJI:
 
 
                 gifFrame.setVisibility(View.GONE);
@@ -2183,15 +2183,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     mEmojiView.setOnEmojiconClickedListener(this);
                 }
 
-                mDrawerView = mEmojiView;
+                mMessageModeView = mEmojiView;
                 try {
 
-                    wm.addView(mDrawerView, mWindowLayoutParams);
+                    wm.addView(mMessageModeView, mWindowLayoutParams);
 
                     Runnable runnable = new Runnable() {
                         @Override
                         public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mDrawerView) {
+                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
                                 wm.removeView(oldView);
                             }
                         }
@@ -2212,7 +2212,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
 
                 break;
-            case DRAWER_MODE_GIF:
+            case MESSAGE_MODE_GIF:
                 if (mGifHandler == null) {
                     mGifHandler = new GifSearchHandler(this, mUser, mActivityLayout);
 
@@ -2273,9 +2273,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 mActivityLayout.setPadding(0, 0, 0, 0);
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, gifFrameHeight);
-                SurespotLog.d(TAG, "changeMode, gifFrameHeight: %d", gifFrameHeight);
+                SurespotLog.d(TAG, "setMessageMode, gifFrameHeight: %d", gifFrameHeight);
 
-                mDrawerView = null;
+                mMessageModeView = null;
                 break;
             default:
                 return;
@@ -2283,12 +2283,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
 
-        mCurrentDrawerMode = drawerMode;
+        mCurrentMessageMode = messageMode;
 
 
     }
 
-    public void hideEmojiDrawer(boolean showKeyboard) {
+    public void disableMessageMode(boolean showKeyboard) {
 
         View gifFrame = findViewById(R.id.gifFrame);
         gifFrame.setVisibility(View.GONE);
@@ -2298,14 +2298,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
 
 
-        if (mDrawerView != null && mDrawerView.getParent() != null) {
+        if (mMessageModeView != null && mMessageModeView.getParent() != null) {
             WindowManager wm = (WindowManager) mContext
                     .getSystemService(Context.WINDOW_SERVICE);
-            wm.removeViewImmediate(mDrawerView);
+            wm.removeViewImmediate(mMessageModeView);
         }
 
-        mDrawerShowing = false;
-        mCurrentDrawerMode = null;
+        mMessageModeActive = false;
+        mCurrentMessageMode = null;
         if (showKeyboard) {
             if (!mActivityLayout.isKeyboardVisible()) {
                 Runnable runnable = new Runnable() {
