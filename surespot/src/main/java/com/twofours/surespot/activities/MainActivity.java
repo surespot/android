@@ -1926,23 +1926,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void updateMessageBar() {
-        SurespotLog.d(TAG,"updateMesageBar");
+        SurespotLog.d(TAG,"updateMessageBar");
         SharedPreferences settings = getSharedPreferences("surespot_preferences", android.content.Context.MODE_PRIVATE);
         boolean black = settings.getBoolean("pref_black", false);
         int mSelectedMask = ContextCompat.getColor(this, com.rockerhieu.emojicon.R.color.selectedMask);
         int mUnselectedMask = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.unselectedMaskDark : com.rockerhieu.emojicon.R.color.unselectedMaskLight);
-        //int setBackgroundColor = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.emojiBackgroundDark : com.rockerhieu.emojicon.R.color.emojiBackgroundLight);
 
-//        mEmojiTabs[mEmojiTabLastSelectedIndex].setSelected(false);
-//        //mEmojiTabs[mEmojiTabLastSelectedIndex].clearColorFilter();
-//        mEmojiTabs[mEmojiTabLastSelectedIndex].setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-//    }
-//    mEmojiTabs[i].setSelected(true);
-//    mEmojiTabs[i].setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
-//
         if (TextUtils.isEmpty(mCurrentMessageMode)) {
             mEmojiButton.setSelected(false);
             mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+            mGifButton.setSelected(false);
+            mGifButton.setTextColor(SurespotApplication.getTextColor());
 
             //show all icons
             if (!TextUtils.isEmpty(mEtMessage.getText())) {
@@ -1970,6 +1964,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 //highlight icon
                 mEmojiButton.setSelected(true);
                 mEmojiButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+                mGifButton.setTextColor(SurespotApplication.getTextColor());
 
                 //if message length > 0 only show emoji icon
                 if (!TextUtils.isEmpty(mEtMessage.getText())) {
@@ -1992,7 +1987,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mGifButton.setVisibility(View.VISIBLE);
                 //highlight icon
                 mGifButton.setSelected(true);
-                //mGifButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+                mGifButton.setTextColor(mSelectedMask);
                 mEmojiButton.setSelected(false);
                 mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
 
