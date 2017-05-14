@@ -95,7 +95,7 @@
         android:layout_toLeftOf="@+id/bSend"
         android:layout_toRightOf="@+id/fButtons">
 
-        <EditText
+        <com.twofours.surespot.ui.ClearableEditText
             android:id="@+id/etInvite"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -105,7 +105,7 @@
             android:maxHeight="150dp"
             android:maxLines="1"
             android:minHeight="45dp">
-        </EditText>
+        </com.twofours.surespot.ui.ClearableEditText>
 
         <com.rockerhieu.emojicon.EmojiconEditText
             android:id="@+id/etMessage"
@@ -129,7 +129,7 @@
             android:orientation="horizontal"
             android:visibility="gone">
 
-            <EditText
+            <com.twofours.surespot.ui.ClearableEditText
                 android:id="@+id/etGiphy"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -139,7 +139,7 @@
                 android:maxHeight="150dp"
                 android:maxLines="1"
                 android:minHeight="45dp">
-            </EditText>
+            </com.twofours.surespot.ui.ClearableEditText>
 
             <ImageView
                 android:id="@+id/poweredByGiphy"
