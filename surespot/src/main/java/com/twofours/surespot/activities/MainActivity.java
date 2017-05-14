@@ -180,6 +180,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private String mCurrentMessageMode;
     private View mGalleryView;
     private View mButtons;
+    private boolean isCollapsed = false;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -573,10 +574,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         TextWatcher tw = new ChatTextWatcher();
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
-        mEtMessage.setOnClickListener(new View.OnClickListener() {
+        mEtMessage.setOnTouchListener(new OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                toggleMessageMode(MESSAGE_MODE_KEYBOARD);
+            public boolean onTouch(View v, MotionEvent event) {
+                if (MotionEvent.ACTION_DOWN == event.getAction()) {
+                    setMessageMode(MESSAGE_MODE_KEYBOARD);
+                }
+                return false;
             }
         });
 
@@ -1874,58 +1878,89 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     private void updateMessageBar() {
         SurespotLog.d(TAG, "updateMessageBar");
+        boolean expand = false;
+        View bHighlight = null;
         SharedPreferences settings = getSharedPreferences("surespot_preferences", android.content.Context.MODE_PRIVATE);
         boolean black = settings.getBoolean("pref_black", false);
-        int mSelectedMask = ContextCompat.getColor(this, com.rockerhieu.emojicon.R.color.selectedMask);
-        int mUnselectedMask = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.unselectedMaskDark : com.rockerhieu.emojicon.R.color.unselectedMaskLight);
+        int selectedMask = ContextCompat.getColor(this, com.rockerhieu.emojicon.R.color.selectedMask);
+        int unselectedMask = ContextCompat.getColor(this, black ? com.rockerhieu.emojicon.R.color.unselectedMaskDark : com.rockerhieu.emojicon.R.color.unselectedMaskLight);
 
-        showButtons();
-        //invite tab - show qr, hide others
-        if (mCurrentFriend == null) {
-            expand();
+
+        if (mCurrentMessageMode == null) {
+            if (mCurrentFriend == null) {
+                mQRButton.setVisibility(View.VISIBLE);
+                mEmojiButton.setVisibility(View.GONE);
+                mGifButton.setVisibility(View.GONE);
+                mCameraButton.setVisibility(View.GONE);
+                mGalleryButton.setVisibility(View.GONE);
+                mMoreButton.setVisibility(View.GONE);;
+            }
+            else {
+                mQRButton.setVisibility(View.GONE);
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mGifButton.setVisibility(View.VISIBLE);
+                mCameraButton.setVisibility(View.VISIBLE);
+                mGalleryButton.setVisibility(View.VISIBLE);
+                mMoreButton.setVisibility(View.GONE);
+                expand = true;
+            }
         }
         else {
 
+            View bShow;
 
-            if (TextUtils.isEmpty(mCurrentMessageMode)) {
-                expand();
-                mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                mGifButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                return;
-            }
 
             switch (mCurrentMessageMode) {
                 case MESSAGE_MODE_KEYBOARD:
-                    collapse();
-                    mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                    mGifButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                    mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+                    bShow = mEmojiButton;
                     break;
                 case MESSAGE_MODE_EMOJI:
-                    collapse();
-                    mEmojiButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
-                    mGifButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                    mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-
+                    bShow = mEmojiButton;
+                    bHighlight = mEmojiButton;
                     break;
                 case MESSAGE_MODE_GIF:
-                    collapse();
-                    mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                    mGifButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
-                    mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+                    bShow = mGifButton;
+                    bHighlight = mGifButton;
+                    break;
+                case MESSAGE_MODE_CAMERA:
+                    bShow = mCameraButton;
+                    bHighlight = mCameraButton;
                     break;
                 case MESSAGE_MODE_GALLERY:
-                    // mGalleryButton.setVisibility(View.VISIBLE);
-                    expand();
-                    mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                    mGifButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
-                    mGalleryButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+                    bShow = mGalleryButton;
+                    bHighlight = mGalleryButton;
                     break;
+                case MESSAGE_MODE_MORE:
+                    bShow = mMoreButton;
+                    bHighlight = mMoreButton;
+                    break;
+                default:
+                    bShow = mEmojiButton;
+                    break;
+
             }
+
+            mEmojiButton.setVisibility(bShow == mEmojiButton ? View.VISIBLE : View.GONE);
+            mGifButton.setVisibility(bShow == mGifButton ? View.VISIBLE : View.GONE);
+            mGalleryButton.setVisibility(bShow == mGalleryButton ? View.VISIBLE : View.GONE);
+            mCameraButton.setVisibility(bShow == mCameraButton ? View.VISIBLE : View.GONE);
+            mMoreButton.setVisibility(bShow == mMoreButton ? View.GONE : View.GONE);
         }
 
+        mEmojiButton.setColorFilter(bHighlight == mEmojiButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
+        mGifButton.setColorFilter(bHighlight == mGifButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
+        mCameraButton.setColorFilter(bHighlight == mCameraButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
+        mGalleryButton.setColorFilter(bHighlight == mGalleryButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
+        mMoreButton.setColorFilter(bHighlight == mMoreButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
+
+        if (expand) {
+            expand();
+        }
+        else {
+            collapse();
+        }
     }
+
 
 
 
@@ -1965,61 +2000,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
     }
 
-    private boolean isCollapsed = false;
-
-    private void showButtons() {
-
-        if (!isCollapsed || mCurrentMessageMode == null) {
-            if (mCurrentFriend == null) {
-                mQRButton.setVisibility(View.VISIBLE);
-                mEmojiButton.setVisibility(View.GONE);
-                mGifButton.setVisibility(View.GONE);
-                mCameraButton.setVisibility(View.GONE);
-                mGalleryButton.setVisibility(View.GONE);
-                mMoreButton.setVisibility(View.GONE);;
-            }
-            else {
-                mQRButton.setVisibility(View.GONE);
-                mEmojiButton.setVisibility(View.VISIBLE);
-                mGifButton.setVisibility(View.VISIBLE);
-                mCameraButton.setVisibility(View.VISIBLE);
-                mGalleryButton.setVisibility(View.VISIBLE);
-                mMoreButton.setVisibility(View.GONE);
-            }
-            return;
-        }
-
-        View vKeep;
-
-        switch (mCurrentMessageMode) {
-            case MESSAGE_MODE_KEYBOARD:
-            case MESSAGE_MODE_EMOJI:
-                vKeep = mEmojiButton;
-                break;
-            case MESSAGE_MODE_GIF:
-                vKeep = mGifButton;
-                break;
-            case MESSAGE_MODE_CAMERA:
-                vKeep = mCameraButton;
-                break;
-            case MESSAGE_MODE_GALLERY:
-                vKeep = mGalleryButton;
-                break;
-            case MESSAGE_MODE_MORE:
-                vKeep = mMoreButton;
-                break;
-            default:
-                vKeep = mEmojiButton;
-                break;
-
-        }
-
-        mEmojiButton.setVisibility(vKeep == mEmojiButton ? View.VISIBLE : View.GONE);
-        mGifButton.setVisibility(vKeep == mGifButton ? View.VISIBLE : View.GONE);
-        mGalleryButton.setVisibility(vKeep == mGalleryButton ? View.VISIBLE : View.GONE);
-        mCameraButton.setVisibility(vKeep == mCameraButton ? View.VISIBLE : View.GONE);
-        mMoreButton.setVisibility(vKeep == mMoreButton ? View.GONE : View.GONE);
-    }
 
 
     public void collapse() {
