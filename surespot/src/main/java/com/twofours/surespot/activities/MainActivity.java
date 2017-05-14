@@ -1071,7 +1071,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
         ChatManager.pause(mUser, this.hashCode());
 
-        Utils.putUserSharedPrefsString(this, mUser, "message_text", mEtMessage.getText().toString());
+        if (TextUtils.isEmpty(mEtMessage.getText())) {
+            Utils.removeUserPref(this, mUser, "message_text");
+        }
+        else {
+            Utils.putUserSharedPrefsString(this, mUser, "message_text", mEtMessage.getText().toString());
+        }
 
         mResumed = false;
     }

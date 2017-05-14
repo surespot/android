@@ -186,6 +186,13 @@ public class Utils {
 		editor.remove(key);		
 		editor.commit();
 	}
+
+	public static void removeUserPref(Context context, String username, String key) {
+		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);
+		Editor e = sp.edit();
+		e.remove(key);
+		e.commit();
+	}
 	
 	public static SharedPreferences getGlobalSharedPrefs(Context context) {
 		return context.getSharedPreferences(SurespotConstants.PrefNames.PREFS_FILE, android.content.Context.MODE_PRIVATE);
