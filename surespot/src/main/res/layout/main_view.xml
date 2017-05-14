@@ -34,52 +34,62 @@
 
     <LinearLayout
         android:id="@+id/fButtons"
+
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_above="@+id/fEmoji"
         android:layout_alignParentLeft="true"
         android:layout_alignTop="@+id/editTexts"
+
         android:orientation="horizontal">
 
 
         <ImageView
             android:id="@+id/bQR"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:src="@drawable/qr_surespot"/>
 
         <ImageView
             android:id="@+id/bEmoji"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:src="@drawable/smiley"
             android:visibility="visible"/>
 
         <TextView
             android:id="@+id/tvGIF"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:gravity="center"
             android:text="@string/gif"
             android:textSize="@dimen/abc_text_size_large_material"
             android:textStyle="bold"/>
+
         <ImageView
             android:id="@+id/bCamera"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:src="@drawable/ic_menu_camera"
             android:visibility="visible"/>
+
         <ImageView
             android:id="@+id/bGallery"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:src="@drawable/ic_menu_gallery"
             android:visibility="visible"/>
-        <ImageView
 
+        <ImageView
             android:id="@+id/bPlus"
             android:layout_width="40dp"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
 
             android:src="@drawable/ic_menu_add"
             android:visibility="visible"/>
