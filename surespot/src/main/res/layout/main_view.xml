@@ -51,6 +51,7 @@
             android:layout_gravity="bottom"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="5dp"
+            android:visibility="gone"
             android:src="@drawable/qr_surespot"/>
 
         <ImageView
@@ -61,20 +62,34 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/face"
-            android:visibility="visible"/>
+            android:visibility="visible"
+            />
+
+
+        <ImageView
+            android:id="@+id/bExpand"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/arrow"
+            />
+
 
         <ImageView
             android:id="@+id/tvGIF"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:src="@drawable/gif"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:gravity="center"
+            android:src="@drawable/gif"
             android:text="@string/gif"
             android:textSize="@dimen/abc_text_size_large_material"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:visibility="visible"/>
 
         <ImageView
             android:id="@+id/bCamera"
@@ -84,7 +99,8 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/camera"
-            android:visibility="visible"/>
+            android:visibility="visible"
+            />
 
         <ImageView
             android:id="@+id/bGallery"
@@ -94,7 +110,8 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/photo"
-            android:visibility="visible"/>
+            android:visibility="visible"
+            />
 
         <ImageView
             android:id="@+id/bPlus"
@@ -104,7 +121,8 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:src="@drawable/elipsis"
-            android:visibility="visible"/>
+            android:visibility="gone"
+            />
 
     </LinearLayout>
 
@@ -115,7 +133,8 @@
         android:layout_above="@+id/fEmoji"
         android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@+id/bSend"
-        android:layout_toRightOf="@+id/fButtons">
+        android:layout_toRightOf="@+id/fButtons"
+        >
 
         <com.twofours.surespot.ui.ClearableEditText
             android:id="@+id/etInvite"
@@ -174,15 +193,14 @@
 
     <FrameLayout
         android:id="@+id/bSend"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_above="@+id/fEmoji"
         android:layout_alignParentRight="true"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_marginBottom="-10dp"
-        android:layout_marginRight="-10dp"
+        android:background="@drawable/square_send_button"
 
-        android:background="@drawable/send_button">
+        >
 
         <ImageView
             android:id="@+id/ivInvite"

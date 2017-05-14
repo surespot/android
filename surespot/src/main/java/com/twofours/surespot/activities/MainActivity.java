@@ -141,11 +141,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mSendButton;
     private EmojiconsView mEmojiView;
     private ImageView mQRButton;
+    private ImageView mExpandButton;
     private ImageView mEmojiButton;
     private ImageView mGifButton;
     private ImageView mCameraButton;
     private ImageView mGalleryButton;
     private ImageView mMoreButton;
+
 
     private Friend mCurrentFriend;
     private boolean mFriendHasBeenSet;
@@ -180,7 +182,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private String mCurrentMessageMode;
     private View mGalleryView;
     private View mButtons;
-    private boolean isCollapsed = false;
+    private boolean isCollapsed = true;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -523,6 +525,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
         mEmojiButton.setOnClickListener(messageModeClickListener);
         mEmojiButton.setTag("emoji");
+
+        mExpandButton = (ImageView) mainView.findViewById(R.id.bExpand);
+        mExpandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                disableMessageMode(true);
+            }
+        });
+
 
         mGifButton = (ImageView) findViewById(R.id.tvGIF);
         mGifButton.setOnClickListener(messageModeClickListener);
@@ -1871,9 +1882,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     mIvSend.setVisibility(GONE);
                 }
             }
-
         }
-        updateMessageBar();
     }
 
     private void updateMessageBar() {
@@ -1889,14 +1898,16 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (mCurrentMessageMode == null) {
             if (mCurrentFriend == null) {
                 mQRButton.setVisibility(View.VISIBLE);
+                mExpandButton.setVisibility(View.GONE);
                 mEmojiButton.setVisibility(View.GONE);
                 mGifButton.setVisibility(View.GONE);
                 mCameraButton.setVisibility(View.GONE);
                 mGalleryButton.setVisibility(View.GONE);
-                mMoreButton.setVisibility(View.GONE);;
+                mMoreButton.setVisibility(View.GONE);
             }
             else {
                 mQRButton.setVisibility(View.GONE);
+                mExpandButton.setVisibility(View.GONE);
                 mEmojiButton.setVisibility(View.VISIBLE);
                 mGifButton.setVisibility(View.VISIBLE);
                 mCameraButton.setVisibility(View.VISIBLE);
@@ -1912,7 +1923,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             switch (mCurrentMessageMode) {
                 case MESSAGE_MODE_KEYBOARD:
-                    bShow = mEmojiButton;
+                    bShow = mExpandButton;
+                    bHighlight = mExpandButton;
                     break;
                 case MESSAGE_MODE_EMOJI:
                     bShow = mEmojiButton;
@@ -1925,14 +1937,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 case MESSAGE_MODE_CAMERA:
                     bShow = mCameraButton;
                     bHighlight = mCameraButton;
+                    expand = true;
                     break;
                 case MESSAGE_MODE_GALLERY:
                     bShow = mGalleryButton;
                     bHighlight = mGalleryButton;
+                    expand = true;
                     break;
                 case MESSAGE_MODE_MORE:
                     bShow = mMoreButton;
                     bHighlight = mMoreButton;
+                    expand = true;
                     break;
                 default:
                     bShow = mEmojiButton;
@@ -1940,13 +1955,26 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             }
 
-            mEmojiButton.setVisibility(bShow == mEmojiButton ? View.VISIBLE : View.GONE);
-            mGifButton.setVisibility(bShow == mGifButton ? View.VISIBLE : View.GONE);
-            mGalleryButton.setVisibility(bShow == mGalleryButton ? View.VISIBLE : View.GONE);
-            mCameraButton.setVisibility(bShow == mCameraButton ? View.VISIBLE : View.GONE);
-            mMoreButton.setVisibility(bShow == mMoreButton ? View.GONE : View.GONE);
+            if (!expand) {
+                mExpandButton.setVisibility(bShow == mExpandButton ? View.VISIBLE : View.GONE);
+                mEmojiButton.setVisibility(bShow == mEmojiButton ? View.VISIBLE : View.GONE);
+                mGifButton.setVisibility(bShow == mGifButton ? View.VISIBLE : View.GONE);
+                mGalleryButton.setVisibility(bShow == mGalleryButton ? View.VISIBLE : View.GONE);
+                mCameraButton.setVisibility(bShow == mCameraButton ? View.VISIBLE : View.GONE);
+                mMoreButton.setVisibility(bShow == mMoreButton ? View.GONE : View.GONE);
+            }
+            else {
+                mQRButton.setVisibility(View.GONE);
+                mExpandButton.setVisibility(View.GONE);
+                mEmojiButton.setVisibility(View.VISIBLE);
+                mGifButton.setVisibility(View.VISIBLE);
+                mCameraButton.setVisibility(View.VISIBLE);
+                mGalleryButton.setVisibility(View.VISIBLE);
+                mMoreButton.setVisibility(View.GONE);
+            }
         }
 
+        mExpandButton.setColorFilter(bHighlight == mExpandButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mEmojiButton.setColorFilter(bHighlight == mEmojiButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mGifButton.setColorFilter(bHighlight == mGifButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mCameraButton.setColorFilter(bHighlight == mCameraButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
@@ -1968,7 +1996,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (isCollapsed) {
             isCollapsed = false;
-            updateMessageBar();
             ViewGroup.LayoutParams lp = mButtons.getLayoutParams();
             int widthSpec = View.MeasureSpec.makeMeasureSpec(lp.width, View.MeasureSpec.UNSPECIFIED);
             mButtons.measure(widthSpec, LayoutParams.MATCH_PARENT);
@@ -2005,8 +2032,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     public void collapse() {
         if (!isCollapsed) {
             isCollapsed = true;
-
-            updateMessageBar();
 
             ViewGroup.LayoutParams lp = mButtons.getLayoutParams();
             int widthSpec = View.MeasureSpec.makeMeasureSpec(lp.width, View.MeasureSpec.UNSPECIFIED);
