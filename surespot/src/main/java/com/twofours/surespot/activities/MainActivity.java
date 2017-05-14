@@ -55,6 +55,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -173,6 +174,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private boolean mWaitingForKeyboardToShow = false;
     private View mMessageModeView;
     private String mCurrentMessageMode;
+    private View mGalleryView;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -505,7 +507,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        View.OnClickListener drawerToggleListener = new View.OnClickListener() {
+        View.OnClickListener messageModeClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleMessageMode(v.getTag().toString());
@@ -513,23 +515,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         };
 
         mEmojiButton = (ImageView) mainView.findViewById(R.id.bEmoji);
-        mEmojiButton.setOnClickListener(drawerToggleListener);
+        mEmojiButton.setOnClickListener(messageModeClickListener);
         mEmojiButton.setTag("emoji");
 
         mGifButton = (TextView) findViewById(R.id.tvGIF);
-        mGifButton.setOnClickListener(drawerToggleListener);
+        mGifButton.setOnClickListener(messageModeClickListener);
         mGifButton.setTag("gif");
 
         mCameraButton = (ImageView) mainView.findViewById(R.id.bCamera);
-        mCameraButton.setOnClickListener(drawerToggleListener);
+        mCameraButton.setOnClickListener(messageModeClickListener);
         mCameraButton.setTag("camera");
 
         mGalleryButton = (ImageView) mainView.findViewById(R.id.bGallery);
-        mGalleryButton.setOnClickListener(drawerToggleListener);
+        mGalleryButton.setOnClickListener(messageModeClickListener);
         mGalleryButton.setTag("gallery");
 
         mMoreButton = (ImageView) mainView.findViewById(R.id.bPlus);
-        mMoreButton.setOnClickListener(drawerToggleListener);
+        mMoreButton.setOnClickListener(messageModeClickListener);
         mMoreButton.setTag("more");
 
         mQRButton = (ImageView) mainView.findViewById(R.id.bQR);
@@ -567,20 +569,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
         mEtMessage.addTextChangedListener(tw);
 
-//        OnTouchListener editTouchListener = new OnTouchListener() {
-//
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//
-//                if (mMessageModeActive) {
-//                    return true;
-//                }
-//
-//                return false;
-//            }
-//        };
-//
-//        mEtMessage.setOnTouchListener(editTouchListener);
+        OnTouchListener editTouchListener = new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (messageModeActive()) {
+                    return true;
+                }
+
+                return false;
+            }
+        };
+
+        mEtMessage.setOnTouchListener(editTouchListener);
 
         mEtInvite = (EditText) mainView.findViewById(R.id.etInvite);
         mEtInvite.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_USERNAME_LENGTH), new LetterOrDigitInputFilter()});
@@ -1093,11 +1095,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         try {
-            InputMethodManager input = (InputMethodManager) mContext
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (input != null && mEtMessage != null) {
-                input.hideSoftInputFromWindow(mEtMessage.getWindowToken(), 0);
-            }
+            hideKeyboard();
         }
         catch (Exception e) {
         }
@@ -1949,7 +1947,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
                 mGifButton.setSelected(false);
                 mGifButton.setTextColor(SurespotApplication.getTextColor());
-
+                mGalleryButton.setSelected(false);
+                mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
                 //show all icons
                 if (!TextUtils.isEmpty(mEtMessage.getText())) {
 
@@ -1970,13 +1969,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
             switch (mCurrentMessageMode) {
                 case MESSAGE_MODE_EMOJI:
-                    //emoji icon visible
                     mEmojiButton.setVisibility(View.VISIBLE);
-                    //highlight icon
+
                     mEmojiButton.setSelected(true);
                     mEmojiButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
                     mGifButton.setTextColor(SurespotApplication.getTextColor());
-
+                    mGalleryButton.setSelected(false);
+                    mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
                     //if message length > 0 only show emoji icon
                     if (!TextUtils.isEmpty(mEtMessage.getText())) {
                         mGifButton.setVisibility(GONE);
@@ -1994,13 +1993,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                     break;
                 case MESSAGE_MODE_GIF:
-                    //gif icon visible
                     mGifButton.setVisibility(View.VISIBLE);
-                    //highlight icon
-                    mGifButton.setSelected(true);
-                    mGifButton.setTextColor(mSelectedMask);
+
                     mEmojiButton.setSelected(false);
                     mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+                    mGifButton.setSelected(true);
+                    mGifButton.setTextColor(mSelectedMask);
+                    mGalleryButton.setSelected(false);
+                    mGalleryButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
 
                     //if message length > 0 only show gif icon
                     if (!TextUtils.isEmpty(mEtGifSearch.getText())) {
@@ -2015,6 +2015,33 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         mEmojiButton.setVisibility(View.VISIBLE);
                         mCameraButton.setVisibility(View.VISIBLE);
                         mGalleryButton.setVisibility(View.VISIBLE);
+                        //     mMoreButton.setVisibility(View.VISIBLE);
+                    }
+                    break;
+                case MESSAGE_MODE_GALLERY:
+                    mGalleryButton.setVisibility(View.VISIBLE);
+
+                    mEmojiButton.setSelected(false);
+                    mEmojiButton.setColorFilter(mUnselectedMask, PorterDuff.Mode.SRC_IN);
+                    mGifButton.setSelected(false);
+                    mGifButton.setTextColor(SurespotApplication.getTextColor());
+                    mGalleryButton.setSelected(true);
+                    mGalleryButton.setColorFilter(mSelectedMask, PorterDuff.Mode.SRC_IN);
+
+
+                    //if message length > 0 only show gif icon
+                    if (!TextUtils.isEmpty(mEtGifSearch.getText())) {
+                        mEmojiButton.setVisibility(GONE);
+                        mGifButton.setVisibility(GONE);
+                        mCameraButton.setVisibility(GONE);
+                        mMoreButton.setVisibility(GONE);
+                    }
+                    else {
+                        //show all other icons
+                        mEmojiButton.setVisibility(View.VISIBLE);
+                        mGifButton.setVisibility(View.VISIBLE);
+                        mCameraButton.setVisibility(View.VISIBLE);
+
                         //     mMoreButton.setVisibility(View.VISIBLE);
                     }
                     break;
@@ -2241,6 +2268,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
         }
 
+        InputMethodManager input = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         final WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
         final View oldView = mMessageModeView;
         final View gifFrame = findViewById(R.id.gifFrame);
@@ -2347,8 +2375,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 gifFrame.setVisibility(View.VISIBLE);
 
                 requestFocus(mEtGifSearch);
-                InputMethodManager input = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                input.showSoftInput(mEtGifSearch, 0);
+                if (input != null) {
+                    input.showSoftInput(mEtGifSearch, 0);
+                }
 
                 //hard coded to 150 in the view, easier than trying to measure the view here
                 int gifFrameHeight = (int) UIUtils.pxFromDp(this, 150);
@@ -2358,6 +2387,46 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 SurespotLog.d(TAG, "setMessageMode, gifFrameHeight: %d", gifFrameHeight);
 
                 mMessageModeView = null;
+                break;
+            case MESSAGE_MODE_GALLERY:
+                gifFrame.setVisibility(GONE);
+                mGiphySearchFieldLayout.setVisibility(GONE);
+                mEtMessage.setVisibility(View.VISIBLE);
+                mSendButton.setVisibility(View.VISIBLE);
+
+                if (mGalleryView == null) {
+                    mGalleryView = new LinearLayout(this);
+                }
+
+                mMessageModeView = mGalleryView;
+                try {
+
+                    wm.addView(mMessageModeView, mWindowLayoutParams);
+
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
+                                wm.removeView(oldView);
+                            }
+                        }
+                    };
+                    mHandler.postDelayed(runnable, 500);
+
+                }
+                catch (Exception e) {
+                    SurespotLog.e(TAG, e, "error adding gallery view");
+                    return;
+                }
+
+
+                if (!mActivityLayout.isKeyboardVisible()) {
+                    SurespotLog.d(TAG, "setting padding");
+                    mActivityLayout.setPadding(0, 0, 0, keyboardHeight);
+                }
+                mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
+
+
                 break;
             default:
                 return;
@@ -2376,6 +2445,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         gifFrame.setVisibility(GONE);
         mGiphySearchFieldLayout.setVisibility(GONE);
         mEtMessage.setVisibility(View.VISIBLE);
+        mEtGifSearch.setText("");
         mSendButton.setVisibility(View.VISIBLE);
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
 
@@ -2408,14 +2478,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         }
         else {
-//            if (mActivityLayout.isKeyboardVisible()) {
-//                backButtonPressed();
-//                return;
-//            }
-
             mActivityLayout.setPadding(0, 0, 0, 0);
         }
-        //getActionBar().show();
         updateMessageBar();
     }
 
@@ -2462,4 +2526,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             SurespotLog.d(TAG, "requestFocus, view has focus, not requesting focus");
         }
     }
+
+    void hideKeyboard() {
+        InputMethodManager input = (InputMethodManager) mContext
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (input != null && mEtMessage != null) {
+            input.hideSoftInputFromWindow(mEtMessage.getWindowToken(), 0);
+        }
+    }
+
+
 }
