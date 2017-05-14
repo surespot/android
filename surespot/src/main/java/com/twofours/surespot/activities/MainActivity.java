@@ -1071,11 +1071,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
         ChatManager.pause(mUser, this.hashCode());
 
-        if (TextUtils.isEmpty(mEtMessage.getText())) {
-            Utils.removeUserPref(this, mUser, "message_text");
-        }
-        else {
-            Utils.putUserSharedPrefsString(this, mUser, "message_text", mEtMessage.getText().toString());
+        if (mEtMessage != null) {
+            if (TextUtils.isEmpty(mEtMessage.getText())) {
+                Utils.removeUserPref(this, mUser, "message_text");
+            }
+            else {
+                Utils.putUserSharedPrefsString(this, mUser, "message_text", mEtMessage.getText().toString());
+            }
         }
 
         mResumed = false;
@@ -1472,6 +1474,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         }
 
         ChatManager.detach(this, this.hashCode());
+        Utils.removeUserPref(this, mUser, "message_text");
     }
 
 
@@ -1552,7 +1555,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
             }
         }
-
     }
 
     @Override
@@ -1565,9 +1567,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     mImageCaptureHandler.getImagePath());
             outState.putParcelable("imageCaptureHandler", mImageCaptureHandler);
         }
-
-        //save edit text
-        outState.putString("message_text", mEtMessage.getText().toString());
     }
 
     @Override
@@ -1579,8 +1578,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             SurespotLog.d(TAG, "onRestoreInstanceState restored imageCaptureHandler, to: %s, path: %s", mImageCaptureHandler.getTo(),
                     mImageCaptureHandler.getImagePath());
         }
-
-        mEtMessage.setText(savedInstanceState.getString("message_text"));
     }
 
     private boolean mInProgress;
