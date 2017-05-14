@@ -49,6 +49,8 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp"
             android:src="@drawable/qr_surespot"/>
 
         <ImageView
@@ -56,14 +58,19 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:src="@drawable/smiley"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/face"
             android:visibility="visible"/>
 
-        <TextView
+        <ImageView
             android:id="@+id/tvGIF"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
+            android:src="@drawable/gif"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:gravity="center"
             android:text="@string/gif"
             android:textSize="@dimen/abc_text_size_large_material"
@@ -74,7 +81,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:src="@drawable/ic_menu_camera"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/camera"
             android:visibility="visible"/>
 
         <ImageView
@@ -82,7 +91,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:src="@drawable/ic_menu_gallery"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/photo"
             android:visibility="visible"/>
 
         <ImageView
@@ -90,8 +101,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-
-            android:src="@drawable/ic_menu_add"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/elipsis"
             android:visibility="visible"/>
 
     </LinearLayout>
