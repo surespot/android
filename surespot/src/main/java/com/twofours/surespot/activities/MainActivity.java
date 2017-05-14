@@ -57,7 +57,6 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -84,6 +83,7 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.gifs.GifDetails;
 import com.twofours.surespot.gifs.GifSearchHandler;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.images.GalleryModeHandler;
 import com.twofours.surespot.images.ImageCaptureHandler;
 import com.twofours.surespot.images.ImageSelectActivity;
 import com.twofours.surespot.network.IAsyncCallback;
@@ -175,6 +175,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private DrawerLayout mDrawerLayout;
     private LayoutParams mWindowLayoutParams;
     private GifSearchHandler mGifHandler;
+    private GalleryModeHandler mGalleryModeHandler;
     private EditText mEtGifSearch;
     private View mGiphySearchFieldLayout;
     private boolean mWaitingForKeyboardToShow = false;
@@ -2034,6 +2035,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             isCollapsed = true;
 
             ViewGroup.LayoutParams lp = mButtons.getLayoutParams();
+
             int widthSpec = View.MeasureSpec.makeMeasureSpec(lp.width, View.MeasureSpec.UNSPECIFIED);
             mButtons.measure(widthSpec, LayoutParams.MATCH_PARENT);
             final int initialWidth = mButtons.getWidth();
@@ -2438,40 +2440,51 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_GALLERY:
-                if (mGalleryView == null) {
-                    mGalleryView = new LinearLayout(this);
+                if (mGalleryModeHandler == null) {
+                    mGalleryModeHandler = new GalleryModeHandler(this, mUser);
+                    mGalleryModeHandler.setGifSelectedCallback(new IAsyncCallback<GifDetails>() {
+                        @Override
+                        public void handleResponse(GifDetails result) {
+                            if (result != null) {
+                                sendGifMessage(result.getUrl());
+                            }
+                        }
+                    });
                 }
 
+                mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view,null, false);
                 mMessageModeView = mGalleryView;
+
+
                 try {
                     wm.addView(mMessageModeView, mWindowLayoutParams);
-                    Runnable runnable2 = new Runnable() {
+                    Runnable runnable3 = new Runnable() {
                         @Override
                         public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
+                            if (oldView != null && oldView.getParent() != null) {
                                 wm.removeView(oldView);
                             }
                         }
                     };
-                    mHandler.postDelayed(runnable2, 500);
+                    mHandler.postDelayed(runnable3, 500);
                 }
                 catch (Exception e) {
-                    SurespotLog.e(TAG, e, "error adding gallery view");
+                    SurespotLog.e(TAG, e, "error adding emoji view");
                     return;
                 }
 
+                mGalleryModeHandler.refreshContextAndViews(mContext, mGalleryView);
+
+                mEtMessage.setVisibility(View.VISIBLE);
                 requestFocus(mEtMessage);
                 if (input != null) {
                     input.showSoftInput(mEtMessage, 0);
                 }
-                requestFocus(mGalleryView);
 
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
-                mEtMessage.setVisibility(View.VISIBLE);
-                mSendButton.setVisibility(View.VISIBLE);
 
-                mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
+                mSendButton.setVisibility(View.VISIBLE);
                 mCurrentMessageMode = MESSAGE_MODE_GALLERY;
                 updateMessageBar();
                 break;

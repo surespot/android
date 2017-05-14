@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical">
+              >
+
+    <ProgressBar
+        android:id="@+id/gallery_progress_bar"
+        style="?android:progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        />
+
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvGallery"
@@ -11,4 +21,12 @@
         android:orientation="horizontal"
         />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/tv_no_images"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/no_GIFS_found"
+        android:visibility="gone"
+        />
+</FrameLayout>

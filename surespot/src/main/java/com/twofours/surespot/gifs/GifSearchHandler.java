@@ -46,7 +46,7 @@ public class GifSearchHandler {
         mContext = context;
         mUsername = username;
 
-        refreshContextAndViews(context, parentView);
+   //     refreshContextAndViews(context, parentView);
 
   //      final String sRecentlyUsed = mContext.getString(R.string.recently_used);
 //        mTvLastSearch = (TextView)  parentView.findViewById(R.id.tvLastSearch);

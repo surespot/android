@@ -3,4 +3,5 @@
     <item name="tagMessage" type="id">0</item>
     <item name="tagDownloader" type="id">1</item>
     <item name="tagGifDownloader" type="id">2</item>
+    <item name="tagGalleryDownloader" type="id">3</item>
 </resources>
