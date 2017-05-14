@@ -49,18 +49,16 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="5dp"
-            android:visibility="gone"
-            android:src="@drawable/qr_surespot"/>
+            android:src="@drawable/qr_surespot"
+            android:visibility="gone"/>
 
         <ImageView
             android:id="@+id/bEmoji"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="5dp"
+            android:paddingBottom="4dp"
+            android:paddingTop="4dp"
             android:src="@drawable/face"
             android:visibility="visible"
             />
@@ -71,8 +69,8 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="5dp"
+            android:paddingBottom="6dp"
+            android:paddingTop="6dp"
             android:src="@drawable/arrow"
             />
 
