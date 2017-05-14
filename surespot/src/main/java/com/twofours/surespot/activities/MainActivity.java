@@ -1731,45 +1731,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             return true;
         }
 
+        if (messageModeActive()) {
+            disableMessageMode(false);
+        }
 
         //returning false will cause the keyboard to be hidden
         if (mActivityLayout.isKeyboardVisible()) {
-
-//            if (mGifShowing) {
-//                mActivityLayout.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        hideGifDrawer(false, false);
-//                        setEmojiIcon(false);
-//                    }
-//                });
-//
-//            }
-
-            if (messageModeActive()) {
-                mActivityLayout.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        disableMessageMode(false);
-                    }
-                });
-            }
-
-            mActivityLayout.post(new Runnable() {
-                @Override
-                public void run() {
-                    //             setDrawerIcon();
-                }
-            });
             SurespotLog.d(TAG, "keyboard showing backButtonPressed returning false");
             return false;
-        }
-
-        if (messageModeActive()) {
-            disableMessageMode(false);
-            //     setEmojiIcon();
-            SurespotLog.d(TAG, "emoji showing and keyboard not visible, backButtonPressed returning true");
-            return true;
         }
 
         //go to home page if we not
@@ -1787,7 +1756,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.d(TAG, "backButtonPressed returning false at the bottom");
         return false;
     }
-
 
     private void inviteFriend() {
 
