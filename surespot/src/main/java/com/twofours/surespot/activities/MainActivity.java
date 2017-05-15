@@ -56,7 +56,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -74,6 +73,7 @@ import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
+import com.twofours.surespot.camera.CameraModeHandler;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
@@ -108,22 +108,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import io.fotoapparat.Fotoapparat;
-import io.fotoapparat.hardware.Capabilities;
-import io.fotoapparat.result.PhotoResult;
-import io.fotoapparat.view.CameraView;
 import okhttp3.Call;
 import okhttp3.Response;
 
 import static android.view.View.GONE;
 import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
-import static io.fotoapparat.parameter.selector.FocusModeSelectors.autoFocus;
-import static io.fotoapparat.parameter.selector.FocusModeSelectors.continuousFocus;
-import static io.fotoapparat.parameter.selector.FocusModeSelectors.fixed;
-import static io.fotoapparat.parameter.selector.Selectors.firstAvailable;
-import static io.fotoapparat.parameter.selector.SizeSelectors.biggestSize;
 
 public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
@@ -194,8 +184,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mGalleryView;
     private View mButtons;
     private boolean isCollapsed = true;
-    private CameraView mCameraView;
-    private Fotoapparat mFotoapparat;
+    private CameraModeHandler mCameraModeHandler;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -2512,95 +2501,32 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case MESSAGE_MODE_CAMERA:
                 mCurrentMessageMode = MESSAGE_MODE_CAMERA;
-                View view = getLayoutInflater().inflate(R.layout.camera_view, null, false);
-                mCameraView = (CameraView) view.findViewById(R.id.camera);
+                if (mCameraModeHandler == null) {
+                    mCameraModeHandler = new CameraModeHandler();
+                }
 
-                mFotoapparat = Fotoapparat
-                        .with(this)
-                        .into(mCameraView)
-//                        .photoSize(new SelectorFunction<Size>() {
-//                            @Override
-//                            public Size select(Collection<Size> collection) {
-//                                return new Size(mActivityLayout.getWidth(), mActivityLayout.getKeyboardHeight());
-//                            }
-//                        })
-//                        .previewSize(new SelectorFunction<Size>() {
-//                            @Override
-//                            public Size select(Collection<Size> collection) {
-//                                return new Size((int)UIUtils.pxFromDp(MainActivity.this,200), mActivityLayout.getKeyboardHeight());
-//                            }
-//                        })
-                        .photoSize(biggestSize())
-                        .previewSize(biggestSize())
-                        .focusMode(firstAvailable(continuousFocus(), autoFocus(), fixed()))
+                View view = getLayoutInflater().inflate(R.layout.google_camera_view, null, false);
+                mCameraModeHandler.setupCamera(this, view, keyboardHeight, new IAsyncCallback<Uri>() {
+                    @Override
+                    public void handleResponse(Uri uri) {
+                        if (uri != null) {
+                            ChatController cc = ChatManager.getChatController(mUser);
+                            if (cc != null) {
 
+                                //TODO send bitmap in
+                                ChatUtils.uploadPictureMessageAsync(
+                                        MainActivity.this,
+                                        cc,
+                                        uri,
+                                        mUser,
+                                        mCurrentFriend.getName(),
+                                        true);
 
-                        .build();
-
-                //if (mCameraView == null) {
-
-                //}
-                ImageButton fab = (ImageButton) view.findViewById(R.id.take_picture);
-                fab.setOnClickListener(
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                final PhotoResult photoResult = mFotoapparat.takePicture();
-                                Runnable runnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Capabilities result;
-                                        try {
-                                            result = mFotoapparat.getCapabilities().toPendingResult().await();
-                                            SurespotLog.d(TAG,"result: %s", result);
-                                        }
-                                        catch (ExecutionException e) {
-                                            e.printStackTrace();
-                                        }
-                                        catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                        File f = null;
-                                        try {
-                                            f = FileUtils.createGalleryImageFile(".jpg");
-                                            photoResult.saveToFile(f).await();
-                                        }
-                                        catch (IOException e) {
-                                            //TODO notify user
-                                            SurespotLog.e(TAG, e, "error sending camera image");
-                                            return;
-                                        }
-                                        catch (InterruptedException e) {
-                                            SurespotLog.w(TAG, e, "save camera image to file");
-                                            return;
-                                        }
-                                        catch (ExecutionException e) {
-                                            SurespotLog.w(TAG, e, "save camera image to file");
-                                            return;
-                                        }
-                                        String path = f.getAbsolutePath();
-
-
-                                        ChatController cc = ChatManager.getChatController(mUser);
-                                        if (cc != null) {
-
-                                            //TODO send bitmap in
-                                            ChatUtils.uploadPictureMessageAsync(
-                                                    MainActivity.this,
-                                                    cc,
-                                                    Uri.fromFile(new File(path)),
-                                                    mUser,
-                                                    mCurrentFriend.getName(),
-                                                    true);
-
-                                            FileUtils.galleryAddPic(MainActivity.this, path);
-                                        }
-                                    }
-                                };
-                                SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+                                FileUtils.galleryAddPic(MainActivity.this, uri.getPath());
                             }
-                        });
+                        }
+                    }
+                });
 
                 mMessageModeView = view;
 
@@ -2634,11 +2560,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
-
                 mSendButton.setVisibility(View.VISIBLE);
-
-                mFotoapparat.start();
-//
                 updateMessageBar();
                 break;
         }
@@ -2682,13 +2604,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void stopCamera() {
-        if (mFotoapparat != null) {
-            try {
-                mFotoapparat.stop();
-            }
-            catch (IllegalStateException e) {
-                SurespotLog.w(TAG, e, "stop camera");
-            }
+        if (mCameraModeHandler != null) {
+            mCameraModeHandler.stopCamera();
         }
     }
 
