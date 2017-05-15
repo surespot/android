@@ -61,6 +61,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.google.android.cameraview.CameraView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.rockerhieu.emojicon.EmojiconsView;
@@ -183,6 +184,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mGalleryView;
     private View mButtons;
     private boolean isCollapsed = true;
+    private CameraView mCameraView;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -1974,9 +1976,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mExpandButton.setColorFilter(bHighlight == mExpandButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mEmojiButton.setColorFilter(bHighlight == mEmojiButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mGifButton.setColorFilter(bHighlight == mGifButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
-        mCameraButton.setColorFilter(bHighlight == mCameraButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
-        mGalleryButton.setColorFilter(bHighlight == mGalleryButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
-        mMoreButton.setColorFilter(bHighlight == mMoreButton ? selectedMask: unselectedMask, PorterDuff.Mode.SRC_IN);
+        mCameraButton.setColorFilter(bHighlight == mCameraButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
+        mGalleryButton.setColorFilter(bHighlight == mGalleryButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
+        mMoreButton.setColorFilter(bHighlight == mMoreButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
 
         if (expand) {
             expand();
@@ -1985,8 +1987,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             collapse();
         }
     }
-
-
 
 
     public void expand() {
@@ -2023,7 +2023,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mButtons.startAnimation(a);
         }
     }
-
 
 
     public void collapse() {
@@ -2297,6 +2296,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         switch (messageMode) {
             case MESSAGE_MODE_KEYBOARD:
+                mCurrentMessageMode = MESSAGE_MODE_KEYBOARD;
                 mMessageModeView = null;
 
                 try {
@@ -2327,10 +2327,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mSendButton.setVisibility(View.VISIBLE);
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-                mCurrentMessageMode = MESSAGE_MODE_KEYBOARD;
+
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_EMOJI:
+                mCurrentMessageMode = MESSAGE_MODE_EMOJI;
                 mMessageModeView = mEmojiView;
                 createEmojiView();
                 try {
@@ -2361,10 +2362,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mSendButton.setVisibility(View.VISIBLE);
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-                mCurrentMessageMode = MESSAGE_MODE_EMOJI;
+
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_GIF:
+                mCurrentMessageMode = MESSAGE_MODE_GIF;
                 if (mGifHandler == null) {
                     mGifHandler = new GifSearchHandler(this, mUser, mActivityLayout);
                     mGifHandler.setGifSelectedCallback(new IAsyncCallback<GifDetails>() {
@@ -2432,10 +2434,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mHandler.postDelayed(runnable, 100);
 
                 mMessageModeView = null;
-                mCurrentMessageMode = MESSAGE_MODE_GIF;
+
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_GALLERY:
+                mCurrentMessageMode = MESSAGE_MODE_GALLERY;
                 if (mGalleryModeHandler == null) {
                     mGalleryModeHandler = new GalleryModeHandler(this, mUser, keyboardHeight);
                     mGalleryModeHandler.setGallerySelectedCallback(new IAsyncCallback<Uri>() {
@@ -2457,7 +2460,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     });
                 }
 
-                mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view,null, false);
+                mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
                 mMessageModeView = mGalleryView;
 
 
@@ -2466,7 +2469,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     Runnable runnable3 = new Runnable() {
                         @Override
                         public void run() {
-                            if (oldView != null && oldView.getParent() != null) {
+                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
                                 wm.removeView(oldView);
                             }
                         }
@@ -2490,11 +2493,51 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mGiphySearchFieldLayout.setVisibility(GONE);
 
                 mSendButton.setVisibility(View.VISIBLE);
-                mCurrentMessageMode = MESSAGE_MODE_GALLERY;
+
                 updateMessageBar();
                 break;
-            default:
-                return;
+            case MESSAGE_MODE_CAMERA:
+                mCurrentMessageMode = MESSAGE_MODE_CAMERA;
+                View view = getLayoutInflater().inflate(R.layout.camera_view, null, false);
+
+                //if (mCameraView == null) {
+                    mCameraView = (CameraView) view.findViewById(R.id.camera);
+                //}
+                mMessageModeView = view;
+
+
+                try {
+                    wm.addView(mMessageModeView, mWindowLayoutParams);
+                    Runnable runnable3 = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
+                                wm.removeView(oldView);
+                            }
+                        }
+                    };
+                    mHandler.postDelayed(runnable3, 500);
+                }
+                catch (Exception e) {
+                    SurespotLog.e(TAG, e, "error adding camera view");
+                    return;
+                }
+
+
+                mEtMessage.setVisibility(View.VISIBLE);
+                requestFocus(mEtMessage);
+                if (input != null) {
+                    input.showSoftInput(mEtMessage, 0);
+                }
+
+                gifFrame.setVisibility(GONE);
+                mGiphySearchFieldLayout.setVisibility(GONE);
+
+                mSendButton.setVisibility(View.VISIBLE);
+
+                mCameraView.start();
+                updateMessageBar();
+                break;
         }
 
         SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
@@ -2508,6 +2551,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtGifSearch.setText("");
         mSendButton.setVisibility(View.VISIBLE);
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
+        if (mCameraView != null) {
+            mCameraView.stop();
+        }
 
         if (mMessageModeView != null && mMessageModeView.getParent() != null) {
             WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
