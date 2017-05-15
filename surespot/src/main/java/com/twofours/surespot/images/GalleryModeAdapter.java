@@ -14,7 +14,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
-public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.GifViewHolder> {
+public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAdapter.GifViewHolder> {
     private final static String TAG = "GalleryModeAdapter";
     private static final int IMAGE_ID_COLUMN = 0;
     private static final int DATA_COLUMN = 1;
@@ -29,50 +29,19 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
     private GalleryModeDownloader mGifSearchDownloader;
     private Context mContext;
     private IAsyncCallback<Uri> mCallback;
-    private Cursor mCursor;
+    //private Cursor mCursor;
     private int mHeight;
 
     public GalleryModeAdapter(Context context, IAsyncCallback<Uri> callback, int height) {
+        super(context,null);
         mContext = context;
         mGifSearchDownloader = new GalleryModeDownloader(context);
         mCallback = callback;
-        mCursor = getCursor();
+        //mCursor = getCursor();
         mHeight = height;
         SurespotLog.d(TAG, "height: %d", height);
 
     }
-
-
-    public Cursor getCursor() {
-        Cursor imageCursor = null;
-        try {
-            String[] projection = new String[]{
-                    MediaStore.Images.ImageColumns._ID,
-                    MediaStore.Images.ImageColumns.DATA,
-                    MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                    MediaStore.Images.ImageColumns.DATE_TAKEN,
-                    MediaStore.Images.ImageColumns.MIME_TYPE,
-                    MediaStore.Images.ImageColumns.ORIENTATION,
-                    MediaStore.Images.ImageColumns.WIDTH,
-                    MediaStore.Images.ImageColumns.HEIGHT
-            };
-            String[] tprojection = new String[]{
-                    MediaStore.Images.Thumbnails._ID,
-                    MediaStore.Images.Thumbnails.DATA,
-
-                    MediaStore.Images.Thumbnails.WIDTH,
-                    MediaStore.Images.Thumbnails.HEIGHT,
-                    MediaStore.Images.Thumbnails.IMAGE_ID
-            };
-            imageCursor = mContext.getContentResolver().query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, tprojection, null, null, "image_id desc limit 50 offset 0");
-        }
-        catch (Exception e) {
-            SurespotLog.e(TAG, e, "getCursor");
-        }
-
-        return imageCursor;
-    }
-
 
     @Override
     public GifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -85,13 +54,14 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
 
 
     @Override
-    public void onBindViewHolder(final GifViewHolder holder, final int position) {
-        mCursor.moveToPosition(position);
+    public void onBindViewHolder(GifViewHolder holder, Cursor cursor, int position) {
+
+        cursor.moveToPosition(position);
         //Uri uri = ContentUris.withAppendedId(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, mCursor.getInt(IMAGE_ID_COLUMN));
-        final String id = mCursor.getString(T_ORIG_ID_COLUMN);
+        final String id = cursor.getString(T_ORIG_ID_COLUMN);
         //    int orientation = mCursor.getInt(ORIENTATION_COLUMN);
-        int height = mCursor.getInt(T_HEIGHT_COLUMN);
-        int width = mCursor.getInt(T_WIDTH_COLUMN);
+        int height = cursor.getInt(T_HEIGHT_COLUMN);
+        int width = cursor.getInt(T_WIDTH_COLUMN);
 
         SurespotLog.d(TAG, "onBindViewHolder url: %s, width %d, height %d", id.toString(), width, height);
 
@@ -133,20 +103,6 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
                 }
             }
         });
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public int getItemCount() {
-
-        if (mCursor == null) {
-            return 0;
-        }
-        return mCursor.getCount();
     }
 
     public Context getContext() {

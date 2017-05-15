@@ -124,7 +124,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private static final String MESSAGE_MODE_GALLERY = "gallery";
     private static final String MESSAGE_MODE_MORE = "more";
 
-    private Context mContext = null;
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallback<Object> m401Handler;
 
@@ -249,9 +248,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         Utils.logIntent(TAG, intent);
 
         getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
-
-
-        mContext = this;
 
         SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
         mEnterToSend = sp.getBoolean("pref_enter_to_send", true);
@@ -2287,15 +2283,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mWindowLayoutParams = new WindowManager.LayoutParams();
         mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
         mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-        mWindowLayoutParams.token = ((Activity) mContext).getWindow().getDecorView().getWindowToken();
+        mWindowLayoutParams.token = this.getWindow().getDecorView().getWindowToken();
         mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
         if (mWindowLayoutParams != null) {
             mWindowLayoutParams.height = keyboardHeight;
             mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
         }
 
-        InputMethodManager input = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        final WindowManager wm = (WindowManager) mContext.getSystemService(Activity.WINDOW_SERVICE);
+        InputMethodManager input = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        final WindowManager wm = (WindowManager) this.getSystemService(Activity.WINDOW_SERVICE);
         final View oldView = mMessageModeView;
         final View gifFrame = findViewById(R.id.gifFrame);
 
@@ -2391,7 +2387,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     });
                 }
 
-                mGifHandler.refreshContextAndViews(mContext, mActivityLayout);
+                mGifHandler.refreshContextAndViews(this, mActivityLayout);
 
                 try {
                     Runnable runnable = new Runnable() {
@@ -2482,7 +2478,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     return;
                 }
 
-                mGalleryModeHandler.refreshContextAndViews(mContext, mGalleryView);
+                mGalleryModeHandler.refreshContextAndViews(this, mGalleryView);
 
                 mEtMessage.setVisibility(View.VISIBLE);
                 requestFocus(mEtMessage);
@@ -2514,7 +2510,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
 
         if (mMessageModeView != null && mMessageModeView.getParent() != null) {
-            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
             wm.removeViewImmediate(mMessageModeView);
         }
 
@@ -2525,7 +2521,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     @Override
                     public void run() {
                         requestFocus(mEtMessage);
-                        InputMethodManager input = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        InputMethodManager input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         input.showSoftInput(mEtMessage, 0);
                     }
                 };
@@ -2580,8 +2576,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     void hideKeyboard() {
-        InputMethodManager input = (InputMethodManager) mContext
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (input != null && mEtMessage != null) {
             input.hideSoftInputFromWindow(mEtMessage.getWindowToken(), 0);
         }
