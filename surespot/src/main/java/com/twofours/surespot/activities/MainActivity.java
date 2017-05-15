@@ -536,7 +536,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         });
 
 
-        mGifButton = (ImageView) findViewById(R.id.tvGIF);
+        mGifButton = (ImageView) findViewById(R.id.bGIF);
         mGifButton.setOnClickListener(messageModeClickListener);
         mGifButton.setTag("gif");
 

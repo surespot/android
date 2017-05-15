@@ -76,7 +76,7 @@
 
 
         <ImageView
-            android:id="@+id/tvGIF"
+            android:id="@+id/bGIF"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
@@ -196,41 +196,52 @@
         android:layout_above="@+id/fEmoji"
         android:layout_alignParentRight="true"
         android:layout_alignWithParentIfMissing="true"
-        android:background="@drawable/square_send_button"
+
+
 
         >
 
-        <ImageView
+        <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivInvite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:tint="@drawable/send_button"
             android:layout_gravity="center"
             android:src="@drawable/ic_menu_invite">
-        </ImageView>
+        </com.twofours.surespot.ui.TintableImageView>
 
-        <ImageView
+        <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivVoice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:tint="@drawable/send_button"
             android:layout_gravity="center"
-            android:src="@drawable/ic_btn_speak_now">
-        </ImageView>
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/mic">
+        </com.twofours.surespot.ui.TintableImageView>
 
-        <ImageView
+        <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivHome"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:layout_width="wrap_content"
+            app:tint="@drawable/send_button"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ic_menu_home">
-        </ImageView>
+            android:src="@drawable/home">
+        </com.twofours.surespot.ui.TintableImageView>
 
-        <ImageView
+        <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivSend"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ic_menu_send">
-        </ImageView>
+            app:tint="@drawable/send_button"
+            android:src="@drawable/send">
+        </com.twofours.surespot.ui.TintableImageView>
     </FrameLayout>
 
 

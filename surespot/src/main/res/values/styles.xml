@@ -31,4 +31,8 @@
     <declare-styleable name="VolumeEnvelopeView">
         <attr name="color" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="TintableImageView">
+        <attr name="tint" format="reference|color" />
+    </declare-styleable>
 </resources>
