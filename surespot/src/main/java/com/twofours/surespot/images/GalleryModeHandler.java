@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.support.annotation.DimenRes;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +14,6 @@ import android.widget.ProgressBar;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.gifs.GifDetails;
 import com.twofours.surespot.network.IAsyncCallback;
 
 public class GalleryModeHandler {
@@ -22,11 +22,9 @@ public class GalleryModeHandler {
     private RecyclerView mRecyclerView;
     private StaggeredGridLayoutManager mLayoutManager;
     private GalleryModeAdapter mGalleryModeAdapter;
-    private IAsyncCallback<GifDetails> mGifSelectedCallback;
+    private IAsyncCallback<Uri> mGallerySelectedCallback;
     private ProgressBar mProgressBar;
     private View mEmptyView;
-    //   private TextView mTvLastSearch;
-    private IAsyncCallback<String> mGifSearchTextCallback;
     private Context mContext;
     private String mUsername;
     private int mHeight;
@@ -75,15 +73,6 @@ public class GalleryModeHandler {
         parentView.setBackgroundColor(black ? Color.BLACK : Color.WHITE);
         mRecyclerView = (RecyclerView) parentView.findViewById(R.id.rvGallery);
 
-//        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                if(newState == RecyclerView.SCROLL_STATE_IDLE){
-//                    mRecyclerView.invalidateItemDecorations();
-//                }
-//            }
-//        });
-
         mLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
         mLayoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
 
@@ -105,7 +94,7 @@ public class GalleryModeHandler {
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
         if (mGalleryModeAdapter == null) {
-            mGalleryModeAdapter = new GalleryModeAdapter(mContext, mGifSelectedCallback, mHeight);
+            mGalleryModeAdapter = new GalleryModeAdapter(mContext, mGallerySelectedCallback, mHeight);
             mRecyclerView.setAdapter(mGalleryModeAdapter);
             mGalleryModeAdapter.notifyDataSetChanged();
         }
@@ -118,10 +107,10 @@ public class GalleryModeHandler {
     }
 
 
-    public void setGifSelectedCallback(final IAsyncCallback<GifDetails> callback) {
-        mGifSelectedCallback = new IAsyncCallback<GifDetails>() {
+    public void setGallerySelectedCallback(final IAsyncCallback<Uri> callback) {
+        mGallerySelectedCallback = new IAsyncCallback<Uri>() {
             @Override
-            public void handleResponse(GifDetails result) {
+            public void handleResponse(Uri result) {
                 //update recently used
                 callback.handleResponse(result);
             }

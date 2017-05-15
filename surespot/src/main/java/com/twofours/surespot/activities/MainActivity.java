@@ -2442,11 +2442,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             case MESSAGE_MODE_GALLERY:
                 if (mGalleryModeHandler == null) {
                     mGalleryModeHandler = new GalleryModeHandler(this, mUser, keyboardHeight);
-                    mGalleryModeHandler.setGifSelectedCallback(new IAsyncCallback<GifDetails>() {
+                    mGalleryModeHandler.setGallerySelectedCallback(new IAsyncCallback<Uri>() {
                         @Override
-                        public void handleResponse(GifDetails result) {
-                            if (result != null) {
-                                sendGifMessage(result.getUrl());
+                        public void handleResponse(Uri uri) {
+                            if (uri != null) {
+                                ChatController cc = ChatManager.getChatController(mUser);
+                                if (cc != null) {
+                                    ChatUtils.uploadPictureMessageAsync(
+                                            MainActivity.this,
+                                            cc,
+                                            uri,
+                                            mUser,
+                                            mCurrentFriend.getName(),
+                                            true);
+                                }
                             }
                         }
                     });
