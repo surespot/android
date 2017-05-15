@@ -1234,17 +1234,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         //    mMenuItems.add(menu.findItem(R.id.menu_mute_bar));
         mMenuItems.add(menu.findItem(R.id.menu_close_bar));
-        mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
-
-        MenuItem captureItem = menu.findItem(R.id.menu_capture_image_bar);
-        if (hasCamera()) {
-            mMenuItems.add(captureItem);
-            captureItem.setEnabled(FileUtils.isExternalStorageMounted());
-        }
-        else {
-            SurespotLog.d(TAG, "hiding capture image menu option");
-            menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
-        }
+//        mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
+//
+//        MenuItem captureItem = menu.findItem(R.id.menu_capture_image_bar);
+//        if (hasCamera()) {
+//            mMenuItems.add(captureItem);
+//            captureItem.setEnabled(FileUtils.isExternalStorageMounted());
+//        }
+//        else {
+//            SurespotLog.d(TAG, "hiding capture image menu option");
+//            menu.findItem(R.id.menu_capture_image_bar).setVisible(false);
+//        }
 
         mMenuItems.add(menu.findItem(R.id.menu_clear_messages));
         // nag nag nag
@@ -1317,92 +1317,92 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 cc.closeTab();
                 return true;
-            case R.id.menu_send_image_bar:
-                if (currentChat == null || mCurrentFriend == null) {
-                    return true;
-                }
-
-                // can't send images to deleted folk
-                if (mCurrentFriend.isDeleted()) {
-                    return true;
-                }
-
-                new AsyncTask<Void, Void, Void>() {
-                    protected Void doInBackground(Void... params) {
-                        if (mCurrentFriend == null) {
-                            return null;
-                        }
-                        Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
-                        intent.putExtra("to", currentChat);
-                        intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
-                        intent.putExtra("from", mUser);
-                        intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
-                        // set start intent to avoid restarting every rotation
-                        intent.putExtra("start", true);
-                        intent.putExtra("friendImage", false);
-                        startActivity(intent);
-                        return null;
-                    }
-                }.execute();
-
-                return true;
-            case R.id.menu_capture_image_bar:
-                if (currentChat == null) {
-                    return true;
-                }
-                // can't send images to deleted folk
-                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
-                    return true;
-                }
-
-                new AsyncTask<Void, Void, Void>() {
-                    protected Void doInBackground(Void... params) {
-
-                        mImageCaptureHandler = new ImageCaptureHandler(mUser, currentChat);
-                        mImageCaptureHandler.capture(MainActivity.this);
-                        return null;
-                    }
-                }.execute();
-
-                return true;
-            case R.id.menu_send_file_bar:
-                if (currentChat == null || mCurrentFriend == null) {
-                    return true;
-                }
-
-                // can't send images to deleted folk
-                if (mCurrentFriend.isDeleted()) {
-                    return true;
-                }
-
-
-                String plural = "";
-                Intent intent = new Intent();
-                intent.setType("*/*");
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                    plural = "s";
-                }
-
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                SurespotLog.d(TAG, "startActivityForResult");
-                startActivityForResult(Intent.createChooser(intent, getString(R.string.select_file) + plural), SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE);
-
-
-                return true;
-            case R.id.menu_settings_bar:
-
-                new AsyncTask<Void, Void, Void>() {
-                    protected Void doInBackground(Void... params) {
-                        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                        intent.putExtra("username", mUser);
-                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
-                        return null;
-                    }
-                }.execute();
-                return true;
+//            case R.id.menu_send_image_bar:
+//                if (currentChat == null || mCurrentFriend == null) {
+//                    return true;
+//                }
+//
+//                // can't send images to deleted folk
+//                if (mCurrentFriend.isDeleted()) {
+//                    return true;
+//                }
+//
+//                new AsyncTask<Void, Void, Void>() {
+//                    protected Void doInBackground(Void... params) {
+//                        if (mCurrentFriend == null) {
+//                            return null;
+//                        }
+//                        Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
+//                        intent.putExtra("to", currentChat);
+//                        intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
+//                        intent.putExtra("from", mUser);
+//                        intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
+//                        // set start intent to avoid restarting every rotation
+//                        intent.putExtra("start", true);
+//                        intent.putExtra("friendImage", false);
+//                        startActivity(intent);
+//                        return null;
+//                    }
+//                }.execute();
+//
+//                return true;
+//            case R.id.menu_capture_image_bar:
+//                if (currentChat == null) {
+//                    return true;
+//                }
+//                // can't send images to deleted folk
+//                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+//                    return true;
+//                }
+//
+//                new AsyncTask<Void, Void, Void>() {
+//                    protected Void doInBackground(Void... params) {
+//
+//                        mImageCaptureHandler = new ImageCaptureHandler(mUser, currentChat);
+//                        mImageCaptureHandler.capture(MainActivity.this);
+//                        return null;
+//                    }
+//                }.execute();
+//
+//                return true;
+//            case R.id.menu_send_file_bar:
+//                if (currentChat == null || mCurrentFriend == null) {
+//                    return true;
+//                }
+//
+//                // can't send images to deleted folk
+//                if (mCurrentFriend.isDeleted()) {
+//                    return true;
+//                }
+//
+//
+//                String plural = "";
+//                Intent intent = new Intent();
+//                intent.setType("*/*");
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+//                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+//                    plural = "s";
+//                }
+//
+//                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+//                intent.setAction(Intent.ACTION_GET_CONTENT);
+//                SurespotLog.d(TAG, "startActivityForResult");
+//                startActivityForResult(Intent.createChooser(intent, getString(R.string.select_file) + plural), SurespotConstants.IntentRequestCodes.REQUEST_SELECT_FILE);
+//
+//
+//                return true;
+//            case R.id.menu_settings_bar:
+//
+//                new AsyncTask<Void, Void, Void>() {
+//                    protected Void doInBackground(Void... params) {
+//                        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+//                        intent.putExtra("username", mUser);
+//                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
+//                        return null;
+//                    }
+//                }.execute();
+//                return true;
             case R.id.menu_logout_bar:
                 SharedPreferences spl = Utils.getGlobalSharedPrefs(this);
                 boolean confirmlogout = spl.getBoolean("pref_confirm_logout", true);
@@ -1573,15 +1573,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     public void enableImageMenuItems() {
 
-        if (mMenuItems != null) {
-            for (MenuItem menuItem : mMenuItems) {
-                if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
-
-                    menuItem.setEnabled(mExternalStorageWriteable);
-
-                }
-            }
-        }
+//        if (mMenuItems != null) {
+//            for (MenuItem menuItem : mMenuItems) {
+//                if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+//
+//                    menuItem.setEnabled(mExternalStorageWriteable);
+//
+//                }
+//            }
+//        }
     }
 
     @Override
@@ -2443,8 +2443,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             case MESSAGE_MODE_GALLERY:
                 mCurrentMessageMode = MESSAGE_MODE_GALLERY;
                 if (mGalleryModeHandler == null) {
-                    mGalleryModeHandler = new GalleryModeHandler(this, mUser, keyboardHeight);
-                    mGalleryModeHandler.setGallerySelectedCallback(new IAsyncCallback<Uri>() {
+                    mGalleryModeHandler = new GalleryModeHandler(this, mUser, keyboardHeight, new IAsyncCallback<Uri>() {
                         @Override
                         public void handleResponse(Uri uri) {
                             if (uri != null) {
@@ -2460,7 +2459,46 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 }
                             }
                         }
-                    });
+                    },
+                            new IAsyncCallback<Object>() {
+
+                                @Override
+                                public void handleResponse(Object result) {
+                                    final ChatController cc = ChatManager.getChatController(mUser);
+                                    final String currentChat = cc.getCurrentChat();
+                                    if (currentChat == null) {
+                                        return;
+                                    }
+                                    if (currentChat == null || mCurrentFriend == null) {
+                                        return;
+                                    }
+
+                                    // can't send images to deleted folk
+                                    if (mCurrentFriend.isDeleted()) {
+                                        return;
+                                    }
+
+                                    new AsyncTask<Void, Void, Void>() {
+                                        protected Void doInBackground(Void... params) {
+                                            if (mCurrentFriend == null) {
+                                                return null;
+                                            }
+                                            Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
+                                            intent.putExtra("to", currentChat);
+                                            intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
+                                            intent.putExtra("from", mUser);
+                                            intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
+                                            // set start intent to avoid restarting every rotation
+                                            intent.putExtra("start", true);
+                                            intent.putExtra("friendImage", false);
+                                            startActivity(intent);
+                                            return null;
+                                        }
+                                    }.execute();
+                                }
+                            }
+
+                    );
                 }
 
                 mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
@@ -2505,7 +2543,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     mCameraModeHandler = new CameraModeHandler();
                 }
 
-                View view = getLayoutInflater().inflate(R.layout.google_camera_view, null, false);
+                View view = getLayoutInflater().inflate(R.layout.camera_view, null, false);
 
                 mMessageModeView = view;
 
@@ -2559,7 +2597,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 final ChatController cc = ChatManager.getChatController(mUser);
                                 if (cc == null) {
                                     SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
-                                    return ;
+                                    return;
                                 }
                                 final String currentChat = cc.getCurrentChat();
                                 if (currentChat == null) {
@@ -2585,26 +2623,25 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 );
 
 
-
                 mEtMessage.setVisibility(View.VISIBLE);
 
-                            requestFocus(mEtMessage);
-                if(input !=null)
+                requestFocus(mEtMessage);
+                if (input != null)
 
-                            {
-                                input.showSoftInput(mEtMessage, 0);
-                            }
+                {
+                    input.showSoftInput(mEtMessage, 0);
+                }
 
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
                 mSendButton.setVisibility(View.VISIBLE);
 
-                            updateMessageBar();
+                updateMessageBar();
                 break;
-                        }
-
-                        SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
         }
+
+        SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
+    }
 
 
     public void disableMessageMode(boolean showKeyboard) {

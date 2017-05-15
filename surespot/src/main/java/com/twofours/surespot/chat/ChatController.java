@@ -1989,13 +1989,13 @@ public class ChatController {
         if (mMenuItems != null) {
             for (MenuItem menuItem : mMenuItems) {
                 // deleted users can't have images sent to them
-                if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
-
-                    menuItem.setVisible(enabled && !isDeleted);
-                }
-                else {
+//                if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
+//
+//                    menuItem.setVisible(enabled && !isDeleted);
+//                }
+//                else {
                     menuItem.setVisible(enabled);
-                }
+                //}
             }
         }
     }

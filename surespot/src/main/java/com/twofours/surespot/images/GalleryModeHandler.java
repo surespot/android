@@ -31,7 +31,8 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
     private RecyclerView mRecyclerView;
     private StaggeredGridLayoutManager mLayoutManager;
     private GalleryModeAdapter mGalleryModeAdapter;
-    private IAsyncCallback<Uri> mGallerySelectedCallback;
+    private IAsyncCallback<Uri> mImageSelectedCallback;
+    private IAsyncCallback<Object> mLaunchGalleryCallback;
     private ProgressBar mProgressBar;
     private View mEmptyView;
     private Activity mContext;
@@ -49,10 +50,12 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
     };
     private Handler mHandler = new Handler();
 
-    public GalleryModeHandler(Activity context, String username, int height) {
+    public GalleryModeHandler(Activity context, String username, int height, IAsyncCallback<Uri> imageSelectedCallback, IAsyncCallback<Object> launchGalleryCallback) {
         mContext = context;
         mUsername = username;
         mHeight = height;
+        mImageSelectedCallback = imageSelectedCallback;
+        mLaunchGalleryCallback = launchGalleryCallback;
     }
 
 
@@ -105,6 +108,13 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
         mEmptyView = parentView.findViewById(R.id.tv_no_images);
         mGalleryModeAdapter = null;
 
+        View launchView = parentView.findViewById(R.id.launch_gallery);
+        launchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mLaunchGalleryCallback.handleResponse(null);
+            }
+        });
         populateImages();
     }
 
@@ -116,7 +126,7 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
         if (mGalleryModeAdapter == null) {
-            mGalleryModeAdapter = new GalleryModeAdapter(mContext, mGallerySelectedCallback, mHeight);
+            mGalleryModeAdapter = new GalleryModeAdapter(mContext, mImageSelectedCallback, mHeight);
             mRecyclerView.setAdapter(mGalleryModeAdapter);
         }
 
@@ -145,18 +155,6 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
         mContext.getLoaderManager().restartLoader(0, null, this);
         mProgressBar.setVisibility(View.GONE);
         //mEmptyView.setVisibility(mC.size() > 0 ? View.GONE : View.VISIBLE);
-    }
-
-
-    public void
-    setGallerySelectedCallback(final IAsyncCallback<Uri> callback) {
-        mGallerySelectedCallback = new IAsyncCallback<Uri>() {
-            @Override
-            public void handleResponse(Uri result) {
-                //update recently used
-                callback.handleResponse(result);
-            }
-        };
     }
 
 
