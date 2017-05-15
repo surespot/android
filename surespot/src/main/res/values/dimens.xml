@@ -5,6 +5,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="emoji_drawer_default_height">200dp</dimen>
     <dimen name="min_emoji_drawer_height">120dp</dimen>
-    <dimen name="item_offset">3dp</dimen>
-
+    <dimen name="item_offset_side">3dp</dimen>
+    <dimen name="item_offset_bottom">6dp</dimen>
 </resources>

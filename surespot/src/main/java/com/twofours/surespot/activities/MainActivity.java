@@ -2441,7 +2441,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case MESSAGE_MODE_GALLERY:
                 if (mGalleryModeHandler == null) {
-                    mGalleryModeHandler = new GalleryModeHandler(this, mUser);
+                    mGalleryModeHandler = new GalleryModeHandler(this, mUser, keyboardHeight);
                     mGalleryModeHandler.setGifSelectedCallback(new IAsyncCallback<GifDetails>() {
                         @Override
                         public void handleResponse(GifDetails result) {

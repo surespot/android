@@ -28,12 +28,15 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
     private Context mContext;
     private IAsyncCallback<GifDetails> mCallback;
     private Cursor mCursor;
+    private int mHeight;
 
-    public GalleryModeAdapter(Context context, IAsyncCallback<GifDetails> callback) {
+    public GalleryModeAdapter(Context context, IAsyncCallback<GifDetails> callback, int height) {
         mContext = context;
         mGifSearchDownloader = new GalleryModeDownloader(context);
         mCallback = callback;
         mCursor = getCursor();
+        mHeight = height;
+        SurespotLog.d(TAG, "height: %d", height);
 
     }
 
@@ -59,7 +62,7 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
                     MediaStore.Images.Thumbnails.HEIGHT,
                     MediaStore.Images.Thumbnails.IMAGE_ID
             };
-            imageCursor = mContext.getContentResolver().query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, tprojection, null, null, "image_id desc limit 20 offset 50");
+            imageCursor = mContext.getContentResolver().query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, tprojection, null, null, "image_id desc limit 50 offset 0");
         }
         catch (Exception e) {
             SurespotLog.e(TAG, e, "getCursor");
@@ -84,7 +87,7 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
         mCursor.moveToPosition(position);
         //Uri uri = ContentUris.withAppendedId(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, mCursor.getInt(IMAGE_ID_COLUMN));
         String uri = mCursor.getString(T_ORIG_ID_COLUMN);
-    //    int orientation = mCursor.getInt(ORIENTATION_COLUMN);
+        //    int orientation = mCursor.getInt(ORIENTATION_COLUMN);
         int height = mCursor.getInt(T_HEIGHT_COLUMN);
         int width = mCursor.getInt(T_WIDTH_COLUMN);
 
@@ -93,21 +96,30 @@ public class GalleryModeAdapter extends RecyclerView.Adapter<GalleryModeAdapter.
 
         mGifSearchDownloader.download(holder.imageView, uri.toString());
 //
-    //    double scale =  (double) 400/ height;
-////
-      //  height = (int) (scale * height);
-      //  width = (int) (scale * width);
-////
-    //    SurespotLog.d(TAG, "onBindViewHolder scaled url: %s, scale: %f, width: %d, height: %d", uri.toString(), scale, width, height);
-//        ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
-//        if (params == null) {
-//            params = new ViewGroup.LayoutParams(width, height);
-//        }
-//        params.height = height;
-//        params.width = width;
-////        SurespotLog.d(TAG, "onBindViewHolder params post url: %s, scale: %f, width to %d, height to %d", details.getUrl(), scale, params.width, params.height);
-        //holder.imageView.setLayoutParams(params);
-       // ChatUtils.setImageViewLayout(holder.imageView, width, height);
+        //determine image height knowing that there's 2 rows with a gap
+        //and figure out the scaled height
+        double offsetSide = mContext.getResources().getDimensionPixelSize(R.dimen.item_offset_side);
+        double offsetBottom = mContext.getResources().getDimensionPixelSize(R.dimen.item_offset_bottom);
+        double scale = ((mHeight - offsetBottom) / 2) / height;
+        height = (int) Math.round(scale * height);
+        width = (int) Math.round(scale * width);
+
+        //add the same offsets we do for the item decoration
+        if (position % 2 == 0) {
+            height += offsetBottom;
+        }
+
+        width += offsetSide;
+
+        SurespotLog.d(TAG, "onBindViewHolder scaled url: %s, scale: %f, width: %d, height: %d", uri.toString(), scale, width, height);
+        ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
+        if (params == null) {
+            params = new ViewGroup.LayoutParams(width, height);
+        }
+        params.height = height;
+        params.width = width;
+//        SurespotLog.d(TAG, "onBindViewHolder params post url: %s, scale: %f, width to %d, height to %d", details.getUrl(), scale, params.width, params.height);
+        holder.imageView.setLayoutParams(params);
 
 
 //        holder.imageView.setOnClickListener(new View.OnClickListener() {
