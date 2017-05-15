@@ -805,18 +805,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mDrawerLayout.setScrimColor(Color.argb(224, 0, 0, 0));
         View header = getLayoutInflater().inflate(R.layout.drawer_header, mDrawerList, false);
         mDrawerList.addHeaderView(header, null, false);
-        mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                //    SurespotLog.d(TAG, "slideOffset: %f", slideOffset);
-                if (slideOffset > 0.5) {
-
-                    if (messageModeActive()) {
-                        disableMessageMode(false);
-                    }
-                }
-            }
-        });
 
         updateDrawer();
     }
@@ -2595,10 +2583,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
 
     public void disableMessageMode(boolean showKeyboard) {
+        mEtMessage.setVisibility(View.VISIBLE);
+        requestFocus(mEtMessage);
+
         View gifFrame = findViewById(R.id.gifFrame);
         gifFrame.setVisibility(GONE);
         mGiphySearchFieldLayout.setVisibility(GONE);
-        mEtMessage.setVisibility(View.VISIBLE);
+
         mEtGifSearch.setText("");
         mSendButton.setVisibility(View.VISIBLE);
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
@@ -2611,17 +2602,21 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         mCurrentMessageMode = null;
         if (showKeyboard) {
-            if (!mActivityLayout.isKeyboardVisible()) {
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        requestFocus(mEtMessage);
-                        InputMethodManager input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                        input.showSoftInput(mEtMessage, 0);
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+
+                    if (!mEtMessage.hasFocus()) {
+
+                        if (!mActivityLayout.isKeyboardVisible()) {
+                            InputMethodManager input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            input.showSoftInput(mEtMessage, 0);
+                        }
                     }
-                };
-                mHandler.post(runnable);
-            }
+                }
+            };
+            mHandler.post(runnable);
+
         }
         stopCamera();
         updateMessageBar();

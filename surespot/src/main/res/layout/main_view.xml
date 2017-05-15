@@ -170,11 +170,11 @@
 
             <EditText
                 android:id="@+id/etGiphy"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="100"
+
                 android:imeOptions="actionSearch|flagNoExtractUi"
-                android:inputType="text"
+                android:inputType="text|textCapSentences"
                 android:maxHeight="150dp"
                 android:maxLines="1"
                 android:minHeight="45dp">
