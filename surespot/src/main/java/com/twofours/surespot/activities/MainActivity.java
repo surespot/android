@@ -56,12 +56,12 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import com.google.android.cameraview.CameraView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.rockerhieu.emojicon.EmojiconsView;
@@ -108,12 +108,22 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import io.fotoapparat.Fotoapparat;
+import io.fotoapparat.hardware.Capabilities;
+import io.fotoapparat.result.PhotoResult;
+import io.fotoapparat.view.CameraView;
 import okhttp3.Call;
 import okhttp3.Response;
 
 import static android.view.View.GONE;
 import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
+import static io.fotoapparat.parameter.selector.FocusModeSelectors.autoFocus;
+import static io.fotoapparat.parameter.selector.FocusModeSelectors.continuousFocus;
+import static io.fotoapparat.parameter.selector.FocusModeSelectors.fixed;
+import static io.fotoapparat.parameter.selector.Selectors.firstAvailable;
+import static io.fotoapparat.parameter.selector.SizeSelectors.biggestSize;
 
 public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
@@ -185,6 +195,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mButtons;
     private boolean isCollapsed = true;
     private CameraView mCameraView;
+    private Fotoapparat mFotoapparat;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -2037,6 +2048,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             final int finalWidth = mButtons.getMeasuredWidth();
             SurespotLog.d(TAG, "collapse, initialWidth: %d, desiredWidth: %d", initialWidth, finalWidth);
 
+            if (initialWidth < finalWidth) return;
+
             Animation a = new Animation() {
                 @Override
                 protected void applyTransformation(float interpolatedTime, Transformation t) {
@@ -2055,6 +2068,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             };
 
             // 1dp/ms
+
             a.setDuration((int) ((initialWidth - finalWidth) / mButtons.getContext().getResources().getDisplayMetrics().density));
             //a.setDuration(1000);
             mButtons.startAnimation(a);
@@ -2327,7 +2341,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mSendButton.setVisibility(View.VISIBLE);
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-
+                stopCamera();
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_EMOJI:
@@ -2362,7 +2376,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mSendButton.setVisibility(View.VISIBLE);
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-
+                stopCamera();
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_GIF:
@@ -2432,7 +2446,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 };
 
                 mHandler.postDelayed(runnable, 100);
-
+                stopCamera();
                 mMessageModeView = null;
 
                 updateMessageBar();
@@ -2491,18 +2505,103 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
-
                 mSendButton.setVisibility(View.VISIBLE);
+                stopCamera();
 
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_CAMERA:
                 mCurrentMessageMode = MESSAGE_MODE_CAMERA;
                 View view = getLayoutInflater().inflate(R.layout.camera_view, null, false);
+                mCameraView = (CameraView) view.findViewById(R.id.camera);
+
+                mFotoapparat = Fotoapparat
+                        .with(this)
+                        .into(mCameraView)
+//                        .photoSize(new SelectorFunction<Size>() {
+//                            @Override
+//                            public Size select(Collection<Size> collection) {
+//                                return new Size(mActivityLayout.getWidth(), mActivityLayout.getKeyboardHeight());
+//                            }
+//                        })
+//                        .previewSize(new SelectorFunction<Size>() {
+//                            @Override
+//                            public Size select(Collection<Size> collection) {
+//                                return new Size((int)UIUtils.pxFromDp(MainActivity.this,200), mActivityLayout.getKeyboardHeight());
+//                            }
+//                        })
+                        .photoSize(biggestSize())
+                        .previewSize(biggestSize())
+                        .focusMode(firstAvailable(continuousFocus(), autoFocus(), fixed()))
+
+
+                        .build();
 
                 //if (mCameraView == null) {
-                    mCameraView = (CameraView) view.findViewById(R.id.camera);
+
                 //}
+                ImageButton fab = (ImageButton) view.findViewById(R.id.take_picture);
+                fab.setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                final PhotoResult photoResult = mFotoapparat.takePicture();
+                                Runnable runnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Capabilities result;
+                                        try {
+                                            result = mFotoapparat.getCapabilities().toPendingResult().await();
+                                            SurespotLog.d(TAG,"result: %s", result);
+                                        }
+                                        catch (ExecutionException e) {
+                                            e.printStackTrace();
+                                        }
+                                        catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        File f = null;
+                                        try {
+                                            f = FileUtils.createGalleryImageFile(".jpg");
+                                            photoResult.saveToFile(f).await();
+                                        }
+                                        catch (IOException e) {
+                                            //TODO notify user
+                                            SurespotLog.e(TAG, e, "error sending camera image");
+                                            return;
+                                        }
+                                        catch (InterruptedException e) {
+                                            SurespotLog.w(TAG, e, "save camera image to file");
+                                            return;
+                                        }
+                                        catch (ExecutionException e) {
+                                            SurespotLog.w(TAG, e, "save camera image to file");
+                                            return;
+                                        }
+                                        String path = f.getAbsolutePath();
+
+
+                                        ChatController cc = ChatManager.getChatController(mUser);
+                                        if (cc != null) {
+
+                                            //TODO send bitmap in
+                                            ChatUtils.uploadPictureMessageAsync(
+                                                    MainActivity.this,
+                                                    cc,
+                                                    Uri.fromFile(new File(path)),
+                                                    mUser,
+                                                    mCurrentFriend.getName(),
+                                                    true);
+
+                                            FileUtils.galleryAddPic(MainActivity.this, path);
+                                        }
+                                    }
+                                };
+                                SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
+                            }
+                        });
+
                 mMessageModeView = view;
 
 
@@ -2525,8 +2624,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
 
                 mEtMessage.setVisibility(View.VISIBLE);
+
                 requestFocus(mEtMessage);
-                if (input != null) {
+                if (input != null)
+
+                {
                     input.showSoftInput(mEtMessage, 0);
                 }
 
@@ -2535,13 +2637,15 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 mSendButton.setVisibility(View.VISIBLE);
 
-                mCameraView.start();
+                mFotoapparat.start();
+//
                 updateMessageBar();
                 break;
         }
 
         SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
     }
+
 
     public void disableMessageMode(boolean showKeyboard) {
         View gifFrame = findViewById(R.id.gifFrame);
@@ -2551,9 +2655,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mEtGifSearch.setText("");
         mSendButton.setVisibility(View.VISIBLE);
         mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-        if (mCameraView != null) {
-            mCameraView.stop();
-        }
+
 
         if (mMessageModeView != null && mMessageModeView.getParent() != null) {
             WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
@@ -2574,8 +2676,20 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mHandler.post(runnable);
             }
         }
+        stopCamera();
         updateMessageBar();
         expand();
+    }
+
+    private void stopCamera() {
+        if (mFotoapparat != null) {
+            try {
+                mFotoapparat.stop();
+            }
+            catch (IllegalStateException e) {
+                SurespotLog.w(TAG, e, "stop camera");
+            }
+        }
     }
 
     private void sendGifMessage(String result) {
