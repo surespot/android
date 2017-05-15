@@ -658,8 +658,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         mEtGifSearch.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_SEARCH_LENGTH)});
         mGiphySearchFieldLayout = mainView.findViewById(R.id.giphySearchFieldLayout);
-
-        createEmojiView();
     }
 
     private void switchUser(String identityName) {
@@ -2273,8 +2271,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case MESSAGE_MODE_EMOJI:
                 mCurrentMessageMode = MESSAGE_MODE_EMOJI;
-                mMessageModeView = mEmojiView;
                 createEmojiView();
+                mMessageModeView = mEmojiView;
                 try {
                     wm.addView(mMessageModeView, mWindowLayoutParams);
                     Runnable runnable = new Runnable() {
