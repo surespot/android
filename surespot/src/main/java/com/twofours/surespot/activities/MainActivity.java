@@ -2506,6 +2506,27 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
 
                 View view = getLayoutInflater().inflate(R.layout.google_camera_view, null, false);
+
+                mMessageModeView = view;
+
+                try {
+                    wm.addView(mMessageModeView, mWindowLayoutParams);
+                    Runnable runnable3 = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
+                                wm.removeView(oldView);
+                            }
+                        }
+                    };
+                    mHandler.postDelayed(runnable3, 500);
+                }
+                catch (Exception e) {
+                    SurespotLog.e(TAG, e, "error adding camera view");
+                    return;
+                }
+
+
                 mCameraModeHandler.setupCamera(this, view, keyboardHeight, new IAsyncCallback<Uri>() {
                     @Override
                     public void handleResponse(Uri uri) {
@@ -2528,25 +2549,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                 });
 
-                mMessageModeView = view;
-
-
-                try {
-                    wm.addView(mMessageModeView, mWindowLayoutParams);
-                    Runnable runnable3 = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-                                wm.removeView(oldView);
-                            }
-                        }
-                    };
-                    mHandler.postDelayed(runnable3, 500);
-                }
-                catch (Exception e) {
-                    SurespotLog.e(TAG, e, "error adding camera view");
-                    return;
-                }
 
 
                 mEtMessage.setVisibility(View.VISIBLE);

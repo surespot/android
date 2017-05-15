@@ -2,14 +2,20 @@ package com.twofours.surespot.camera;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.v4.view.ViewCompat;
+import android.view.Display;
+import android.view.Surface;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import com.google.android.cameraview.AspectRatio;
 import com.google.android.cameraview.CameraView;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.utils.FileUtils;
+import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
@@ -30,7 +36,45 @@ public class CameraModeHandler {
     public void setupCamera(Context context, View parentView, final int keyboardHeight, final IAsyncCallback<Uri> pictureTakenCallback) {
         mContext = context;
         mPictureTakenCallback = pictureTakenCallback;
+
         mCameraView = (CameraView) parentView.findViewById(R.id.camera);
+        AspectRatio ratio = mCameraView.getAspectRatio();
+
+
+        Display display = ViewCompat.getDisplay(parentView);
+        if (display == null) {
+            SurespotLog.d(TAG, "getting display from window manager");
+            display = UIUtils.getDisplay(context);
+        }
+
+        int rotation = Surface.ROTATION_0;
+        if (display != null) {
+            rotation = display.getRotation();
+            SurespotLog.d(TAG, "got display, rotation: %d", display.getRotation());
+        }
+        else {
+            SurespotLog.d(TAG, "display null");
+        }
+
+        ViewGroup.LayoutParams params = mCameraView.getLayoutParams();
+
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+
+            //compensate for portrait
+            float width = (keyboardHeight / ratio.getX() * ratio.getY());
+            params.width = (int) width;
+        }
+        else {
+            float width = (keyboardHeight / ratio.getY()* ratio.getX());
+            params.width = (int) width;
+        }
+        mCameraView.setLayoutParams(params);
+
+        SurespotLog.d(TAG, "ratio: %s, width: %d, height: %d", ratio, params.width, keyboardHeight);
+//
+//
+//        mCameraView.setDisplayOrientation(Surface.ROTATION_0);
+//        mCameraView.getPreview().setSize(200,keyboardHeight );
 
 
         startCamera();
@@ -80,22 +124,6 @@ public class CameraModeHandler {
 
         });
 
-
-        //find best size for preview
-//        AspectRatio bestRatio = null;
-//        Set<AspectRatio> aspectRatios = mGoogleCameraView.getSupportedAspectRatios();
-//        for (AspectRatio ar : aspectRatios) {
-////            if (ar.getY() > keyboardHeight) {
-////                continue;
-////            }
-////            if (bestRatio == null || bestRatio.getY() < ar.getY()) {
-////                bestRatio = ar;
-////            }
-//            SurespotLog.d(TAG, "ratio x: %d, ratio y: %d", ar.getX(), ar.getY());
-//        }
-//
-//        //SurespotLog.d(TAG, "keyboard height: %d, setting camera  ratio x: %d, ratio y: %d, ratio: %s", keyboardHeight,bestRatio.getX(), bestRatio.getY(),  bestRatio);
-//        mGoogleCameraView.setAspectRatio(bestRatio);
 
     }
 

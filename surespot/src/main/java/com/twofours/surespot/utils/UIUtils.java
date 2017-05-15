@@ -586,6 +586,12 @@ public class UIUtils {
         return displaySize;
     }
 
+    public static Display getDisplay(Context context) {
+        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        return manager.getDefaultDisplay();
+
+    }
+
     private static double mDensity = 0.0;
     public static double dpFromPx(final Context context, final float px) {
         //cache the density
