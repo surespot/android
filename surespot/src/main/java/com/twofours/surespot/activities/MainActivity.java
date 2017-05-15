@@ -1317,54 +1317,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 cc.closeTab();
                 return true;
-//            case R.id.menu_send_image_bar:
-//                if (currentChat == null || mCurrentFriend == null) {
-//                    return true;
-//                }
-//
-//                // can't send images to deleted folk
-//                if (mCurrentFriend.isDeleted()) {
-//                    return true;
-//                }
-//
-//                new AsyncTask<Void, Void, Void>() {
-//                    protected Void doInBackground(Void... params) {
-//                        if (mCurrentFriend == null) {
-//                            return null;
-//                        }
-//                        Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
-//                        intent.putExtra("to", currentChat);
-//                        intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
-//                        intent.putExtra("from", mUser);
-//                        intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
-//                        // set start intent to avoid restarting every rotation
-//                        intent.putExtra("start", true);
-//                        intent.putExtra("friendImage", false);
-//                        startActivity(intent);
-//                        return null;
-//                    }
-//                }.execute();
-//
-//                return true;
-//            case R.id.menu_capture_image_bar:
-//                if (currentChat == null) {
-//                    return true;
-//                }
-//                // can't send images to deleted folk
-//                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
-//                    return true;
-//                }
-//
-//                new AsyncTask<Void, Void, Void>() {
-//                    protected Void doInBackground(Void... params) {
-//
-//                        mImageCaptureHandler = new ImageCaptureHandler(mUser, currentChat);
-//                        mImageCaptureHandler.capture(MainActivity.this);
-//                        return null;
-//                    }
-//                }.execute();
-//
-//                return true;
 //            case R.id.menu_send_file_bar:
 //                if (currentChat == null || mCurrentFriend == null) {
 //                    return true;
@@ -1392,17 +1344,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //
 //
 //                return true;
-//            case R.id.menu_settings_bar:
-//
-//                new AsyncTask<Void, Void, Void>() {
-//                    protected Void doInBackground(Void... params) {
-//                        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-//                        intent.putExtra("username", mUser);
-//                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
-//                        return null;
-//                    }
-//                }.execute();
-//                return true;
+            case R.id.menu_settings_bar:
+
+                new AsyncTask<Void, Void, Void>() {
+                    protected Void doInBackground(Void... params) {
+                        Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                        intent.putExtra("username", mUser);
+                        startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_SETTINGS);
+                        return null;
+                    }
+                }.execute();
+                return true;
             case R.id.menu_logout_bar:
                 SharedPreferences spl = Utils.getGlobalSharedPrefs(this);
                 boolean confirmlogout = spl.getBoolean("pref_confirm_logout", true);
@@ -1453,9 +1405,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                 }.execute();
                 return true;
-//            case R.id.menu_purchase_voice:
-//                showVoicePurchaseDialog(false);
-//                return true;
+
             default:
                 return false;
 
