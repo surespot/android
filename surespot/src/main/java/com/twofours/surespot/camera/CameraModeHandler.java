@@ -7,7 +7,7 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.google.android.cameraview.AspectRatio;
 import com.google.android.cameraview.CameraView;
@@ -33,7 +33,7 @@ public class CameraModeHandler {
     //private Fotoapparat mFotoapparat;
     private IAsyncCallback<Uri> mPictureTakenCallback;
 
-    public void setupCamera(Context context, View parentView, final int keyboardHeight, final IAsyncCallback<Uri> pictureTakenCallback) {
+    public void setupCamera(Context context, View parentView, final int keyboardHeight, final IAsyncCallback<Uri> pictureTakenCallback, final IAsyncCallback<Object> launchCameraCallback) {
         mContext = context;
         mPictureTakenCallback = pictureTakenCallback;
 
@@ -71,22 +71,8 @@ public class CameraModeHandler {
         mCameraView.setLayoutParams(params);
 
         SurespotLog.d(TAG, "ratio: %s, width: %d, height: %d", ratio, params.width, keyboardHeight);
-//
-//
-//        mCameraView.setDisplayOrientation(Surface.ROTATION_0);
-//        mCameraView.getPreview().setSize(200,keyboardHeight );
-
-
         startCamera();
-
-//        AspectFrameLayout afl = (AspectFrameLayout) parentView.findViewById(R.id.afl);
-//        afl.setAspectRatio(200 / keyboardHeight);
-
-
-
-
-
-        ImageButton fab = (ImageButton) parentView.findViewById(R.id.take_picture);
+        ImageView fab = (ImageView) parentView.findViewById(R.id.take_picture);
         fab.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -95,6 +81,13 @@ public class CameraModeHandler {
                     }
                 });
 
+        ImageView lb = (ImageView) parentView.findViewById(R.id.launchCamera);
+        lb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                launchCameraCallback.handleResponse(null);
+            }
+        });
 
         mCameraView.addCallback(new com.google.android.cameraview.CameraView.Callback() {
             @Override
@@ -118,13 +111,8 @@ public class CameraModeHandler {
 
                 String path = f.getAbsolutePath();
                 pictureTakenCallback.handleResponse(Uri.fromFile(new File(path)));
-
-
             }
-
         });
-
-
     }
 
     public void startCamera() {

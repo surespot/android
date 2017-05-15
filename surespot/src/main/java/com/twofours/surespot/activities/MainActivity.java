@@ -2527,48 +2527,84 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
 
 
-                mCameraModeHandler.setupCamera(this, view, keyboardHeight, new IAsyncCallback<Uri>() {
-                    @Override
-                    public void handleResponse(Uri uri) {
-                        if (uri != null) {
-                            ChatController cc = ChatManager.getChatController(mUser);
-                            if (cc != null) {
+                mCameraModeHandler.setupCamera(
+                        this,
+                        view,
+                        keyboardHeight,
+                        new IAsyncCallback<Uri>() {
+                            @Override
+                            public void handleResponse(Uri uri) {
+                                if (uri != null) {
+                                    ChatController cc = ChatManager.getChatController(mUser);
+                                    if (cc != null) {
 
-                                //TODO send bitmap in
-                                ChatUtils.uploadPictureMessageAsync(
-                                        MainActivity.this,
-                                        cc,
-                                        uri,
-                                        mUser,
-                                        mCurrentFriend.getName(),
-                                        true);
+                                        //TODO send bitmap in
+                                        ChatUtils.uploadPictureMessageAsync(
+                                                MainActivity.this,
+                                                cc,
+                                                uri,
+                                                mUser,
+                                                mCurrentFriend.getName(),
+                                                true);
 
-                                FileUtils.galleryAddPic(MainActivity.this, uri.getPath());
+                                        FileUtils.galleryAddPic(MainActivity.this, uri.getPath());
+                                    }
+                                }
+                            }
+                        },
+                        new IAsyncCallback<Object>() {
+
+                            @Override
+                            public void handleResponse(Object result) {
+                                final ChatController cc = ChatManager.getChatController(mUser);
+                                if (cc == null) {
+                                    SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
+                                    return ;
+                                }
+                                final String currentChat = cc.getCurrentChat();
+                                if (currentChat == null) {
+                                    return;
+                                }
+                                // can't send images to deleted folk
+                                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+                                    return;
+                                }
+
+                                new AsyncTask<Void, Void, Void>() {
+                                    protected Void doInBackground(Void... params) {
+
+                                        mImageCaptureHandler = new ImageCaptureHandler(mUser, currentChat);
+                                        mImageCaptureHandler.capture(MainActivity.this);
+                                        return null;
+                                    }
+                                }.execute();
+
+
                             }
                         }
-                    }
-                });
+                );
 
 
 
                 mEtMessage.setVisibility(View.VISIBLE);
 
-                requestFocus(mEtMessage);
-                if (input != null)
+                            requestFocus(mEtMessage);
+                if(input !=null)
 
-                {
-                    input.showSoftInput(mEtMessage, 0);
-                }
+                            {
+                                input.showSoftInput(mEtMessage, 0);
+                            }
 
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
                 mSendButton.setVisibility(View.VISIBLE);
-                updateMessageBar();
-                break;
-        }
 
-        SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
-    }
+                            updateMessageBar();
+                break;
+                        }
+
+                        SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
+        }
 
 
     public void disableMessageMode(boolean showKeyboard) {
