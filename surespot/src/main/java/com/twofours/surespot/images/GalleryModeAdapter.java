@@ -14,7 +14,7 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
-public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAdapter.GifViewHolder> {
+public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAdapter.ImageViewHolder> {
     private final static String TAG = "GalleryModeAdapter";
     private static final int IMAGE_ID_COLUMN = 0;
     private static final int DATA_COLUMN = 1;
@@ -44,17 +44,17 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
     }
 
     @Override
-    public GifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        SurespotLog.d(TAG, "onCreateViewHolder");
+    public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        SurespotLog.v(TAG, "onCreateViewHolder");
         ImageView v = (ImageView) parent.inflate(getContext(), R.layout.gallery_mode_item, null);
 
-        GifViewHolder vh = new GifViewHolder(v);
+        ImageViewHolder vh = new ImageViewHolder(v);
         return vh;
     }
 
 
     @Override
-    public void onBindViewHolder(GifViewHolder holder, Cursor cursor, int position) {
+    public void onBindViewHolder(ImageViewHolder holder, Cursor cursor, int position) {
 
         cursor.moveToPosition(position);
         //Uri uri = ContentUris.withAppendedId(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, mCursor.getInt(IMAGE_ID_COLUMN));
@@ -63,7 +63,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
         int height = cursor.getInt(T_HEIGHT_COLUMN);
         int width = cursor.getInt(T_WIDTH_COLUMN);
 
-        SurespotLog.d(TAG, "onBindViewHolder url: %s, width %d, height %d", id.toString(), width, height);
+        SurespotLog.v(TAG, "onBindViewHolder url: %s, width %d, height %d", id.toString(), width, height);
 
 
         mGifSearchDownloader.download(holder.imageView, id.toString());
@@ -83,7 +83,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
 
         width += offsetSide;
 
-        SurespotLog.d(TAG, "onBindViewHolder scaled url: %s, scale: %f, width: %d, height: %d", id.toString(), scale, width, height);
+        SurespotLog.v(TAG, "onBindViewHolder scaled url: %s, scale: %f, width: %d, height: %d", id.toString(), scale, width, height);
         ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
         if (params == null) {
             params = new ViewGroup.LayoutParams(width, height);
@@ -110,11 +110,11 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
     }
 
 
-    public static class GifViewHolder extends RecyclerView.ViewHolder {
+    public static class ImageViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView imageView;
 
-        public GifViewHolder(ImageView v) {
+        public ImageViewHolder(ImageView v) {
             super(v);
             imageView = v;
         }

@@ -147,11 +147,13 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
 
                     loadingMore = true;
                     mPage++;
+                    SurespotLog.d(TAG, "restarting loader, page: %d", mPage);
                     mContext.getLoaderManager().restartLoader(0, null, GalleryModeHandler.this);
                 }
             }
         });
 
+        loadingMore = true;
         mContext.getLoaderManager().restartLoader(0, null, this);
         mProgressBar.setVisibility(View.GONE);
         //mEmptyView.setVisibility(mC.size() > 0 ? View.GONE : View.VISIBLE);
@@ -162,6 +164,7 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case 0:
+                SurespotLog.d(TAG, "onCreateLoader: mpage: %d, mPage");
                 return new CursorLoader(mContext, MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, mProjection, null, null, String.format("image_id desc limit %d offset %d", mOffset, mPage * mOffset));
             default:
                 throw new IllegalArgumentException("no id handled!");
@@ -170,27 +173,31 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
         switch (loader.getId()) {
             case 0:
-                SurespotLog.d(TAG, "onLoadFinished: loading more");
+                if (loadingMore) {
+                    loadingMore = false;
 
-                Cursor cursor = ((GalleryModeAdapter) mRecyclerView.getAdapter()).getCursor();
+                    SurespotLog.d(TAG, "onLoadFinished: loading more, mPage: %d", mPage);
 
-
-                MatrixCursor mx = new MatrixCursor(mProjection);
-
-                fillMx(cursor, mx);
-                fillMx(data, mx);
-
-                ((GalleryModeAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
+                    Cursor cursor = ((GalleryModeAdapter) mRecyclerView.getAdapter()).getCursor();
 
 
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadingMore = false;
-                    }
-                }, 100);
+                    MatrixCursor mx = new MatrixCursor(mProjection);
+
+                    fillMx(cursor, mx);
+                    fillMx(data, mx);
+
+                    ((GalleryModeAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
+
+                }
+//                mHandler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                    }
+//                }, 100);
 
                 break;
             default:

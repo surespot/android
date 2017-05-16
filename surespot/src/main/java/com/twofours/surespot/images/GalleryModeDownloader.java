@@ -63,14 +63,14 @@ public class GalleryModeDownloader {
         //cache per IV as well so we have a drawable per message
         Bitmap bitmap = getBitmapFromCache(message);
         if (bitmap == null) {
-            SurespotLog.d(TAG, "bitmap not in memory cache for url: %s", message);
+            SurespotLog.v(TAG, "bitmap not in memory cache for url: %s", message);
 
 
             //imageView.showProgress();
             forceDownload(imageView, message);
         }
         else {
-            SurespotLog.d(TAG, "loading bitmap from memory cache for url: %s, width: %d, height: %d", message, bitmap.getWidth(), bitmap.getHeight());
+            SurespotLog.v(TAG, "loading bitmap from memory cache for url: %s, width: %d, height: %d", message, bitmap.getWidth(), bitmap.getHeight());
 
             cancelPotentialDownload(imageView, message);
             //imageView.clearAnimation();
@@ -160,7 +160,7 @@ public class GalleryModeDownloader {
                 final ImageView imageView = imageViewReference.get();
 
                 if (!mCancelled && bitmap != null && imageView != null) {
-                    SurespotLog.d(TAG, "BitmapDownloaderTask, url: %s, width: %d, height: %d", url, bitmap.getWidth(), bitmap.getHeight());
+                    SurespotLog.v(TAG, "BitmapDownloaderTask, url: %s, width: %d, height: %d", url, bitmap.getWidth(), bitmap.getHeight());
                     final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
 
@@ -171,7 +171,7 @@ public class GalleryModeDownloader {
                             public void run() {
 
                                 if (!mCancelled) {
-                                    SurespotLog.d(TAG, "bitmap downloaded: %s", url);
+                                    SurespotLog.v(TAG, "bitmap downloaded: %s", url);
                                     addBitmapToCache(url, bitmap);
                                     imageView.setImageBitmap(bitmap);
                               //      ChatUtils.setScaledImageViewLayout(imageView, bitmap.getWidth(), bitmap.getHeight());
