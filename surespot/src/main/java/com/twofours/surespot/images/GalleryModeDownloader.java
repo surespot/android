@@ -21,7 +21,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -90,20 +89,24 @@ public class GalleryModeDownloader {
         SurespotLog.d(TAG, "loading bitmap for id: %d", data.getId());
 
         String[] args = new String[]{String.valueOf(data.getId())};
-        Cursor ct = mContentResolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Thumbnails.DATA}, MediaStore.Images.Thumbnails.IMAGE_ID + "= ?", args, null);
+        Cursor ct = mContentResolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Thumbnails._ID}, MediaStore.Images.Thumbnails.IMAGE_ID + "= ?", args, null);
         Bitmap bitmap = null;
+        Uri uri = null;
         if (ct.moveToFirst()) {
-            String path = ct.getString(ct.getColumnIndex(MediaStore.Images.Thumbnails.DATA));
-            bitmap = BitmapFactory.decodeFile(path);
-            SurespotLog.d(TAG, "loaded thumbnail bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+
+            //String path = ct.getString(ct.getColumnIndex(MediaStore.Images.Thumbnails.DATA));
+            //bitmap = BitmapFactory.decodeFile(path);
+            uri = ContentUris.withAppendedId(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, ct.getLong(0));
+            bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, data.getOrientation(), Math.max(data.getWidth(), data.getHeight()));
+            if (bitmap != null) {
+                SurespotLog.d(TAG, "loaded thumbnail bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+            }
         }
-        else {
+
+        if (bitmap == null) {
             //no thumbnail, generate our own
-
-            final Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getId());
-
-            //pass in 0 for orientation as adapter has already compensated and set the post orientated size
-            bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, 0, Math.max(data.getWidth(), data.getHeight()));
+            uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getId());
+            bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, data.getOrientation(), Math.max(data.getWidth(), data.getHeight()));
             SurespotLog.d(TAG, "generated bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
         }
         ct.close();

@@ -34,7 +34,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
     private int mHeight;
 
     public GalleryModeAdapter(Context context, IAsyncCallback<Uri> callback, int height) {
-        super(context,null);
+        super(context, null);
         mContext = context;
         mGifSearchDownloader = new GalleryModeDownloader(context);
         mCallback = callback;
@@ -59,16 +59,23 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
 
         cursor.moveToPosition(position);
 
-       final int id = cursor.getInt(IMAGE_ID_COLUMN);
-
+        final int id = cursor.getInt(IMAGE_ID_COLUMN);
         final Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-        final String data = cursor.getString(DATA_COLUMN);
-         int orientation = cursor.getInt(ORIENTATION_COLUMN);
+        //final String data = cursor.getString(DATA_COLUMN);
+        int orientation = cursor.getInt(ORIENTATION_COLUMN);
         int height = cursor.getInt(HEIGHT_COLUMN);
         int width = cursor.getInt(WIDTH_COLUMN);
 
-        SurespotLog.d(TAG, "onBindViewHolder id: %d, ratio: %f, width %d, height: %d, orientation: %d", id, (double) width/height, width, height, orientation);
+        SurespotLog.d(TAG, "onBindViewHolder id: %d, ratio: %f, width %d, height: %d, orientation: %d", id, (double) width / height, width, height, orientation);
 
+        //rotate dimensions for scaling
+        if (orientation == 90 || orientation == 270) {
+            int oldWidth = width;
+            width = height;
+            height = oldWidth;
+
+            SurespotLog.d(TAG, "onBindViewHolder id: %d, rotated, new ratio: %f, new width %d, new height: %d, orientation: %d", id, (double) width / height, width, height, orientation);
+        }
 
         //determine image height knowing that there's 2 rows with a gap
         //and figure out the scaled height
@@ -91,10 +98,9 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
         gd.setHeight(height);
         gd.setOrientation(orientation);
 
-        mGifSearchDownloader.download(holder.imageView,  gd);
-//
+        mGifSearchDownloader.download(holder.imageView, gd);
 
-        SurespotLog.d(TAG, "onBindViewHolder scaled id: %d, ratio: %f, scale: %f, width: %d, height: %d", id, (double) width/height, scale, width, height);
+        SurespotLog.d(TAG, "onBindViewHolder scaled id: %d, ratio: %f, scale: %f, width: %d, height: %d", id, (double) width / height, scale, width, height);
         ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
         if (params == null) {
             params = new ViewGroup.LayoutParams(width, height);

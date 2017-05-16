@@ -201,7 +201,7 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
                     public void run() {
                         loadingMore = false;
                     }
-                }, 2000);
+                }, 800);
 
                 break;
             default:

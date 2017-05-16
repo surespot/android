@@ -78,12 +78,12 @@ public class MessageImageDownloader {
 
 
         if (bitmap == null) {
-            SurespotLog.d(TAG, "bitmap not in memory cache: " + uri);
+            SurespotLog.v(TAG, "bitmap not in memory cache: " + uri);
             forceDownload(imageView, message);
             //imageView.setImageDrawable(null);
         }
         else {
-            SurespotLog.d(TAG, "loading bitmap from memory cache: " + uri);
+            SurespotLog.v(TAG, "loading bitmap from memory cache: " + uri);
             cancelPotentialDownload(imageView, message);
             //     imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
