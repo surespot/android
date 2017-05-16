@@ -17,22 +17,26 @@
 package com.twofours.surespot.images;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.utils.ChatUtils;
 
 import java.lang.ref.WeakReference;
+
 
 /**
  * This helper class download images from the Internet and binds those with the provided ImageView.
@@ -48,34 +52,62 @@ public class GalleryModeDownloader {
     private static BitmapCache mBitmapCache = new BitmapCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ContentResolver mContentResolver;
+    private Context mContext;
 
 
     public GalleryModeDownloader(Context context) {
 
+        mContext = context;
         mContentResolver = context.getContentResolver();
+
     }
 
-    public void download(ImageView imageView, String message) {
-        if (message == null) {
+    public void download(ImageView imageView, GalleryData data) {
+        if (data == null) {
             return;
         }
 
         //cache per IV as well so we have a drawable per message
-        Bitmap bitmap = getBitmapFromCache(message);
+        Bitmap bitmap = getBitmapFromCache(String.valueOf(data.getId()));
         if (bitmap == null) {
-            SurespotLog.v(TAG, "bitmap not in memory cache for url: %s", message);
+            SurespotLog.v(TAG, "bitmap not in memory cache for id %d", data.getId());
 
 
             //imageView.showProgress();
-            forceDownload(imageView, message);
+            forceDownload(imageView, data);
         }
         else {
-            SurespotLog.v(TAG, "loading bitmap from memory cache for url: %s, width: %d, height: %d", message, bitmap.getWidth(), bitmap.getHeight());
+            SurespotLog.v(TAG, "loading bitmap from memory cache for id: %d, width: %d, height: %d", data.getId(), bitmap.getWidth(), bitmap.getHeight());
 
-            cancelPotentialDownload(imageView, message);
+            cancelPotentialDownload(imageView, data);
             //imageView.clearAnimation();
             imageView.setImageBitmap(bitmap);
         }
+    }
+
+
+    private Bitmap loadThumbnail(GalleryData data) {
+        SurespotLog.d(TAG, "loading bitmap for id: %d", data.getId());
+
+        String[] args = new String[]{String.valueOf(data.getId())};
+        Cursor ct = mContentResolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Thumbnails.DATA}, MediaStore.Images.Thumbnails.IMAGE_ID + "= ?", args, null);
+        Bitmap bitmap = null;
+        if (ct.moveToFirst()) {
+            String path = ct.getString(ct.getColumnIndex(MediaStore.Images.Thumbnails.DATA));
+            bitmap = BitmapFactory.decodeFile(path);
+            SurespotLog.d(TAG, "loaded thumbnail for id: %d", data.getId());
+        }
+        else {
+            //no thumbnail, generate our own
+
+            final Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getId());
+
+            //pass in 0 for orientation as adapter has already compensated and set the post orientated size
+            bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, 0, Math.max(data.getWidth(), data.getHeight()));
+            SurespotLog.d(TAG, "generated bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+        }
+        ct.close();
+        return bitmap;
     }
 
 	/*
@@ -86,9 +118,9 @@ public class GalleryModeDownloader {
     /**
      * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
      */
-    private void forceDownload(ImageView imageView, String message) {
-        if (cancelPotentialDownload(imageView, message)) {
-            BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, message);
+    private void forceDownload(ImageView imageView, GalleryData data) {
+        if (cancelPotentialDownload(imageView, data)) {
+            BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, data);
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task, SurespotConfiguration.getImageDisplayHeight());
             imageView.setImageDrawable(downloadedDrawable);
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -99,12 +131,12 @@ public class GalleryModeDownloader {
      * Returns true if the current download has been canceled or if there was no download in progress on this image view. Returns false if the download in
      * progress deals with the same url. The download is not stopped in that case.
      */
-    private boolean cancelPotentialDownload(ImageView imageView, String message) {
+    private boolean cancelPotentialDownload(ImageView imageView, GalleryData data) {
         BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
         if (bitmapDownloaderTask != null) {
-            String taskMessage = bitmapDownloaderTask.getUrl();
-            if ((taskMessage == null) || (!taskMessage.equals(message))) {
+            GalleryData taskMessage = bitmapDownloaderTask.getData();
+            if ((taskMessage == null) || (!taskMessage.equals(data))) {
                 bitmapDownloaderTask.cancel();
             }
             else {
@@ -120,17 +152,17 @@ public class GalleryModeDownloader {
      * The actual AsyncTask that will asynchronously download the image.
      */
     class BitmapDownloaderTask implements Runnable {
-        private String mMessage;
+        private GalleryData mData;
         private boolean mCancelled;
 
-        public String getUrl() {
-            return mMessage;
+        public GalleryData getData() {
+            return mData;
         }
 
         private final WeakReference<ImageView> imageViewReference;
 
-        public BitmapDownloaderTask(ImageView imageView, String message) {
-            mMessage = message;
+        public BitmapDownloaderTask(ImageView imageView, GalleryData message) {
+            mData = message;
             imageViewReference = new WeakReference<ImageView>(imageView);
         }
 
@@ -145,22 +177,20 @@ public class GalleryModeDownloader {
             }
 
 
-            //if we have unencrypted url
-            final String url = mMessage;
-            if (!TextUtils.isEmpty(url)) {
+            //if we have unencrypted data
+            final GalleryData data = mData;
+            if (data != null) {
 
 
-                SurespotLog.v(TAG, "BitmapDownloaderTask getting %s,", url);
+                SurespotLog.v(TAG, "BitmapDownloaderTask getting %d,", data.getId());
 
-                final Bitmap bitmap = loadThumbnail(url);
-
-
+                final Bitmap bitmap = loadThumbnail(data);
 
 
                 final ImageView imageView = imageViewReference.get();
 
                 if (!mCancelled && bitmap != null && imageView != null) {
-                    SurespotLog.v(TAG, "BitmapDownloaderTask, url: %s, width: %d, height: %d", url, bitmap.getWidth(), bitmap.getHeight());
+                    SurespotLog.v(TAG, "BitmapDownloaderTask, data: %d, width: %d, height: %d", data.getId(), bitmap.getWidth(), bitmap.getHeight());
                     final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
 
 
@@ -171,10 +201,10 @@ public class GalleryModeDownloader {
                             public void run() {
 
                                 if (!mCancelled) {
-                                    SurespotLog.v(TAG, "bitmap downloaded: %s", url);
-                                    addBitmapToCache(url, bitmap);
+                                    SurespotLog.v(TAG, "bitmap downloaded: %d", data.getId());
+                                    addBitmapToCache(String.valueOf(data.getId()), bitmap);
                                     imageView.setImageBitmap(bitmap);
-                              //      ChatUtils.setScaledImageViewLayout(imageView, bitmap.getWidth(), bitmap.getHeight());
+                                    //      ChatUtils.setScaledImageViewLayout(imageView, bitmap.getWidth(), bitmap.getHeight());
                                 }
                             }
                         });
@@ -184,21 +214,6 @@ public class GalleryModeDownloader {
         }
     }
 
-
-    private Bitmap loadThumbnail(String uri) {
-
-
-        //int id = (int) ContentUris.parseId(Uri.parse(uri));
-//        int orientation = getOrientation(cr, id);
-//        Matrix matrix = new Matrix();
-//        matrix.postRotate(orientation);
-//        Log.d("Orientation", String.valueOf(orientation));
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap = MediaStore.Images.Thumbnails.getThumbnail(
-                mContentResolver, Integer.parseInt(uri), 1, options);
-        //bitmap = crop(bitmap, matrix);
-        return bitmap;
-    }
 
     public BitmapDownloaderTask getBitmapDownloaderTask(ImageView imageView) {
         if (imageView != null) {
@@ -212,30 +227,29 @@ public class GalleryModeDownloader {
     }
 
 
+    public static class DownloadedDrawable extends ColorDrawable {
+        private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
+        private int mHeight;
 
-public static class DownloadedDrawable extends ColorDrawable {
-    private final WeakReference<BitmapDownloaderTask> bitmapDownloaderTaskReference;
-    private int mHeight;
+        public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask, int height) {
+            mHeight = height;
+            bitmapDownloaderTaskReference = new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
+        }
 
-    public DownloadedDrawable(BitmapDownloaderTask bitmapDownloaderTask, int height) {
-        mHeight = height;
-        bitmapDownloaderTaskReference = new WeakReference<BitmapDownloaderTask>(bitmapDownloaderTask);
+        public BitmapDownloaderTask getBitmapDownloaderTask() {
+            return bitmapDownloaderTaskReference.get();
+        }
+
+        /**
+         * Force ImageView to be a certain height
+         */
+        @Override
+        public int getIntrinsicHeight() {
+
+            return mHeight;
+        }
+
     }
-
-    public BitmapDownloaderTask getBitmapDownloaderTask() {
-        return bitmapDownloaderTaskReference.get();
-    }
-
-    /**
-     * Force ImageView to be a certain height
-     */
-    @Override
-    public int getIntrinsicHeight() {
-
-        return mHeight;
-    }
-
-}
 
 
     /**

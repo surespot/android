@@ -25,6 +25,11 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.network.IAsyncCallback;
 
+import java.io.File;
+
+import static com.twofours.surespot.images.GalleryModeAdapter.DATA_COLUMN;
+import static com.twofours.surespot.images.GalleryModeAdapter.IMAGE_ID_COLUMN;
+
 public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "GalleryModeHandler";
 
@@ -48,6 +53,15 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
             MediaStore.Images.Thumbnails.HEIGHT,
             MediaStore.Images.Thumbnails.IMAGE_ID
     };
+    String[] projection = new String[]{
+            MediaStore.Images.ImageColumns._ID,
+            MediaStore.Images.ImageColumns.DATA,
+            MediaStore.Images.ImageColumns.MINI_THUMB_MAGIC,
+            MediaStore.Images.ImageColumns.DATE_MODIFIED,
+            MediaStore.Images.ImageColumns.MIME_TYPE,
+            MediaStore.Images.ImageColumns.ORIENTATION,
+            MediaStore.Images.ImageColumns.WIDTH,
+            MediaStore.Images.ImageColumns.HEIGHT};
     private Handler mHandler = new Handler();
 
     public GalleryModeHandler(Activity context, String username, int height, IAsyncCallback<Uri> imageSelectedCallback, IAsyncCallback<Object> launchGalleryCallback) {
@@ -165,7 +179,7 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
         switch (id) {
             case 0:
                 SurespotLog.d(TAG, "onCreateLoader: mpage: %d, mPage");
-                return new CursorLoader(mContext, MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, mProjection, null, null, String.format("image_id desc limit %d offset %d", mOffset, mPage * mOffset));
+                return new CursorLoader(mContext, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null, null, String.format("date_modified desc limit %d offset %d", mOffset, mPage * mOffset));
             default:
                 throw new IllegalArgumentException("no id handled!");
         }
@@ -179,15 +193,15 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
                 if (loadingMore) {
                     loadingMore = false;
 
-                    SurespotLog.d(TAG, "onLoadFinished: loading more, mPage: %d", mPage);
+                    SurespotLog.d(TAG, "onLoadFinished: loading more, mPage: %d, count; %d", mPage, data.getColumnCount());
 
                     Cursor cursor = ((GalleryModeAdapter) mRecyclerView.getAdapter()).getCursor();
 
 
-                    MatrixCursor mx = new MatrixCursor(mProjection);
+                    MatrixCursor mx = new MatrixCursor(projection);
 
-                    fillMx(cursor, mx);
-                    fillMx(data, mx);
+                    fillFull(cursor, mx, false);
+                    fillFull(data, mx, true);
 
                     ((GalleryModeAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
 
@@ -195,9 +209,9 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
 //                mHandler.postDelayed(new Runnable() {
 //                    @Override
 //                    public void run() {
-//
+//                        loadingMore = false;
 //                    }
-//                }, 100);
+//                }, 500);
 
                 break;
             default:
@@ -206,18 +220,37 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
     }
 
 
-    private void fillMx(Cursor data, MatrixCursor mx) {
+    private void fillFull(Cursor data, MatrixCursor mx, boolean validate) {
         if (data == null)
             return;
 
         data.moveToPosition(-1);
         while (data.moveToNext()) {
+            if (validate) {
+                //see if we can even image, bro
+                final String path = data.getString(DATA_COLUMN);
+                long id = data.getLong(IMAGE_ID_COLUMN);
+
+                File file = new File(path);
+                if (!file.exists() || file.length() == 0) {
+                    SurespotLog.d(TAG, "skipping image for id: %d", id);
+                    continue;
+                }
+
+                SurespotLog.d(TAG, "adding image for id: %d, path: %s", id, path);
+            }
+
+
             mx.addRow(new Object[]{
                     data.getString(0),
                     data.getString(1),
                     data.getString(2),
                     data.getString(3),
-                    data.getString(4)
+                    data.getString(4),
+                    data.getString(5),
+                    data.getString(6),
+                    data.getString(7)
+
             });
         }
     }

@@ -16,8 +16,9 @@ import com.twofours.surespot.network.IAsyncCallback;
 
 public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAdapter.ImageViewHolder> {
     private final static String TAG = "GalleryModeAdapter";
-    private static final int IMAGE_ID_COLUMN = 0;
-    private static final int DATA_COLUMN = 1;
+    public static final int IMAGE_ID_COLUMN = 0;
+    public static final int DATA_COLUMN = 1;
+    private static final int MINI_THUMB_MAGIC = 2;
     private static final int ORIENTATION_COLUMN = 5;
     private static final int WIDTH_COLUMN = 6;
     private static final int HEIGHT_COLUMN = 7;
@@ -57,17 +58,18 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
     public void onBindViewHolder(ImageViewHolder holder, Cursor cursor, int position) {
 
         cursor.moveToPosition(position);
-        //Uri uri = ContentUris.withAppendedId(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, mCursor.getInt(IMAGE_ID_COLUMN));
-        final String id = cursor.getString(T_ORIG_ID_COLUMN);
-        //    int orientation = mCursor.getInt(ORIENTATION_COLUMN);
-        int height = cursor.getInt(T_HEIGHT_COLUMN);
-        int width = cursor.getInt(T_WIDTH_COLUMN);
 
-        SurespotLog.v(TAG, "onBindViewHolder url: %s, width %d, height %d", id.toString(), width, height);
+       final int id = cursor.getInt(IMAGE_ID_COLUMN);
+
+        final Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+        final String data = cursor.getString(DATA_COLUMN);
+         int orientation = cursor.getInt(ORIENTATION_COLUMN);
+        int height = cursor.getInt(HEIGHT_COLUMN);
+        int width = cursor.getInt(WIDTH_COLUMN);
+
+        SurespotLog.d(TAG, "onBindViewHolder id: %d, ratio: %f, width %d, height: %d, orientation: %d", id, (double) width/height, width, height, orientation);
 
 
-        mGifSearchDownloader.download(holder.imageView, id.toString());
-//
         //determine image height knowing that there's 2 rows with a gap
         //and figure out the scaled height
         double offsetSide = mContext.getResources().getDimensionPixelSize(R.dimen.item_offset_side);
@@ -83,14 +85,23 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
 
         width += offsetSide;
 
-        SurespotLog.v(TAG, "onBindViewHolder scaled url: %s, scale: %f, width: %d, height: %d", id.toString(), scale, width, height);
+        GalleryData gd = new GalleryData();
+        gd.setId(id);
+        gd.setWidth(width);
+        gd.setHeight(height);
+        gd.setOrientation(orientation);
+
+        mGifSearchDownloader.download(holder.imageView,  gd);
+//
+
+        SurespotLog.d(TAG, "onBindViewHolder scaled id: %d, ratio: %f, scale: %f, width: %d, height: %d", id, (double) width/height, scale, width, height);
         ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
         if (params == null) {
             params = new ViewGroup.LayoutParams(width, height);
         }
         params.height = height;
         params.width = width;
-//        SurespotLog.d(TAG, "onBindViewHolder params post url: %s, scale: %f, width to %d, height to %d", details.getUrl(), scale, params.width, params.height);
+//        SurespotLog.d(TAG, "onBindViewHolder params post url: %s, scale: %f, width to %d, height to %d", details.getData(), scale, params.width, params.height);
         holder.imageView.setLayoutParams(params);
 
 
@@ -99,7 +110,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
             @Override
             public void onClick(View v) {
                 if (mCallback != null) {
-                    mCallback.handleResponse(ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, Integer.parseInt(id)));
+                    mCallback.handleResponse(uri);
                 }
             }
         });
