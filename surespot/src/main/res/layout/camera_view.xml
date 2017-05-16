@@ -33,25 +33,29 @@
 
         <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/launchCamera"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:layout_marginBottom="11dp"
+            android:layout_marginBottom="21dp"
             android:layout_marginRight="20dp"
-            android:background="@drawable/elipsis"
+            android:background="@drawable/filled_black_circle_grey_border"
+            android:padding="8dp"
+            android:src="@drawable/elipsis"
             app:tint="@drawable/send_button"/>
     </RelativeLayout>
 
 
     <com.twofours.surespot.ui.TintableImageView
         android:id="@+id/take_picture"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/ic_camera"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/filled_black_circle_grey_border"
+        android:padding="8dp"
+        android:src="@drawable/ic_camera"
         app:tint="@drawable/send_button"
         />
 

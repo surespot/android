@@ -34,13 +34,15 @@
 
     <com.twofours.surespot.ui.TintableImageView
         android:id="@+id/launch_gallery"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:padding="8dp"
         android:clickable="true"
         android:layout_gravity="bottom|right"
-        android:layout_marginBottom="11dp"
+        android:layout_marginBottom="21dp"
         android:layout_marginRight="20dp"
-        android:background="@android:color/black"
+        android:background="@drawable/filled_black_circle_grey_border"
         android:src="@drawable/elipsis"
+        android:scaleType="centerInside"
         app:tint="@drawable/send_button"/>
 </FrameLayout>

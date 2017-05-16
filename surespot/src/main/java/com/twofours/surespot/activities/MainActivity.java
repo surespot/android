@@ -2386,100 +2386,100 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                    public void handleResponse(String path, Uri uri) {
 //       //                 if (path == null) return;
 
-                        if (mGalleryModeHandler == null) {
-                            mGalleryModeHandler = new GalleryModeHandler(MainActivity.this, mUser, keyboardHeight, new IAsyncCallback<Uri>() {
-                                @Override
-                                public void handleResponse(Uri uri) {
-                                    if (uri != null) {
-                                        ChatController cc = ChatManager.getChatController(mUser);
-                                        if (cc != null) {
-                                            ChatUtils.uploadPictureMessageAsync(
-                                                    MainActivity.this,
-                                                    cc,
-                                                    uri,
-                                                    mUser,
-                                                    mCurrentFriend.getName(),
-                                                    true);
-                                        }
-                                    }
+                if (mGalleryModeHandler == null) {
+                    mGalleryModeHandler = new GalleryModeHandler(MainActivity.this, mUser, keyboardHeight, new IAsyncCallback<Uri>() {
+                        @Override
+                        public void handleResponse(Uri uri) {
+                            if (uri != null) {
+                                ChatController cc = ChatManager.getChatController(mUser);
+                                if (cc != null) {
+                                    ChatUtils.uploadPictureMessageAsync(
+                                            MainActivity.this,
+                                            cc,
+                                            uri,
+                                            mUser,
+                                            mCurrentFriend.getName(),
+                                            true);
                                 }
-                            },
-                                    new IAsyncCallback<Object>() {
-
-                                        @Override
-                                        public void handleResponse(Object result) {
-                                            final ChatController cc = ChatManager.getChatController(mUser);
-                                            final String currentChat = cc.getCurrentChat();
-                                            if (currentChat == null) {
-                                                return;
-                                            }
-                                            if (currentChat == null || mCurrentFriend == null) {
-                                                return;
-                                            }
-
-                                            // can't send images to deleted folk
-                                            if (mCurrentFriend.isDeleted()) {
-                                                return;
-                                            }
-
-                                            new AsyncTask<Void, Void, Void>() {
-                                                protected Void doInBackground(Void... params) {
-                                                    if (mCurrentFriend == null) {
-                                                        return null;
-                                                    }
-                                                    Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
-                                                    intent.putExtra("to", currentChat);
-                                                    intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
-                                                    intent.putExtra("from", mUser);
-                                                    intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
-                                                    // set start intent to avoid restarting every rotation
-                                                    intent.putExtra("start", true);
-                                                    intent.putExtra("friendImage", false);
-                                                    startActivity(intent);
-                                                    return null;
-                                                }
-                                            }.execute();
-                                        }
-                                    }
-
-                            );
+                            }
                         }
+                    },
+                            new IAsyncCallback<Object>() {
 
-                        mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
-                        mMessageModeView = mGalleryView;
-
-
-                        try {
-                            wm.addView(mMessageModeView, mWindowLayoutParams);
-                            Runnable runnable3 = new Runnable() {
                                 @Override
-                                public void run() {
-                                    if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-                                        wm.removeView(oldView);
+                                public void handleResponse(Object result) {
+                                    final ChatController cc = ChatManager.getChatController(mUser);
+                                    final String currentChat = cc.getCurrentChat();
+                                    if (currentChat == null) {
+                                        return;
                                     }
+                                    if (currentChat == null || mCurrentFriend == null) {
+                                        return;
+                                    }
+
+                                    // can't send images to deleted folk
+                                    if (mCurrentFriend.isDeleted()) {
+                                        return;
+                                    }
+
+                                    new AsyncTask<Void, Void, Void>() {
+                                        protected Void doInBackground(Void... params) {
+                                            if (mCurrentFriend == null) {
+                                                return null;
+                                            }
+                                            Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
+                                            intent.putExtra("to", currentChat);
+                                            intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
+                                            intent.putExtra("from", mUser);
+                                            intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
+                                            // set start intent to avoid restarting every rotation
+                                            intent.putExtra("start", true);
+                                            intent.putExtra("friendImage", false);
+                                            startActivity(intent);
+                                            return null;
+                                        }
+                                    }.execute();
                                 }
-                            };
-                            mHandler.postDelayed(runnable3, 500);
+                            }
+
+                    );
+                }
+
+                mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
+                mMessageModeView = mGalleryView;
+
+
+                try {
+                    wm.addView(mMessageModeView, mWindowLayoutParams);
+                    Runnable runnable3 = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
+                                wm.removeView(oldView);
+                            }
                         }
-                        catch (Exception e) {
-                            SurespotLog.e(TAG, e, "error adding emoji view");
-                            return;
-                        }
+                    };
+                    mHandler.postDelayed(runnable3, 500);
+                }
+                catch (Exception e) {
+                    SurespotLog.e(TAG, e, "error adding emoji view");
+                    return;
+                }
 
-                        mGalleryModeHandler.refreshContextAndViews(this, mGalleryView);
+                mGalleryModeHandler.refreshContextAndViews(this, mGalleryView);
 
-                        mEtMessage.setVisibility(View.VISIBLE);
-                        requestFocus(mEtMessage);
-                        if (input != null) {
-                            input.showSoftInput(mEtMessage, 0);
-                        }
+                mEtMessage.setVisibility(View.VISIBLE);
+                requestFocus(mEtMessage);
+                if (input != null) {
+                    input.showSoftInput(mEtMessage, 0);
+                }
 
-                        gifFrame.setVisibility(GONE);
-                        mGiphySearchFieldLayout.setVisibility(GONE);
-                        mSendButton.setVisibility(View.VISIBLE);
-                        stopCamera();
+                gifFrame.setVisibility(GONE);
+                mGiphySearchFieldLayout.setVisibility(GONE);
+                mSendButton.setVisibility(View.VISIBLE);
+                stopCamera();
 
-                        updateMessageBar();
+                updateMessageBar();
 //                    }
 //                });
                 break;
@@ -2590,7 +2590,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
     private void scanFiles(final IAsyncCallbackTuple<String, Uri> callback) {
-        callback.handleResponse(null,null);
+        callback.handleResponse(null, null);
         return;
 //        SurespotLog.d(TAG,"scanFiles");
 //        ArrayList<String> toBeScanned = new ArrayList<String>();
@@ -2633,7 +2633,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         @Override
                         public void onScanCompleted(String path, Uri uri) {
                             SurespotLog.d(TAG, "scan completed: %s", path);
-                          //  callback.handleResponse(path, uri);
+                            //  callback.handleResponse(path, uri);
                         }
                     });
                 }
