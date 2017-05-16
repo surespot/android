@@ -95,7 +95,7 @@ public class GalleryModeDownloader {
         if (ct.moveToFirst()) {
             String path = ct.getString(ct.getColumnIndex(MediaStore.Images.Thumbnails.DATA));
             bitmap = BitmapFactory.decodeFile(path);
-            SurespotLog.d(TAG, "loaded thumbnail for id: %d", data.getId());
+            SurespotLog.d(TAG, "loaded thumbnail bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
         }
         else {
             //no thumbnail, generate our own
@@ -176,24 +176,16 @@ public class GalleryModeDownloader {
                 return;
             }
 
-
             //if we have unencrypted data
             final GalleryData data = mData;
             if (data != null) {
-
-
                 SurespotLog.v(TAG, "BitmapDownloaderTask getting %d,", data.getId());
-
                 final Bitmap bitmap = loadThumbnail(data);
-
-
                 final ImageView imageView = imageViewReference.get();
 
                 if (!mCancelled && bitmap != null && imageView != null) {
                     SurespotLog.v(TAG, "BitmapDownloaderTask, data: %d, width: %d, height: %d", data.getId(), bitmap.getWidth(), bitmap.getHeight());
                     final BitmapDownloaderTask bitmapDownloaderTask = getBitmapDownloaderTask(imageView);
-
-
                     if (BitmapDownloaderTask.this == bitmapDownloaderTask) {
                         mHandler.post(new Runnable() {
 

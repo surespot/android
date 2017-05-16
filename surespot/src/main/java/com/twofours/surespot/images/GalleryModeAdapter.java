@@ -85,7 +85,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
 
         width += offsetSide;
 
-        GalleryData gd = new GalleryData();
+        final GalleryData gd = new GalleryData();
         gd.setId(id);
         gd.setWidth(width);
         gd.setHeight(height);
@@ -110,6 +110,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
             @Override
             public void onClick(View v) {
                 if (mCallback != null) {
+                    SurespotLog.d(TAG, "selected id: %d", gd.getId());
                     mCallback.handleResponse(uri);
                 }
             }

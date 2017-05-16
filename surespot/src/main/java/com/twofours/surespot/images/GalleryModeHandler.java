@@ -190,28 +190,18 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
 
         switch (loader.getId()) {
             case 0:
-                if (loadingMore) {
-                    loadingMore = false;
-
-                    SurespotLog.d(TAG, "onLoadFinished: loading more, mPage: %d, count; %d", mPage, data.getColumnCount());
-
-                    Cursor cursor = ((GalleryModeAdapter) mRecyclerView.getAdapter()).getCursor();
-
-
-                    MatrixCursor mx = new MatrixCursor(projection);
-
-                    fillFull(cursor, mx, false);
-                    fillFull(data, mx, true);
-
-                    ((GalleryModeAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
-
-                }
-//                mHandler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        loadingMore = false;
-//                    }
-//                }, 500);
+                SurespotLog.d(TAG, "onLoadFinished: loading more, mPage: %d, count; %d", mPage, data.getCount());
+                Cursor cursor = ((GalleryModeAdapter) mRecyclerView.getAdapter()).getCursor();
+                MatrixCursor mx = new MatrixCursor(projection);
+                fillFull(cursor, mx, false);
+                fillFull(data, mx, true);
+                ((GalleryModeAdapter) mRecyclerView.getAdapter()).swapCursor(mx);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadingMore = false;
+                    }
+                }, 2000);
 
                 break;
             default:
