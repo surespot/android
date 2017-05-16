@@ -19,14 +19,11 @@ package com.twofours.surespot.chat;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.SpannableStringBuilder;
-import android.view.View;
 import android.widget.TextView;
 
 import com.rockerhieu.emojicon.EmojiconHandler;
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.chat.ChatAdapter;
-import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.utils.UIUtils;
