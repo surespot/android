@@ -74,7 +74,6 @@ import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.billing.BillingActivity;
 import com.twofours.surespot.billing.BillingController;
-import com.twofours.surespot.camera.CameraModeHandler;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
@@ -98,7 +97,6 @@ import com.twofours.surespot.services.CredentialCachingService.CredentialCaching
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.utils.ChatUtils;
-import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.voice.VoiceController;
@@ -186,7 +184,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mGalleryView;
     private View mButtons;
     private boolean isCollapsed = true;
-    private CameraModeHandler mCameraModeHandler;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -2268,7 +2265,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mSendButton.setVisibility(View.VISIBLE);
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-                stopCamera();
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_EMOJI:
@@ -2303,7 +2299,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mSendButton.setVisibility(View.VISIBLE);
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
-                stopCamera();
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_GIF:
@@ -2373,7 +2368,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 };
 
                 mHandler.postDelayed(runnable, 100);
-                stopCamera();
                 mMessageModeView = null;
 
                 updateMessageBar();
@@ -2477,7 +2471,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
                 mSendButton.setVisibility(View.VISIBLE);
-                stopCamera();
 
                 updateMessageBar();
 //                    }
@@ -2485,104 +2478,61 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case MESSAGE_MODE_CAMERA:
                 mCurrentMessageMode = MESSAGE_MODE_CAMERA;
-                if (mCameraModeHandler == null) {
-                    mCameraModeHandler = new CameraModeHandler();
-                }
 
-                View view = getLayoutInflater().inflate(R.layout.camera_view, null, false);
+                mMessageModeView = null;
 
-                mMessageModeView = view;
 
-                try {
-                    wm.addView(mMessageModeView, mWindowLayoutParams);
-                    Runnable runnable3 = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-                                wm.removeView(oldView);
-                            }
-                        }
-                    };
-                    mHandler.postDelayed(runnable3, 500);
-                }
-                catch (Exception e) {
-                    SurespotLog.e(TAG, e, "error adding camera view");
+                // can't send images to deleted folk
+                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
                     return;
                 }
 
-
-                mCameraModeHandler.setupCamera(
-                        this,
-                        view,
-                        keyboardHeight,
-                        new IAsyncCallback<Uri>() {
-                            @Override
-                            public void handleResponse(Uri uri) {
-                                if (uri != null) {
-                                    ChatController cc = ChatManager.getChatController(mUser);
-                                    if (cc != null) {
-
-                                        //TODO send bitmap in
-                                        ChatUtils.uploadPictureMessageAsync(
-                                                MainActivity.this,
-                                                cc,
-                                                uri,
-                                                mUser,
-                                                mCurrentFriend.getName(),
-                                                true);
-
-                                        FileUtils.galleryAddPic(MainActivity.this, uri.getPath());
-                                    }
-                                }
-                            }
-                        },
-                        new IAsyncCallback<Object>() {
-
-                            @Override
-                            public void handleResponse(Object result) {
-                                final ChatController cc = ChatManager.getChatController(mUser);
-                                if (cc == null) {
-                                    SurespotLog.w(TAG, "onOptionItemSelected chat controller null, bailing");
-                                    return;
-                                }
-                                final String currentChat = cc.getCurrentChat();
-                                if (currentChat == null) {
-                                    return;
-                                }
-                                // can't send images to deleted folk
-                                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
-                                    return;
-                                }
-
-                                new AsyncTask<Void, Void, Void>() {
-                                    protected Void doInBackground(Void... params) {
-
-                                        mImageCaptureHandler = new ImageCaptureHandler(mUser, currentChat);
-                                        mImageCaptureHandler.capture(MainActivity.this);
-                                        return null;
-                                    }
-                                }.execute();
-
-
-                            }
+                new AsyncTask<Void, Void, Void>() {
+                    protected Void doInBackground(Void... params) {
+                        if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+                            return null;
                         }
-                );
+
+                        mImageCaptureHandler = new ImageCaptureHandler(mUser, mCurrentFriend.getName());
+                        mImageCaptureHandler.capture(MainActivity.this);
+                        return null;
+                    }
+                }.execute();
+//                try {
+//                    wm.addView(mMessageModeView, mWindowLayoutParams);
+//                    Runnable runnable3 = new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
+//                                wm.removeView(oldView);
+//                            }
+//                        }
+//                    };
+//                    mHandler.postDelayed(runnable3, 500);
+//                }
+//                catch (Exception e) {
+//                    SurespotLog.e(TAG, e, "error adding camera view");
+//                    return;
+//                }
 
 
-                mEtMessage.setVisibility(View.VISIBLE);
 
-                requestFocus(mEtMessage);
-                if (input != null)
-
-                {
-                    input.showSoftInput(mEtMessage, 0);
-                }
-
-                gifFrame.setVisibility(GONE);
-                mGiphySearchFieldLayout.setVisibility(GONE);
-                mSendButton.setVisibility(View.VISIBLE);
-
-                updateMessageBar();
+//
+//
+//                mEtMessage.setVisibility(View.VISIBLE);
+//
+//                requestFocus(mEtMessage);
+//                if (input != null)
+//
+//                {
+//                    input.showSoftInput(mEtMessage, 0);
+//                }
+//
+//                gifFrame.setVisibility(GONE);
+//                mGiphySearchFieldLayout.setVisibility(GONE);
+//                mSendButton.setVisibility(View.VISIBLE);
+//
+//                updateMessageBar();
                 break;
         }
 
@@ -2682,15 +2632,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mHandler.post(runnable);
 
         }
-        stopCamera();
         updateMessageBar();
         expand();
-    }
-
-    private void stopCamera() {
-        if (mCameraModeHandler != null) {
-            mCameraModeHandler.stopCamera();
-        }
     }
 
     private void sendGifMessage(String result) {

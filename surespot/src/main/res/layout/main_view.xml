@@ -90,6 +90,18 @@
             android:visibility="visible"/>
 
         <ImageView
+            android:id="@+id/bGallery"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/photo"
+            android:visibility="visible"
+            />
+
+
+        <ImageView
             android:id="@+id/bCamera"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -100,16 +112,6 @@
             android:visibility="visible"
             />
 
-        <ImageView
-            android:id="@+id/bGallery"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="bottom"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:src="@drawable/photo"
-            android:visibility="visible"
-            />
 
         <ImageView
             android:id="@+id/bPlus"
@@ -171,8 +173,8 @@
             <EditText
                 android:id="@+id/etGiphy"
                 android:layout_width="0dp"
-                android:layout_weight="100"
                 android:layout_height="wrap_content"
+                android:layout_weight="100"
 
                 android:imeOptions="actionSearch|flagNoExtractUi"
                 android:inputType="text|textCapSentences"
@@ -199,49 +201,48 @@
         android:layout_alignWithParentIfMissing="true"
 
 
-
         >
 
         <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivInvite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:tint="@drawable/send_button"
             android:layout_gravity="center"
-            android:src="@drawable/ic_menu_invite">
+            android:src="@drawable/ic_menu_invite"
+            app:tint="@drawable/send_button">
         </com.twofours.surespot.ui.TintableImageView>
 
         <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivVoice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:tint="@drawable/send_button"
             android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:src="@drawable/mic">
+            android:src="@drawable/mic"
+            app:tint="@drawable/send_button">
         </com.twofours.surespot.ui.TintableImageView>
 
         <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivHome"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
             android:layout_width="wrap_content"
-            app:tint="@drawable/send_button"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/home">
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/home"
+            app:tint="@drawable/send_button">
         </com.twofours.surespot.ui.TintableImageView>
 
         <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/ivSend"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            app:tint="@drawable/send_button"
-            android:src="@drawable/send">
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:src="@drawable/send"
+            app:tint="@drawable/send_button">
         </com.twofours.surespot.ui.TintableImageView>
     </FrameLayout>
 
