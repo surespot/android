@@ -17,9 +17,9 @@ import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.identity.IdentityController;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 
@@ -37,7 +37,7 @@ public class VoiceController {
     private static String mTo = null;
 
     public static final int SEND_THRESHOLD = 3500;
-    public static final int MAX_TIME = 10000;
+    public static final int MAX_TIME = 30000;
     public static final int INTERVAL = 50;
     private static final int SEEK_MAX = 1000;
 
