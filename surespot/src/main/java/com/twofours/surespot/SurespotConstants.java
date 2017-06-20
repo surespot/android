@@ -11,7 +11,7 @@ public class SurespotConstants {
 			+ "Z/aaRkB1bwl9eCNojpw=\n" + "-----END PUBLIC KEY-----";
 
 	public final static boolean PRODUCTION = true;
-	public static final String SERVER_PUBLIC_KEY = PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
+	public static final String SERVER_PUBLIC_KEY =  PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
 
 	public final static boolean LOGGING = true;
 	public final static int MAX_IDENTITIES = 30;

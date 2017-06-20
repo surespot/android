@@ -27,6 +27,8 @@ import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.PBFileUtils;
+import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageDownloader;
 
@@ -150,8 +152,8 @@ public class ChatAdapter extends BaseAdapter {
             SurespotMessage updateMessage = mMessages.get(index);
 
             if (updateMessage != null) {
-                        SurespotLog.v(TAG, "updating message: %s", updateMessage);
-                        SurespotLog.v(TAG, "new message: %s", message);
+                SurespotLog.v(TAG, "updating message: %s", updateMessage);
+                SurespotLog.v(TAG, "new message: %s", message);
 
                 // don't update unless we have an id
                 if (message.getId() != null) {
@@ -512,6 +514,21 @@ public class ChatAdapter extends BaseAdapter {
                 break;
 
             case SurespotConstants.MimeTypes.GIF_LINK:
+                if (type == TYPE_US) {
+                    item.setDownloadGif(true);
+                }
+
+                if (!item.isDownloadGif()) {
+                    boolean downloadGifs = Utils.getUserSharedPrefsBoolean(mContext, mOurUsername, "pref_download_gifs");
+                    if (!downloadGifs) {
+                        chatMessageViewHolder.imageView.setScaleType(ImageView.ScaleType.CENTER);
+                        chatMessageViewHolder.imageView.setImageResource(UIUtils.isDarkTheme(mContext) ? R.drawable.play_circle_outline_light : R.drawable.play_circle_outline_dark);
+                    }
+                    else {
+                        item.setDownloadGif(true);
+                    }
+                }
+
                 chatMessageViewHolder.imageView.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
@@ -653,7 +670,7 @@ public class ChatAdapter extends BaseAdapter {
                 SurespotMessage.FileMessageData fmd = message.getFileMessageData();
 
                 if (fmd != null) {
-                    SurespotLog.d(TAG,"Opening file message, data: %s", fmd);
+                    SurespotLog.d(TAG, "Opening file message, data: %s", fmd);
                     String path = fmd.getLocalUri();
 
 

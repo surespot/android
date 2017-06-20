@@ -48,6 +48,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
     private boolean mPlayVoice = false;
     private boolean mVoicePlayed = false;
     private boolean mHashed;
+    private boolean mDownloadGif = false;
 
     private FileMessageData mFileMessageData;
 
@@ -202,7 +203,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         chatMessage.setShareable(jsonMessage.optBoolean("shareable", false));
         chatMessage.setVoicePlayed(jsonMessage.optBoolean("voicePlayed", false));
         chatMessage.setHashed(jsonMessage.optBoolean("hashed", false));
-
+        chatMessage.setDownloadGif(jsonMessage.optBoolean("downloadGif", false));
 
         chatMessage.setGcm(jsonMessage.optBoolean("gcm", false));
 
@@ -254,6 +255,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             message.put("gcm", this.isGcm());
             message.put("voicePlayed", this.isVoicePlayed());
             message.put("hashed", this.isHashed());
+            message.put("downloadGif", this.isDownloadGif());
 
             if (this.getErrorStatus() > 0) {
                 message.put("errorStatus", this.getErrorStatus());
@@ -446,6 +448,15 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
             notifyObservers();
         }
     }
+
+    public boolean isDownloadGif() {
+        return mDownloadGif;
+    }
+
+    public void setDownloadGif(boolean downloadGif) {
+        this.mDownloadGif = downloadGif;
+    }
+
 
     @Override
     public int compareTo(SurespotMessage another) {
@@ -662,5 +673,7 @@ public class SurespotMessage extends Observable implements Comparable<SurespotMe
         public void setCloudUrl(String cloudUrl) {
             mCloudUrl = cloudUrl;
         }
+
+
     }
 }

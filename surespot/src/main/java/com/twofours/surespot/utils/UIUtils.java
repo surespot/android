@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -608,5 +609,10 @@ public class UIUtils {
             mDensity = context.getResources().getDisplayMetrics().density;
         }
         return dp * mDensity;
+    }
+
+    public static boolean isDarkTheme(Context context) {
+        SharedPreferences settings = context.getSharedPreferences("surespot_preferences", android.content.Context.MODE_PRIVATE);
+        return settings.getBoolean("pref_black", false);
     }
 }

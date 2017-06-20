@@ -74,6 +74,11 @@
         </PreferenceScreen>
 
         <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_download_gifs"
+            android:summary="@string/pref_summary_download_gifs"
+            android:title="@string/pref_title_download_gifs"/>
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_message"
             android:summary="@string/pref_summary_delete_message"
