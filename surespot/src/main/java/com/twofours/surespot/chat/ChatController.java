@@ -2243,10 +2243,13 @@ public class ChatController {
         if (mSocket == null) {
             IO.Options opts = new IO.Options();
 
+
             //override ssl context for self signed certs for dev
             if (!SurespotConfiguration.isSslCheckingStrict()) {
-                opts.sslContext = mNetworkController.getSSLContext();
-                opts.hostnameVerifier = mNetworkController.getHostnameVerifier();
+                IO.setDefaultOkHttpCallFactory(mNetworkController.getClient());
+                IO.setDefaultOkHttpWebSocketFactory(mNetworkController.getClient());
+                //opts.sslContext = mNetworkController.getSSLContext();
+                //opts.hostnameVerifier = mNetworkController.getHostnameVerifier();
             }
 
             opts.reconnection = false;

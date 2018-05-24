@@ -65,13 +65,13 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
     compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
-    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    compile 'com.squareup.okhttp3:okhttp:3.10.0'
     compile 'com.google.android.gms:play-services-auth:10.2.1'
     compile 'com.google.android.gms:play-services-gcm:10.2.1'
     compile 'com.google.android.gms:play-services-analytics:10.2.1'
     compile 'com.android.support:multidex:1.0.1'
-    compile('io.socket:socket.io-client:0.8.3') {
+    compile('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
     }
     compile 'ch.acra:acra:4.8.5'

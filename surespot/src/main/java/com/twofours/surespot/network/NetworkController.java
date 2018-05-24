@@ -1138,4 +1138,8 @@ public class NetworkController {
 
 
     }
+
+    public OkHttpClient getClient() {
+        return mClient;
+    }
 }
