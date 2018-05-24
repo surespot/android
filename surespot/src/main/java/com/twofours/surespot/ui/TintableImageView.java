@@ -33,7 +33,7 @@ public class TintableImageView extends ImageView {
 
     private void init(Context context, AttributeSet attrs, int defStyle) {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TintableImageView, defStyle, 0);
-        tint = a.getColorStateList(R.styleable.TintableImageView_tint);
+        tint = a.getColorStateList(R.styleable.TintableImageView_surespot_tint);
         a.recycle();
     }
 
