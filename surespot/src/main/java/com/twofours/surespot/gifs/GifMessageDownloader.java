@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
@@ -67,6 +68,8 @@ public class GifMessageDownloader {
         if (message == null) {
             return;
         }
+
+        if (!message.isDownloadGif()) return;
 
         //cache per IV as well so we have a drawable per message
         GifDrawable gifDrawable = getGifDrawableFromCache(message.getIv());
@@ -246,6 +249,7 @@ public class GifMessageDownloader {
 //                                        imageView.clearAnimation();
 //                                        Animation fadeIn = AnimationUtils.loadAnimation(imageView.getContext(), android.R.anim.fade_in);// new
 //                                        imageView.startAnimation(fadeIn);
+                                            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                             imageView.setImageDrawable(finalGifDrawable);
                                             //ChatUtils.setImageViewLayout(imageView, finalGifDrawable.getIntrinsicWidth(), finalGifDrawable.getIntrinsicHeight());
                                             UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) imageView.getParent());

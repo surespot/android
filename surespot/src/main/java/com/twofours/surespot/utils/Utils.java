@@ -160,6 +160,12 @@ public class Utils {
 		return sp.getString(key, null);
 	}
 
+	public static boolean getUserSharedPrefsBoolean(Context context, String username, String key) {
+		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);
+		return sp.getBoolean(key, false);
+	}
+
+
 	public static boolean putUserSharedPrefsString(Context context, String username, String key, String value) {
 		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);
 		Editor e = sp.edit();

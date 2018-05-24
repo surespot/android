@@ -383,4 +383,9 @@
     <string name="select_file">Select file</string>
     <string name="mute">Mute</string>
     <string name="unmute">Unmute</string>
+    <string name="pref_title_download_gifs">GIF links</string>
+    <string name="pref_summary_download_gifs">Automatically download GIF links</string>
+
+
+
 </resources>

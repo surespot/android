@@ -122,6 +122,12 @@ public class ChatFragment extends Fragment {
                             SeekBar seekBar = (SeekBar) view.findViewById(R.id.seekBarVoice);
                             VoiceController.playVoiceMessage(ChatFragment.this.getActivity(), seekBar, message);
                         }
+                        else {
+                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK)) {
+                                message.setDownloadGif(true);
+                                mChatAdapter.notifyDataSetChanged();
+                            }
+                        }
                     }
                 }
             }
