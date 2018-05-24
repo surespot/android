@@ -49,34 +49,34 @@ android {
 }
 
 dependencies {
-    compile project(':libs:viewpagerindicator')
-    compile project(':libs:androidkeystore')
-    compile project(':libs:emojicon')
-    compile project(':libs:cameraview')
-    compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
+    implementation project(':libs:viewpagerindicator')
+    implementation project(':libs:androidkeystore')
+    implementation project(':libs:emojicon')
+    implementation project(':libs:cameraview')
+    implementation 'com.android.support:support-v4:25.3.1'
+    implementation 'com.android.support:appcompat-v7:25.3.1'
+    implementation 'com.android.support:design:25.3.1'
 
-    compile 'pub.devrel:easypermissions:0.2.1'
-    compile('com.google.api-client:google-api-client-android:1.22.0') {
+    implementation 'pub.devrel:easypermissions:0.2.1'
+    implementation('com.google.api-client:google-api-client-android:1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    compile('com.google.apis:google-api-services-drive:v3-rev65-1.22.0') {
+    implementation('com.google.apis:google-api-services-drive:v3-rev65-1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
-    compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-    compile 'com.squareup.okhttp3:okhttp:3.10.0'
-    compile 'com.google.android.gms:play-services-auth:10.2.1'
-    compile 'com.google.android.gms:play-services-gcm:10.2.1'
-    compile 'com.google.android.gms:play-services-analytics:10.2.1'
-    compile 'com.android.support:multidex:1.0.1'
-    compile('io.socket:socket.io-client:1.0.0') {
+    implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.google.android.gms:play-services-auth:10.2.1'
+    implementation 'com.google.android.gms:play-services-gcm:10.2.1'
+    implementation 'com.google.android.gms:play-services-analytics:10.2.1'
+    implementation 'com.android.support:multidex:1.0.1'
+    implementation('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
     }
-    compile 'ch.acra:acra:4.8.5'
-    compile 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
-    compile 'net.margaritov.preference.colorpicker.ColorPickerPreference:ColorPickerPreference:1.0.0'
-    compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
-    compile 'io.fotoapparat.fotoapparat:library:master-SNAPSHOT'
+    implementation 'ch.acra:acra:4.8.5'
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.5'
+    implementation 'net.margaritov.preference.colorpicker.ColorPickerPreference:ColorPickerPreference:1.0.0'
+    implementation 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
+    implementation 'io.fotoapparat.fotoapparat:library:master-SNAPSHOT'
 }

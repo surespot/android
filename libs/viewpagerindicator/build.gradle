@@ -11,6 +11,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:25.3.0'
+    implementation 'com.android.support:support-v4:25.3.0'
 }
 
