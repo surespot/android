@@ -17,7 +17,6 @@
 package com.twofours.surespot.services;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 
@@ -54,7 +54,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
     private PowerManager mPm;
     NotificationCompat.Builder mBuilder;
-    NotificationManager mNotificationManager;
+    NotificationManagerCompat mNotificationManager;
 
     @Override
     public void onCreate() {
@@ -62,7 +62,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
         mPm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
         mBuilder = new NotificationCompat.Builder(this);
-        mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager = NotificationManagerCompat.from(this);
     }
 
 
@@ -334,6 +334,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             defaults |= Notification.DEFAULT_VIBRATE;
         }
 
+        mBuilder.setWhen(new Date().getTime());
         mBuilder.setDefaults(defaults);
         mNotificationManager.notify(tag, id, mBuilder.build());
     }
