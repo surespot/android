@@ -19,6 +19,7 @@ package com.twofours.surespot.chat;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.SpannableStringBuilder;
+import android.view.View;
 import android.widget.TextView;
 
 import com.rockerhieu.emojicon.EmojiconHandler;
@@ -134,7 +135,7 @@ public class MessageDecryptor {
                         @Override
                         public void run() {
                             textView.setText(finalPlainData);
-                            UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, textView.getRootView());
+                            UIUtils.updateDateAndSize(mChatAdapter.getContext(), mMessage, (View) textView.getParent());
                         }
                     });
                 }

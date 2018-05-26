@@ -543,6 +543,12 @@ public class ChatAdapter extends BaseAdapter {
 
                 chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
                 chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+
+                //won't be decrypted until they click on it if they don't have auto download enabled so set date/time here if we have it
+                if (item.getDateTime() != null) {
+                    chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
+                            + DateFormat.getTimeFormat(mContext).format(item.getDateTime()));
+                }
                 break;
             case SurespotConstants.MimeTypes.FILE:
 
