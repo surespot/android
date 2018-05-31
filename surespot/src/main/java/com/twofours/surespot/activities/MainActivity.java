@@ -2477,11 +2477,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                });
                 break;
             case MESSAGE_MODE_CAMERA:
-                mCurrentMessageMode = MESSAGE_MODE_CAMERA;
-
-                mMessageModeView = null;
-
-
                 // can't send images to deleted folk
                 if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
                     return;
@@ -2498,41 +2493,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         return null;
                     }
                 }.execute();
-//                try {
-//                    wm.addView(mMessageModeView, mWindowLayoutParams);
-//                    Runnable runnable3 = new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-//                                wm.removeView(oldView);
-//                            }
-//                        }
-//                    };
-//                    mHandler.postDelayed(runnable3, 500);
-//                }
-//                catch (Exception e) {
-//                    SurespotLog.e(TAG, e, "error adding camera view");
-//                    return;
-//                }
-
-
-
-//
-//
-//                mEtMessage.setVisibility(View.VISIBLE);
-//
-//                requestFocus(mEtMessage);
-//                if (input != null)
-//
-//                {
-//                    input.showSoftInput(mEtMessage, 0);
-//                }
-//
-//                gifFrame.setVisibility(GONE);
-//                mGiphySearchFieldLayout.setVisibility(GONE);
-//                mSendButton.setVisibility(View.VISIBLE);
-//
-//                updateMessageBar();
                 break;
         }
 
