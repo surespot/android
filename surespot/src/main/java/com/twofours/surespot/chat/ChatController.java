@@ -18,6 +18,9 @@ import android.support.v4.view.ViewPager;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.SeekBar;
 
 import com.rockerhieu.emojicon.EmojiconHandler;
 import com.twofours.surespot.R;
@@ -47,6 +50,7 @@ import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.voice.VoiceController;
 import com.viewpagerindicator.TitlePageIndicator;
 
 import org.json.JSONArray;
@@ -1994,7 +1998,7 @@ public class ChatController {
 //                    menuItem.setVisible(enabled && !isDeleted);
 //                }
 //                else {
-                    menuItem.setVisible(enabled);
+                menuItem.setVisible(enabled);
                 //}
             }
         }
@@ -3481,45 +3485,45 @@ public class ChatController {
                                 encryptionInputStream,
                                 new IAsyncCallback<SurespotMessage.FileMessageData>() {
 
-                            @Override
-                            public void handleResponse(final SurespotMessage.FileMessageData fileMessageData) {
-                                if (fileMessageData != null) {
-                                    SurespotLog.d(TAG,"received file message data: %s", fileMessageData);
+                                    @Override
+                                    public void handleResponse(final SurespotMessage.FileMessageData fileMessageData) {
+                                        if (fileMessageData != null) {
+                                            SurespotLog.d(TAG, "received file message data: %s", fileMessageData);
 
-                                    message.getFileMessageData().setCloudUrl(fileMessageData.getCloudUrl());
-                                    message.getFileMessageData().setSize(fileMessageData.getSize());
-                                    message.setFromVersion(ourVersion);
-                                    message.setToVersion(theirVersion);
+                                            message.getFileMessageData().setCloudUrl(fileMessageData.getCloudUrl());
+                                            message.getFileMessageData().setSize(fileMessageData.getSize());
+                                            message.setFromVersion(ourVersion);
+                                            message.setToVersion(theirVersion);
 
-                                    //encrypt the url to the encrypted drive data
-                                    final Boolean success = encryptCloudMessage(message);
+                                            //encrypt the url to the encrypted drive data
+                                            final Boolean success = encryptCloudMessage(message);
 
-                                    SurespotLog.d(TAG, "success: %b", success);
-                                    if (success != null) {
-                                        mHandler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                addMessage(message);
-                                                if (success) {
+                                            SurespotLog.d(TAG, "success: %b", success);
+                                            if (success != null) {
+                                                mHandler.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        addMessage(message);
+                                                        if (success) {
 
-                                                    //set the url to the encrypted drive data
+                                                            //set the url to the encrypted drive data
 
-                                                    sendTextMessage(message);
-                                                }
-                                                else {
-                                                    //save the link to the local file so we can open it
-                                                    //   message.setPlainData(plainData);
-                                                    messageSendCompleted(message);
-                                                    if (!scheduleResendTimer()) {
-                                                        errorMessageQueue();
+                                                            sendTextMessage(message);
+                                                        }
+                                                        else {
+                                                            //save the link to the local file so we can open it
+                                                            //   message.setPlainData(plainData);
+                                                            messageSendCompleted(message);
+                                                            if (!scheduleResendTimer()) {
+                                                                errorMessageQueue();
+                                                            }
+                                                        }
                                                     }
-                                                }
+                                                });
                                             }
-                                        });
+                                        }
                                     }
-                                }
-                            }
-                        });
+                                });
                     }
                 }
             };
@@ -3529,5 +3533,41 @@ public class ChatController {
         else {
             sendTextMessage(message);
         }
+    }
+
+    public void handleVoiceMessagePlayed(SurespotMessage playedMessage) {
+        ChatFragment cf = getChatFragment(playedMessage.getFrom());
+        if (cf != null) {
+            ListView messageListView = cf.getView().findViewById(R.id.message_list);
+            ChatAdapter chatAdapter = getChatAdapter(playedMessage.getFrom(), false);
+            if (chatAdapter != null) {
+                if (playedMessage.getTo().equals(mUsername) && playedMessage.getFrom().equals(mCurrentChat)) {
+                    int lastPlayedId = playedMessage.getId();
+                    for (SurespotMessage message : chatAdapter.getMessages()) {
+                        if (message.getId() > lastPlayedId && !message.isVoicePlayed()) {
+                            VoiceController.playVoiceMessage(mContext, getSeekBarForMessage(messageListView, message), message);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private SeekBar getSeekBarForMessage(ListView listView, SurespotMessage message) {
+        final int firstListItemPosition = 0;
+        final int lastListItemPosition = listView.getChildCount();
+
+        for (int pos = firstListItemPosition; pos <= lastListItemPosition; pos++) {
+            View listItemView = listView.getChildAt(pos);
+            if (listItemView != null) {
+                SeekBar seekBar = listItemView.findViewById(R.id.seekBarVoice);
+                if (seekBar != null && VoiceController.getSeekbarMessage(seekBar) == message) {
+                    return seekBar;
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -304,9 +304,10 @@ public class VoiceMessageDownloader {
 
         if (message.isPlayVoice()) {
             SeekBar seekBar = (SeekBar) parentView.findViewById(R.id.seekBarVoice);
-            VoiceController.playVoiceMessage(context, seekBar, message);
+            if (!VoiceController.isRecording() && !VoiceController.isPlaying()) {
+                VoiceController.playVoiceMessage(context, seekBar, message);
+            }
         }
-
     }
 
     class DecryptionTaskWrapper {

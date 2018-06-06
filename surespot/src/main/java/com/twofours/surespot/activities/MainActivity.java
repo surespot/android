@@ -78,6 +78,7 @@ import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SoftKeyboardLayout;
 import com.twofours.surespot.chat.SurespotDrawerLayout;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.filetransfer.FileTransferUtils;
 import com.twofours.surespot.friends.AutoInviteData;
 import com.twofours.surespot.friends.Friend;
@@ -1048,6 +1049,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         setEditTextHints();
         mEtMessage.setText(Utils.getUserSharedPrefsString(this, mUser, "message_text"));
         ChatManager.resume(mUser, this.hashCode());
+        VoiceController.setPlayCompletedCallback(new VoicePlayCompletedHandler());
+    }
+
+    private class VoicePlayCompletedHandler implements IAsyncCallback<SurespotMessage> {
+
+        @Override
+        public void handleResponse(SurespotMessage message) {
+            SurespotLog.d(TAG, "voice message play completed");
+            //if we're still on the same tab
+            if (message.getFrom().equals(mCurrentFriend.getName())) {
+                //tell the adapter
+                ChatController cc = ChatManager.getChatController(mUser);
+                if (cc != null) {
+                    cc.handleVoiceMessagePlayed(message);
+                }
+            }
+        }
     }
 
     @Override
