@@ -3544,7 +3544,7 @@ public class ChatController {
                 if (playedMessage.getTo().equals(mUsername) && playedMessage.getFrom().equals(mCurrentChat)) {
                     int lastPlayedId = playedMessage.getId();
                     for (SurespotMessage message : chatAdapter.getMessages()) {
-                        if (message.getId() > lastPlayedId && !message.isVoicePlayed()) {
+                        if (message.getId() > lastPlayedId && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A) && !message.isVoicePlayed()) {
                             VoiceController.playVoiceMessage(mContext, getSeekBarForMessage(messageListView, message), message);
                             break;
                         }
