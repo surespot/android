@@ -3225,6 +3225,17 @@ public class ChatController {
             SurespotLog.d(TAG, "Connection terminated.");
             mCurrentSendIv = null;
             disconnect();
+
+            if (args.length > 0) {
+                if ("io server disconnect".equals(args[0])) {
+                    SurespotLog.d(TAG, "got server disconnect from websocket");
+                    tryReLogin();
+                    return;
+                }
+            }
+
+
+
             connect();
             processNextMessage();
         }
