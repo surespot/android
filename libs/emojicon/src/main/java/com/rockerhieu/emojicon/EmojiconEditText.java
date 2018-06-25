@@ -43,6 +43,18 @@ public class EmojiconEditText extends EditText {
         init(attrs);
     }
 
+    public interface OnCutCopyPasteListener {
+        void onCut();
+        void onCopy();
+        void onPaste();
+    }
+
+    private OnCutCopyPasteListener mOnCutCopyPasteListener;
+
+    public void setOnCutCopyPasteListener(OnCutCopyPasteListener listener) {
+        mOnCutCopyPasteListener = listener;
+    }
+
     private void init(AttributeSet attrs) {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.Emojicon);
         mEmojiconSize = (int) a.getDimension(R.styleable.Emojicon_emojiconSize, getTextSize());
@@ -78,5 +90,47 @@ public class EmojiconEditText extends EditText {
      */
     public void setUseSystemDefault(boolean useSystemDefault) {
         mUseSystemDefault = useSystemDefault;
+    }
+
+    @Override
+    public boolean onTextContextMenuItem(int id) {
+        // Do your thing:
+        boolean consumed = super.onTextContextMenuItem(id);
+        // React:
+        switch (id){
+            case android.R.id.cut:
+                onCut();
+                break;
+            case android.R.id.copy:
+                onCopy();
+                break;
+            case android.R.id.paste:
+                onPaste();
+        }
+        return consumed;
+    }
+
+    /**
+     * Text was cut from this EditText.
+     */
+    public void onCut(){
+        if(mOnCutCopyPasteListener!=null)
+            mOnCutCopyPasteListener.onCut();
+    }
+
+    /**
+     * Text was copied from this EditText.
+     */
+    public void onCopy(){
+        if(mOnCutCopyPasteListener!=null)
+            mOnCutCopyPasteListener.onCopy();
+    }
+
+    /**
+     * Text was pasted into the EditText.
+     */
+    public void onPaste(){
+        if(mOnCutCopyPasteListener!=null)
+            mOnCutCopyPasteListener.onPaste();
     }
 }

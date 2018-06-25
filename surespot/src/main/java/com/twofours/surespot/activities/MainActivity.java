@@ -64,6 +64,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconsView;
 import com.rockerhieu.emojicon.OnEmojiconClickedListener;
 import com.rockerhieu.emojicon.emoji.Emojicon;
@@ -137,7 +138,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private ImageView mHomeImageView;
 
     private SoftKeyboardLayout mActivityLayout;
-    private EditText mEtMessage;
+    private EmojiconEditText mEtMessage;
     private EditText mEtInvite;
     private View mSendButton;
     private EmojiconsView mEmojiView;
@@ -160,6 +161,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private AlertDialog mDialog;
     private String mUser;
     private boolean mEnterToSend;
+    private boolean mSuppressTextWatcher;
+    private boolean mMessagePasted;
 
     // control booleans
     private boolean mLaunched;
@@ -561,7 +564,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         });
 
-        mEtMessage = (EditText) mainView.findViewById(R.id.etMessage);
+        mEtMessage = mainView.findViewById(R.id.etMessage);
         mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -580,6 +583,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                 }
                 return handled;
+            }
+        });
+
+        mEtMessage.setOnCutCopyPasteListener(new EmojiconEditText.OnCutCopyPasteListener() {
+            @Override
+            public void onCut() {
+
+            }
+
+            @Override
+            public void onCopy() {
+
+            }
+
+            @Override
+            public void onPaste() {
+                mMessagePasted = true;
             }
         });
 
@@ -1652,13 +1672,30 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         @Override
         public void afterTextChanged(Editable s) {
-            if (MainActivity.this.mEnterToSend && s.toString().contains("\n")) {
-                int idx = s.toString().indexOf('\n');
-                s.delete(idx, idx + 1);
+            SurespotLog.d(TAG, "After text changed: %s, message pasted: %b, suppress text watcher: %b", s, mMessagePasted, mSuppressTextWatcher);
+            //if they pasted the text don't do anything
+            if ( mMessagePasted) {
+                mMessagePasted = false;
+                return;
+            }
+
+            if (!MainActivity.this.mSuppressTextWatcher && MainActivity.this.mEnterToSend) {
+                String message = s.toString();
+
+                //strip last carriage return
+                if (message.endsWith("\n")) {
+                    mSuppressTextWatcher = true;
+
+                    int idx = message.lastIndexOf('\n');
+                    s.delete(idx, idx + 1);
+
+                    mSuppressTextWatcher = false;
+                }
+
                 ChatController cc = ChatManager.getChatController(mUser);
 
                 if (cc != null && mEtMessage.getText().toString().length() > 0 && !cc.isFriendDeleted(mCurrentFriend.getName())) {
-                    sendMessage(mCurrentFriend.getName());
+                     sendMessage(mCurrentFriend.getName());
                 }
             }
         }
@@ -1681,7 +1718,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
                 String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
                 SurespotLog.d(TAG, "received action send, data: %s", sharedText);
+            //    mSuppressTextWatcher = true;
                 mEtMessage.append(sharedText);
+           //     mSuppressTextWatcher = false;
             }
             else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
