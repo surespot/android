@@ -50,7 +50,9 @@ import com.twofours.surespot.utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -335,33 +337,40 @@ public class ImportIdentityActivity extends Activity {
         ListView lvIdentities = (ListView) findViewById(R.id.lvLocalIdentities);
         lvIdentities.setEmptyView(findViewById(R.id.no_local_identities));
 
-        List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
-
         // query the filesystem for identities
         final java.io.File exportDir = FileUtils.getIdentityExportDir();
         SurespotLog.d(TAG, "exportDir: %s", exportDir.getAbsolutePath());
         java.io.File[] files = IdentityController.getExportIdentityFiles(this, exportDir.getPath());
+        Arrays.sort(files, new Comparator() {
+
+            public int compare(Object o1, Object o2) {
+                Long x1 = ((java.io.File) o1).lastModified();
+                Long x2 = ((java.io.File) o2).lastModified();
+
+                int sComp = x2.compareTo(x1);
+
+                if (sComp != 0) {
+                    return sComp;
+                }
+
+                String s1 = ((java.io.File) o1).getName();
+                String s2 = ((java.io.File) o2).getName();
+                return s1.compareTo(s2);
+            }});
+
         SurespotLog.d(TAG, "files: %s", Arrays.toString(files));
         TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 
+        List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
         if (files != null) {
-            TreeMap<Long, java.io.File> sortedFiles = new TreeMap<Long, java.io.File>(new Comparator<Long>() {
-                public int compare(Long o1, Long o2) {
-                    return o2.compareTo(o1);
-                }
-            });
-
             for (java.io.File file : files) {
-                sortedFiles.put(file.lastModified(), file);
-            }
-
-            for (java.io.File file : sortedFiles.values()) {
-                long lastModTime = file.lastModified();
-                String date = DateFormat.getDateFormat(this).format(lastModTime) + " " + DateFormat.getTimeFormat(this).format(lastModTime);
+                long modTime = file.lastModified();
+                String date = DateFormat.getDateFormat(this).format(modTime) + " " + DateFormat.getTimeFormat(this).format(modTime);
 
                 HashMap<String, String> map = new HashMap<String, String>();
                 map.put("name", IdentityController.getIdentityNameFromFile(file));
                 map.put("date", date);
+
                 items.add(map);
             }
         }
