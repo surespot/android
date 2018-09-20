@@ -73,6 +73,7 @@ public class SignupActivity extends Activity {
     private Menu mMenuOverflow;
     private boolean mLoggedIn = false;
     private Handler mHandler = new Handler(Looper.getMainLooper());
+    private boolean mSigningUp = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -280,6 +281,13 @@ public class SignupActivity extends Activity {
             return;
         }
 
+        //prevent multiple signup attempts
+        if (!mSigningUp) {
+            mSigningUp = true;
+        }
+        else {
+            return;
+        }
         mMpd.incrProgress();
 
         // make sure we can create the file
@@ -290,6 +298,7 @@ public class SignupActivity extends Activity {
             // pwText.setText("");
             userText.requestFocus();
             mMpd.decrProgress();
+            mSigningUp = false;
             setUsernameValidity(false);
             return;
         }
@@ -372,6 +381,7 @@ public class SignupActivity extends Activity {
                                                 startActivity(newIntent);
                                                 Utils.clearIntent(intent);
                                                 mMpd.decrProgress();
+                                                mSigningUp = false;
                                                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                                                 imm.hideSoftInputFromWindow(pwText.getWindowToken(), 0);
 
@@ -385,6 +395,8 @@ public class SignupActivity extends Activity {
                                         SurespotLog.w(TAG, "201 not returned on user create.");
                                         // confirmPwText.setText("");
                                         // pwText.setText("");
+                                        mMpd.decrProgress();
+                                        mSigningUp = false;
                                         pwText.requestFocus();
                                         // setUsernameValidity(false);
                                     }
@@ -394,11 +406,18 @@ public class SignupActivity extends Activity {
                                 public void onFailure(Throwable arg0, int code, String content) {
                                     SurespotLog.i(TAG,  "signup error %s", content);
                                     mMpd.decrProgress();
+                                    mSigningUp = false;
                                     Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
                                 }
                             });
                         }
                     }.execute();
+
+                }
+                else {
+                    mMpd.decrProgress();
+                    mSigningUp = false;
+                    Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
                 }
             }
         });
