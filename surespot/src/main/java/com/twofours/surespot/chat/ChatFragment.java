@@ -21,6 +21,7 @@ import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.friends.Friend;
+import com.twofours.surespot.gifs.GifMessageMenuFragment;
 import com.twofours.surespot.images.ImageMessageMenuFragment;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
@@ -140,28 +141,29 @@ public class ChatFragment extends Fragment {
 
                 SurespotMessage message = (SurespotMessage) mChatAdapter.getItem(position);
                 try {
-                    if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT) ||
-                            message.getMimeType().equals(SurespotConstants.MimeTypes.GIF_LINK) ||
-                            message.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {
-
-                        DialogFragment dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
-                        dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
-                        return true;
-                    }
-                    else {
-                        if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-                            DialogFragment dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
+                    DialogFragment dialog;
+                    switch (message.getMimeType()) {
+                        case SurespotConstants.MimeTypes.TEXT:
+                            dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
+                            dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
+                            break;
+                        case SurespotConstants.MimeTypes.IMAGE:
+                            dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
                             dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
-                            return true;
-                        }
-                        else {
-                            if (message.getMimeType().equals(SurespotConstants.MimeTypes.M4A)) {
-                                DialogFragment dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
-                                dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
-                                return true;
-                            }
-                        }
+                            break;
+                        case SurespotConstants.MimeTypes.M4A:
+                            dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
+                            dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
+                            break;
+                        case SurespotConstants.MimeTypes.GIF_LINK:
+                        case SurespotConstants.MimeTypes.FILE:
+                        default:
+                            dialog = GifMessageMenuFragment.newInstance(mOurUsername, message);
+                            dialog.show(getActivity().getFragmentManager(), "GifMessageMenuFragment");
+                            break;
                     }
+
+                    return true;
                 }
                 catch (IllegalStateException e) {
                     //swallow this fucker
@@ -171,7 +173,6 @@ public class ChatFragment extends Fragment {
                 return false;
             }
         });
-
 
         return view;
     }
@@ -365,7 +366,7 @@ public class ChatFragment extends Fragment {
 
                 @Override
                 public void run() {
-                    mListView.setSelection(mChatAdapter.getCount()-1);
+                    mListView.setSelection(mChatAdapter.getCount() - 1);
                 }
             }, 400);
         }
