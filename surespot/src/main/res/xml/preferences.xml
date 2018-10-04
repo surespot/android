@@ -94,11 +94,17 @@
             android:summary="@string/pref_summary_enter_to_send"
             android:title="@string/pref_title_enter_to_send"/>
 
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_disable_voice"
             android:summary="@string/pref_disable_voice"
             android:title="@string/pref_disable_voice_title"/>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_confirm_image_send"
+            android:title="@string/pref_title_confirm_image_send"/>
         <!--<CheckBoxPreference-->
         <!--android:defaultValue="false"-->
         <!--android:key="pref_debug_mode"-->

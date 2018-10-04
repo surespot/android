@@ -2398,20 +2398,44 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                    public void handleResponse(String path, Uri uri) {
 //       //                 if (path == null) return;
 
+
                 if (mGalleryModeHandler == null) {
                     mGalleryModeHandler = new GalleryModeHandler(MainActivity.this, mUser, keyboardHeight, new IAsyncCallback<Uri>() {
                         @Override
-                        public void handleResponse(Uri uri) {
+                        public void handleResponse(final Uri uri) {
                             if (uri != null) {
-                                ChatController cc = ChatManager.getChatController(mUser);
+                                final ChatController cc = ChatManager.getChatController(mUser);
                                 if (cc != null) {
-                                    ChatUtils.uploadPictureMessageAsync(
-                                            MainActivity.this,
-                                            cc,
-                                            uri,
-                                            mUser,
-                                            mCurrentFriend.getName(),
-                                            true);
+
+                                    SharedPreferences sp = MainActivity.this.getSharedPreferences(MainActivity.this.mUser, Context.MODE_PRIVATE);
+                                    boolean confirmSend = sp.getBoolean("pref_confirm_image_send", true);
+
+                                    if (confirmSend) {
+                                        mDialog = UIUtils.createAndShowConfirmationDialog(MainActivity.this, getString(R.string.confirm_image_send, mCurrentFriend.getNameOrAlias()), getString(R.string.send),
+                                                getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                                                    public void handleResponse(Boolean result) {
+                                                        if (result) {
+                                                            ChatUtils.uploadPictureMessageAsync(
+                                                                    MainActivity.this,
+                                                                    cc,
+                                                                    uri,
+                                                                    mUser,
+                                                                    mCurrentFriend.getName(),
+                                                                    true);
+                                                        }
+                                                    }
+                                                });
+                                    }
+
+                                    else {
+                                        ChatUtils.uploadPictureMessageAsync(
+                                                MainActivity.this,
+                                                cc,
+                                                uri,
+                                                mUser,
+                                                mCurrentFriend.getName(),
+                                                true);
+                                    }
                                 }
                             }
                         }
