@@ -1236,6 +1236,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mMenuOverflow = menu;
 
         //    mMenuItems.add(menu.findItem(R.id.menu_mute_bar));
+        mMenuItems.add(menu.findItem(R.id.menu_close_all_tabs));
         mMenuItems.add(menu.findItem(R.id.menu_close_bar));
 //        mMenuItems.add(menu.findItem(R.id.menu_send_image_bar));
 //
@@ -1316,6 +1317,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                    cc.saveFriends();
 //                }
 //                return true;
+            case R.id.menu_close_all_tabs:
+                cc.closeAllTabs();
+                return true;
             case R.id.menu_close_bar:
 
                 cc.closeTab();

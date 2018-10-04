@@ -33,6 +33,12 @@
                 android:id="@+id/menu_clear_messages"
                 android:icon="@drawable/ic_menu_delete"
                 android:title="@string/delete_all_messages"/>
+
+
+            <item
+                android:id="@+id/menu_close_all_tabs"
+                android:icon="@drawable/ic_menu_end_conversation"
+                android:title="@string/close_all_tabs"/>
             <item
                 android:id="@+id/menu_invite_external"
                 android:icon="@drawable/blue_heart"

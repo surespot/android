@@ -1934,6 +1934,28 @@ public class ChatController {
         }
     }
 
+    public void closeAllTabs() {
+        int count = mChatPagerAdapter.getCount() - 1;
+        if (count > 0) {
+           for (int position=count;position>0;position--) {
+                String name = mChatPagerAdapter.getChatName(position);
+                if (name != null) {
+                    SurespotLog.d(TAG, "closeTab, name: %s, position: %d", name, position);
+
+                    mChatPagerAdapter.removeChat(mViewPager.getId(), position);
+                    mFriendAdapter.setChatActive(name, false);
+                    mEarliestMessage.remove(name);
+                    destroyChatAdapter(name);
+                    SurespotLog.d(TAG, "closeTab, new tab name: %s, position: %d", mCurrentChat, position);
+                }
+            }
+
+            mIndicator.notifyDataSetChanged();
+            setCurrentChat(null);
+        }
+    }
+
+
     /**
      * Called when a user has been deleted
      *
@@ -1992,14 +2014,18 @@ public class ChatController {
 
         if (mMenuItems != null) {
             for (MenuItem menuItem : mMenuItems) {
+                //close all tabs only on home tab
+                if ((menuItem.getItemId() == R.id.menu_close_all_tabs)) {
+                    menuItem.setVisible(mCurrentChat == null);
+                }
                 // deleted users can't have images sent to them
 //                if (menuItem.getItemId() == R.id.menu_capture_image_bar || menuItem.getItemId() == R.id.menu_send_image_bar) {
 //
 //                    menuItem.setVisible(enabled && !isDeleted);
 //                }
-//                else {
-                menuItem.setVisible(enabled);
-                //}
+                else {
+                    menuItem.setVisible(enabled);
+                }
             }
         }
     }
