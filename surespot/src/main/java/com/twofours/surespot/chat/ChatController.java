@@ -1,5 +1,6 @@
 package com.twofours.surespot.chat;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.Notification;
@@ -92,6 +93,7 @@ import okhttp3.Callback;
 import okhttp3.Cookie;
 import okhttp3.Response;
 
+@SuppressLint("StaticFieldLeak")
 public class ChatController {
 
     private static final String TAG = "ChatController";
