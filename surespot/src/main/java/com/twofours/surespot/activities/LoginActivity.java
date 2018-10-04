@@ -36,6 +36,7 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
+import com.twofours.surespot.backup.ExportIdentityActivity;
 import com.twofours.surespot.backup.ImportIdentityActivity;
 import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
@@ -427,6 +428,18 @@ public class LoginActivity extends Activity {
                     @Override
                     protected Void doInBackground(Void... params) {
                         Intent intent = new Intent(LoginActivity.this, ImportIdentityActivity.class);
+                        startActivity(intent);
+                        return null;
+                    }
+                }.execute();
+                return true;
+            case R.id.menu_backup_identities_bar:
+                new AsyncTask<Void, Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        Intent intent = new Intent(LoginActivity.this, ExportIdentityActivity.class);
+                        intent.putExtra("backupUsername", getSelectedUsername());
                         startActivity(intent);
                         return null;
                     }
