@@ -48,11 +48,11 @@
 
             <ImageView
                 android:id="@+id/friendMute"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_gravity="center"
                 android:scaleType="fitXY"
-                android:src="@drawable/ic_volume_off_white_36dp"
+                android:src="@drawable/ic_volume_off"
                 android:visibility="gone">
             </ImageView>
         </FrameLayout>
