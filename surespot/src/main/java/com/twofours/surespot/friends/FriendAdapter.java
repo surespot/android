@@ -264,7 +264,8 @@ public class FriendAdapter extends BaseAdapter {
         if (friend.hasFriendImageAssigned()) {
             FriendImageDownloader.download(friendViewHolder.avatarImage, mUsername, friend);
         } else {
-            friendViewHolder.avatarImage.setImageResource(android.R.color.transparent);
+        	friendViewHolder.avatarImage.setImageDrawable(friendViewHolder.avatarImage.getResources().getDrawable(R.drawable.surespot_logo));
+            friendViewHolder.avatarImage.setAlpha(0.5f);
         }
 
         if (friend.isMuted()) {
@@ -272,8 +273,16 @@ public class FriendAdapter extends BaseAdapter {
             if (friend.hasFriendImageAssigned()) {
                friendViewHolder.avatarImage.setAlpha(0.5f);
             }
+            else {
+                friendViewHolder.avatarImage.setAlpha(0.25f);
+            }
         } else {
-            friendViewHolder.avatarImage.setAlpha(1.0f);
+            if (friend.hasFriendImageAssigned()) {
+                friendViewHolder.avatarImage.setAlpha(1.0f);
+            }
+            else {
+                friendViewHolder.avatarImage.setAlpha(0.5f);
+            }
             friendViewHolder.muteImage.setVisibility(View.GONE);
         }
 
