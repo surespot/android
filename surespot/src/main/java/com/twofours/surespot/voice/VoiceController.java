@@ -526,7 +526,8 @@ public class VoiceController {
         public void completed() {
             SurespotLog.v(TAG, "SeekBarThread completed");
             mRun = false;
-
+            mLastPosition = 0;
+            setProgress(mSeekBar, 0);
         }
     }
 
