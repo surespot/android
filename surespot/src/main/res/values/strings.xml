@@ -33,7 +33,7 @@
     <string name="identity_imported_successfully">Identity %s restored successfully</string>
     <string name="could_not_import_identity">Could not restore identity</string>
     <string name="could_not_restore_identity_name">Could not restore identity %s</string>
-    <string name="notifications_title">Notifications</string>
+    <string name="notifications_title">Notifications...</string>
     <string name="notifications_vibration">Vibration</string>
     <string name="notifications_sound">Sound</string>
     <string name="notifications_led">LED</string>
@@ -327,7 +327,7 @@
     <string name="voice_help_4">New voice messages will play automatically for the open chat tab.</string>
     <string name="close">Close</string>
     <string name="no_audio_detected">No audio detected - not sending voice message</string>
-    <string name="pref_title_background_image_select">Select a background image</string>
+    <string name="pref_title_background_image_select">Select a background image...</string>
     <string name="pref_title_background_image_remove">Remove background image</string>
     <string name="error_surespot_could_not_create_http_clients">surespot could not create http clients..is storage space available? Shutting down.</string>
     <string name="menu_copy">Copy</string>
