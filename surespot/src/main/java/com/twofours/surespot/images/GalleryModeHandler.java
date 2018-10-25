@@ -223,11 +223,11 @@ public class GalleryModeHandler implements LoaderManager.LoaderCallbacks<Cursor>
 
                 File file = new File(path);
                 if (!file.exists() || file.length() == 0) {
-                    SurespotLog.d(TAG, "skipping image for id: %d", id);
+                    SurespotLog.v(TAG, "skipping image for id: %d", id);
                     continue;
                 }
 
-                SurespotLog.d(TAG, "adding image for id: %d, path: %s", id, path);
+                SurespotLog.v(TAG, "adding image for id: %d, path: %s", id, path);
             }
 
 
