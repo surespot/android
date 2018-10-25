@@ -86,7 +86,7 @@ public class GalleryModeDownloader {
 
 
     private Bitmap loadThumbnail(GalleryData data) {
-        SurespotLog.d(TAG, "loading bitmap for id: %d", data.getId());
+        SurespotLog.v(TAG, "loading bitmap for id: %d", data.getId());
 
         String[] args = new String[]{String.valueOf(data.getId())};
         Cursor ct = mContentResolver.query(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Thumbnails._ID}, MediaStore.Images.Thumbnails.IMAGE_ID + "= ?", args, null);
@@ -99,7 +99,7 @@ public class GalleryModeDownloader {
             uri = ContentUris.withAppendedId(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, ct.getLong(0));
             bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, data.getOrientation(), Math.max(data.getWidth(), data.getHeight()));
             if (bitmap != null) {
-                SurespotLog.d(TAG, "loaded thumbnail bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+                SurespotLog.v(TAG, "loaded thumbnail bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
             }
         }
 
@@ -107,7 +107,7 @@ public class GalleryModeDownloader {
             //no thumbnail, generate our own
             uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getId());
             bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, data.getOrientation(), Math.max(data.getWidth(), data.getHeight()));
-            SurespotLog.d(TAG, "generated bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+            SurespotLog.v(TAG, "generated bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
         }
         ct.close();
         return bitmap;

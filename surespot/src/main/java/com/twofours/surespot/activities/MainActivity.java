@@ -186,6 +186,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mButtons;
     private boolean isCollapsed = true;
     private ImageView mPoweredByGiphyView;
+    private View mOldView;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -871,7 +872,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         mActivityLayout.setOnKeyboardShownListener(new SoftKeyboardLayout.OnKeyboardShownListener() {
             @Override
             public void onKeyboardShown(boolean visible) {
-                SurespotLog.v(TAG, "OnKeyboardShown: visible %b", visible);
+                Configuration config = getResources().getConfiguration();
+
+
+                SurespotLog.d(TAG, "OnKeyboardShown: visible %b, height: %d", visible, mActivityLayout.getKeyboardHeight());
                 //gif doesn't have a drawer so don't hide it
 //                if (!visible &&
 //                        mActivityLayout.getPaddingBottom() == 0 &&
@@ -881,11 +885,28 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //                    disableMessageMode(false);
 //                }
 //                else {
+
+
                 if (visible && mWaitingForKeyboardToShow) {
-                    SurespotLog.d(TAG, "OnKeyboardShown: hiding emoji drawer waiting for keyboard to show");
-                    disableMessageMode(false);
-                    mWaitingForKeyboardToShow = false;
+                    if (MESSAGE_MODE_GALLERY.equals(mCurrentMessageMode)) {
+                        setGalleryMode();
+                        mWaitingForKeyboardToShow = false;
+                    }
+                    else {
+                        if (MESSAGE_MODE_EMOJI.equals(mCurrentMessageMode)) {
+                            switchViews();
+                            mWaitingForKeyboardToShow = false;
+                        }
+                        else {
+                            SurespotLog.d(TAG, "OnKeyboardShown: hiding emoji drawer waiting for keyboard to show");
+                            disableMessageMode(false);
+                            mWaitingForKeyboardToShow = false;
+                        }
+                    }
+
+
                 }
+
                 //  }
             }
         });
@@ -2216,6 +2237,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        SurespotLog.d(TAG, "onConfigurationChanged, screenHeight: %d, orientation: %d", newConfig.screenHeightDp, newConfig.orientation);
+        hideKeyboard();
+        disableMessageMode(false);
     }
 
     private void bindCacheService() {
@@ -2259,20 +2283,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void setMessageMode(String messageMode) {
         SurespotLog.d(TAG, "setMessageMode, mode: %s", messageMode);
 
-        final int keyboardHeight = mActivityLayout.getKeyboardHeight();
-        mWindowLayoutParams = new WindowManager.LayoutParams();
-        mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
-        mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-        mWindowLayoutParams.token = this.getWindow().getDecorView().getWindowToken();
-        mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-        if (mWindowLayoutParams != null) {
-            mWindowLayoutParams.height = keyboardHeight;
-            mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
-        }
-
         final InputMethodManager input = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         final WindowManager wm = (WindowManager) this.getSystemService(Activity.WINDOW_SERVICE);
-        final View oldView = mMessageModeView;
+        mOldView = mMessageModeView;
         final View gifFrame = findViewById(R.id.gifFrame);
 
         switch (messageMode) {
@@ -2285,8 +2298,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     Runnable runnable = new Runnable() {
                         @Override
                         public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-                                wm.removeView(oldView);
+                            if (mOldView != null && mOldView.getParent() != null && mOldView != mMessageModeView) {
+                                wm.removeView(mOldView);
                             }
                         }
                     };
@@ -2314,28 +2327,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mCurrentMessageMode = MESSAGE_MODE_EMOJI;
                 createEmojiView();
                 mMessageModeView = mEmojiView;
-                try {
-                    wm.addView(mMessageModeView, mWindowLayoutParams);
-                    Runnable runnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-                                wm.removeView(oldView);
-                            }
-                        }
-                    };
-                    mHandler.postDelayed(runnable, 500);
-                }
-                catch (Exception e) {
-                    SurespotLog.e(TAG, e, "error adding emoji view");
-                    return;
-                }
-
-                requestFocus(mEtMessage);
-                if (input != null) {
-                    input.showSoftInput(mEtMessage, 0);
-                }
-
                 gifFrame.setVisibility(GONE);
                 mGiphySearchFieldLayout.setVisibility(GONE);
                 mEtMessage.setVisibility(View.VISIBLE);
@@ -2343,6 +2334,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 mActivityLayout.findViewById(R.id.pager).setPadding(0, 0, 0, 0);
                 updateMessageBar();
+
+                if (!mActivityLayout.isKeyboardVisible()) {
+                    mWaitingForKeyboardToShow = true;
+                    mEtMessage.setVisibility(View.VISIBLE);
+                    requestFocus(mEtMessage);
+                    if (input != null) {
+                        input.showSoftInput(mEtMessage, 0);
+                    }
+                }
+                else {
+                    switchViews();
+                }
+                
                 break;
             case MESSAGE_MODE_GIF:
                 mCurrentMessageMode = MESSAGE_MODE_GIF;
@@ -2374,8 +2378,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     Runnable runnable = new Runnable() {
                         @Override
                         public void run() {
-                            if (oldView != null && oldView.getParent() != null) {
-                                wm.removeView(oldView);
+                            if (mOldView != null && mOldView.getParent() != null) {
+                                wm.removeView(mOldView);
                             }
                         }
                     };
@@ -2417,6 +2421,23 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
             case MESSAGE_MODE_GALLERY:
                 mCurrentMessageMode = MESSAGE_MODE_GALLERY;
+                gifFrame.setVisibility(GONE);
+                mGiphySearchFieldLayout.setVisibility(GONE);
+                mSendButton.setVisibility(View.VISIBLE);
+
+                //wait until the keyboard's shown if it's not visible so we can get the height
+                if (!mActivityLayout.isKeyboardVisible()) {
+                    mWaitingForKeyboardToShow = true;
+                    mEtMessage.setVisibility(View.VISIBLE);
+                    requestFocus(mEtMessage);
+                    if (input != null) {
+                        input.showSoftInput(mEtMessage, 0);
+                    }
+                }
+                else {
+                    setGalleryMode();
+                }
+
 
 //                scanFiles(new IAsyncCallbackTuple<String, Uri>() {
 //                    @Override
@@ -2424,122 +2445,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 //       //                 if (path == null) return;
 
 
-                if (mGalleryModeHandler == null) {
-                    mGalleryModeHandler = new GalleryModeHandler(MainActivity.this, mUser, keyboardHeight, new IAsyncCallback<Uri>() {
-                        @Override
-                        public void handleResponse(final Uri uri) {
-                            if (uri != null) {
-                                final ChatController cc = ChatManager.getChatController(mUser);
-                                if (cc != null) {
+                //    if (mGalleryModeHandler == null) {
 
-                                    SharedPreferences sp = MainActivity.this.getSharedPreferences(MainActivity.this.mUser, Context.MODE_PRIVATE);
-                                    boolean confirmSend = sp.getBoolean("pref_confirm_image_send", true);
-
-                                    if (confirmSend) {
-                                        mDialog = UIUtils.createAndShowConfirmationDialog(MainActivity.this, getString(R.string.confirm_image_send, mCurrentFriend.getNameOrAlias()), getString(R.string.send),
-                                                getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
-                                                    public void handleResponse(Boolean result) {
-                                                        if (result) {
-                                                            ChatUtils.uploadPictureMessageAsync(
-                                                                    MainActivity.this,
-                                                                    cc,
-                                                                    uri,
-                                                                    mUser,
-                                                                    mCurrentFriend.getName(),
-                                                                    true);
-                                                        }
-                                                    }
-                                                });
-                                    }
-
-                                    else {
-                                        ChatUtils.uploadPictureMessageAsync(
-                                                MainActivity.this,
-                                                cc,
-                                                uri,
-                                                mUser,
-                                                mCurrentFriend.getName(),
-                                                true);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                            new IAsyncCallback<Object>() {
-
-                                @Override
-                                public void handleResponse(Object result) {
-                                    final ChatController cc = ChatManager.getChatController(mUser);
-                                    final String currentChat = cc.getCurrentChat();
-                                    if (currentChat == null) {
-                                        return;
-                                    }
-                                    if (currentChat == null || mCurrentFriend == null) {
-                                        return;
-                                    }
-
-                                    // can't send images to deleted folk
-                                    if (mCurrentFriend.isDeleted()) {
-                                        return;
-                                    }
-
-                                    new AsyncTask<Void, Void, Void>() {
-                                        protected Void doInBackground(Void... params) {
-                                            if (mCurrentFriend == null) {
-                                                return null;
-                                            }
-                                            Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
-                                            intent.putExtra("to", currentChat);
-                                            intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
-                                            intent.putExtra("from", mUser);
-                                            intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
-                                            // set start intent to avoid restarting every rotation
-                                            intent.putExtra("start", true);
-                                            intent.putExtra("friendImage", false);
-                                            startActivity(intent);
-                                            return null;
-                                        }
-                                    }.execute();
-                                }
-                            }
-
-                    );
-                }
-
-                mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
-                mMessageModeView = mGalleryView;
-
-
-                try {
-                    wm.addView(mMessageModeView, mWindowLayoutParams);
-                    Runnable runnable3 = new Runnable() {
-                        @Override
-                        public void run() {
-                            if (oldView != null && oldView.getParent() != null && oldView != mMessageModeView) {
-                                wm.removeView(oldView);
-                            }
-                        }
-                    };
-                    mHandler.postDelayed(runnable3, 500);
-                }
-                catch (Exception e) {
-                    SurespotLog.e(TAG, e, "error adding emoji view");
-                    return;
-                }
-
-                mGalleryModeHandler.refreshContextAndViews(this, mGalleryView);
-
-                mEtMessage.setVisibility(View.VISIBLE);
-                requestFocus(mEtMessage);
-                if (input != null) {
-                    input.showSoftInput(mEtMessage, 0);
-                }
-
-                gifFrame.setVisibility(GONE);
-                mGiphySearchFieldLayout.setVisibility(GONE);
-                mSendButton.setVisibility(View.VISIBLE);
-
-                updateMessageBar();
 //                    }
 //                });
                 break;
@@ -2563,7 +2470,128 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
         }
 
-        SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
+     //  SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
+    }
+    
+    private void switchViews() {
+        int keyboardHeight = mActivityLayout.getKeyboardHeight();
+        SurespotLog.d(TAG, "switchViews, mode: %s, keyboardHeight: %d", mCurrentMessageMode, keyboardHeight);
+        mWindowLayoutParams = new WindowManager.LayoutParams();
+        mWindowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+        mWindowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+        mWindowLayoutParams.token = this.getWindow().getDecorView().getWindowToken();
+        mWindowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+        if (mWindowLayoutParams != null) {
+            mWindowLayoutParams.height = keyboardHeight;
+            mWindowLayoutParams.width = UIUtils.getDisplaySize(this).x;
+        }
+        final WindowManager wm = (WindowManager) this.getSystemService(Activity.WINDOW_SERVICE);
+        //mOldView = mMessageModeView;
+        try {
+            wm.addView(mMessageModeView, mWindowLayoutParams);
+            Runnable runnable3 = new Runnable() {
+                @Override
+                public void run() {
+                    if (mOldView != null && mOldView.getParent() != null && mOldView != mMessageModeView) {
+                        wm.removeView(mOldView);
+                    }
+                }
+            };
+            mHandler.post(runnable3);
+        }
+        catch (Exception e) {
+            SurespotLog.e(TAG, e, "error adding view");
+            return;
+        }
+
+    }
+
+    private void setGalleryMode() {
+        int keyboardHeight = mActivityLayout.getKeyboardHeight();
+        mGalleryModeHandler = new GalleryModeHandler(MainActivity.this, mUser, keyboardHeight, new IAsyncCallback<Uri>() {
+            @Override
+            public void handleResponse(final Uri uri) {
+                if (uri != null) {
+                    final ChatController cc = ChatManager.getChatController(mUser);
+                    if (cc != null) {
+
+                        SharedPreferences sp = MainActivity.this.getSharedPreferences(MainActivity.this.mUser, Context.MODE_PRIVATE);
+                        boolean confirmSend = sp.getBoolean("pref_confirm_image_send", true);
+
+                        if (confirmSend) {
+                            mDialog = UIUtils.createAndShowConfirmationDialog(MainActivity.this, getString(R.string.confirm_image_send, mCurrentFriend.getNameOrAlias()), getString(R.string.send),
+                                    getString(R.string.ok), getString(R.string.cancel), new IAsyncCallback<Boolean>() {
+                                        public void handleResponse(Boolean result) {
+                                            if (result) {
+                                                ChatUtils.uploadPictureMessageAsync(
+                                                        MainActivity.this,
+                                                        cc,
+                                                        uri,
+                                                        mUser,
+                                                        mCurrentFriend.getName(),
+                                                        true);
+                                            }
+                                        }
+                                    });
+                        }
+
+                        else {
+                            ChatUtils.uploadPictureMessageAsync(
+                                    MainActivity.this,
+                                    cc,
+                                    uri,
+                                    mUser,
+                                    mCurrentFriend.getName(),
+                                    true);
+                        }
+                    }
+                }
+            }
+        },
+            new IAsyncCallback<Object>() {
+
+                @Override
+                public void handleResponse(Object result) {
+                    final ChatController cc = ChatManager.getChatController(mUser);
+                    final String currentChat = cc.getCurrentChat();
+                    if (currentChat == null) {
+                        return;
+                    }
+                    if (currentChat == null || mCurrentFriend == null) {
+                        return;
+                    }
+
+                    // can't send images to deleted folk
+                    if (mCurrentFriend.isDeleted()) {
+                        return;
+                    }
+
+                    new AsyncTask<Void, Void, Void>() {
+                        protected Void doInBackground(Void... params) {
+                            if (mCurrentFriend == null) {
+                                return null;
+                            }
+                            Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
+                            intent.putExtra("to", currentChat);
+                            intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
+                            intent.putExtra("from", mUser);
+                            intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
+                            // set start intent to avoid restarting every rotation
+                            intent.putExtra("start", true);
+                            intent.putExtra("friendImage", false);
+                            startActivity(intent);
+                            return null;
+                        }
+                    }.execute();
+                }
+            }
+        );
+
+        mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
+        mMessageModeView = mGalleryView;
+        switchViews();
+        mGalleryModeHandler.refreshContextAndViews(this, mGalleryView);
+        updateMessageBar();
     }
 
     private void scanFiles(final IAsyncCallbackTuple<String, Uri> callback) {

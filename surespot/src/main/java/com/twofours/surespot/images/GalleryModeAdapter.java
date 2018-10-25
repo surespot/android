@@ -40,7 +40,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
         mCallback = callback;
         //mCursor = getCursor();
         mHeight = height;
-        SurespotLog.d(TAG, "height: %d", height);
+        SurespotLog.v(TAG, "height: %d", height);
 
     }
 
@@ -66,7 +66,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
         int height = cursor.getInt(HEIGHT_COLUMN);
         int width = cursor.getInt(WIDTH_COLUMN);
 
-        SurespotLog.d(TAG, "onBindViewHolder id: %d, ratio: %f, width %d, height: %d, orientation: %d", id, (double) width / height, width, height, orientation);
+        SurespotLog.v(TAG, "onBindViewHolder id: %d, ratio: %f, width %d, height: %d, orientation: %d", id, (double) width / height, width, height, orientation);
 
         //rotate dimensions for scaling
         if (orientation == 90 || orientation == 270) {
@@ -74,7 +74,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
             width = height;
             height = oldWidth;
 
-            SurespotLog.d(TAG, "onBindViewHolder id: %d, rotated, new ratio: %f, new width %d, new height: %d, orientation: %d", id, (double) width / height, width, height, orientation);
+            SurespotLog.v(TAG, "onBindViewHolder id: %d, rotated, new ratio: %f, new width %d, new height: %d, orientation: %d", id, (double) width / height, width, height, orientation);
         }
 
         //determine image height knowing that there's 2 rows with a gap
@@ -100,7 +100,7 @@ public class GalleryModeAdapter extends CursorRecyclerViewAdapter<GalleryModeAda
 
         mGifSearchDownloader.download(holder.imageView, gd);
 
-        SurespotLog.d(TAG, "onBindViewHolder scaled id: %d, ratio: %f, scale: %f, width: %d, height: %d", id, (double) width / height, scale, width, height);
+        SurespotLog.v(TAG, "onBindViewHolder scaled id: %d, ratio: %f, scale: %f, width: %d, height: %d", id, (double) width / height, scale, width, height);
         ViewGroup.LayoutParams params = holder.imageView.getLayoutParams();
         if (params == null) {
             params = new ViewGroup.LayoutParams(width, height);
