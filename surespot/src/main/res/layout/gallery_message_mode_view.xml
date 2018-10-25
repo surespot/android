@@ -43,6 +43,5 @@
         android:layout_marginRight="20dp"
         android:background="@drawable/filled_black_circle_grey_border"
         android:src="@drawable/elipsis"
-        android:scaleType="centerInside"
-        app:tint="@drawable/send_button"/>
+        android:scaleType="centerInside"/>
 </FrameLayout>

@@ -2,5 +2,5 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:state_pressed="true" android:color="@color/selectedMask"/>
-    <item android:color="@android:color/white"/>
+    <item android:color="@color/unselectedMaskLight"/>
 </selector>

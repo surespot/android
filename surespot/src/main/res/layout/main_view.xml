@@ -101,7 +101,7 @@
             />
 
 
-        <ImageView
+        <com.twofours.surespot.ui.TintableImageView
             android:id="@+id/bCamera"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -208,8 +208,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ic_menu_invite"
-            app:tint="@drawable/send_button">
+            android:src="@drawable/ic_menu_invite">
         </com.twofours.surespot.ui.TintableImageView>
 
         <com.twofours.surespot.ui.TintableImageView
@@ -219,8 +218,7 @@
             android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:src="@drawable/mic"
-            app:tint="@drawable/send_button">
+            android:src="@drawable/mic">
         </com.twofours.surespot.ui.TintableImageView>
 
         <com.twofours.surespot.ui.TintableImageView
@@ -230,8 +228,7 @@
             android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:src="@drawable/home"
-            app:tint="@drawable/send_button">
+            android:src="@drawable/home">
         </com.twofours.surespot.ui.TintableImageView>
 
         <com.twofours.surespot.ui.TintableImageView
@@ -241,8 +238,7 @@
             android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:src="@drawable/send"
-            app:tint="@drawable/send_button">
+            android:src="@drawable/send">
         </com.twofours.surespot.ui.TintableImageView>
     </FrameLayout>
 
