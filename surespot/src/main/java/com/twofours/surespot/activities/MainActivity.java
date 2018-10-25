@@ -185,6 +185,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private View mGalleryView;
     private View mButtons;
     private boolean isCollapsed = true;
+    private ImageView mPoweredByGiphyView;
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -658,6 +659,26 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         mEtGifSearch.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_SEARCH_LENGTH)});
         mGiphySearchFieldLayout = mainView.findViewById(R.id.giphySearchFieldLayout);
+
+        mPoweredByGiphyView = mainView.findViewById(R.id.poweredByGiphy);
+        mPoweredByGiphyView.setImageResource(UIUtils.isDarkTheme(this) ? R.drawable.powered_by_giphy_dark : R.drawable.powered_by_giphy_light);
+        mPoweredByGiphyView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        String searchText = mEtGifSearch.getText().toString();
+                        if (!TextUtils.isEmpty(searchText)) {
+                            mGifHandler.searchGifs(searchText);
+                        }
+                        mEtGifSearch.setText("");
+                    }
+                };
+
+                mHandler.post(runnable);
+            }
+        });
     }
 
     private void switchUser(String identityName) {

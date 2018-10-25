@@ -1127,6 +1127,7 @@ public class NetworkController {
                 .addPathSegment("search")
                 .addQueryParameter("q",query)
                 .addQueryParameter("api_key", SurespotConfiguration.getGiphyApiKey())
+                .addQueryParameter("rating", "r")
                 .build();
 
         Request request = new Request.Builder()
