@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="pref_giphy_language_entries">
+        <item>English</item>
+        <item>German</item>
+        <item>Spanish</item>
+        <item>Italian</item>
+        <item>French</item>
+        <item>Arabic</item>
+        <item>Bengali</item>
+        <item>Chinese Simplified</item>
+        <item>Chinese Traditional</item>
+        <item>Czech</item>
+        <item>Danish</item>
+        <item>Dutch</item>
+        <item>Farsi</item>
+        <item>Filipino</item>
+        <item>Finnish</item>
+        <item>Hebrew</item>
+        <item>Hindi</item>
+        <item>Hungarian</item>
+        <item>Indonesian</item>
+        <item>Japanese</item>
+        <item>Korean</item>
+        <item>Malay</item>
+        <item>Norwegian</item>
+        <item>Polish</item>
+        <item>Portuguese</item>
+        <item>Romanian</item>
+        <item>Russian</item>
+        <item>Swedish</item>
+        <item>Thai</item>
+        <item>Turkish</item>
+        <item>Ukrainian</item>
+        <item>Vietnamese</item>
+    </array>
+    <array name="pref_giphy_language_values">
+        <item>en</item>
+        <item>de</item>
+        <item>es</item>
+        <item>it</item>
+        <item>fr</item>
+        <item>ar</item>
+        <item>bn</item>
+        <item>zh-CN</item>
+        <item>zh-TW</item>
+        <item>cs</item>
+        <item>da</item>
+        <item>nl</item>
+        <item>fa</item>
+        <item>tl</item>
+        <item>fi</item>
+        <item>iw</item>
+        <item>hi</item>
+        <item>hu</item>
+        <item>id</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>ms</item>
+        <item>no</item>
+        <item>pl</item>
+        <item>pt</item>
+        <item>ro</item>
+        <item>ru</item>
+        <item>sv</item>
+        <item>th</item>
+        <item>tr</item>
+        <item>uk</item>
+        <item>vi</item>
+    </array>
+</resources>

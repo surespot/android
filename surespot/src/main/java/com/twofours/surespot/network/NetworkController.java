@@ -1117,7 +1117,7 @@ public class NetworkController {
         return mHostnameVerifier;
     }
 
-    public void searchGiphy(String query, Callback responseHandler) {
+    public void searchGiphy(String query, String language, Callback responseHandler) {
 
         HttpUrl url = new HttpUrl.Builder()
                 .scheme("https")
@@ -1128,6 +1128,7 @@ public class NetworkController {
                 .addQueryParameter("q",query)
                 .addQueryParameter("api_key", SurespotConfiguration.getGiphyApiKey())
                 .addQueryParameter("rating", "r")
+                .addQueryParameter("lang", language)
                 .build();
 
         Request request = new Request.Builder()

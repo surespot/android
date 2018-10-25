@@ -109,14 +109,14 @@ public class GifSearchHandler {
 
 
     public void searchGifs(final String terms) {
-        SurespotLog.d(TAG, "searchGifs terms: %s", terms);
-
-     //   mTvLastSearch.setText(terms);
         mRecyclerView.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
         mEmptyView.setVisibility(View.GONE);
 
-        NetworkManager.getNetworkController(mContext).searchGiphy(terms, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
+        //get search language
+        String lang = Utils.getUserSharedPrefsString(mContext, mUsername, "pref_giphy_search_language");
+        SurespotLog.d(TAG, "searchGifs terms: %s, lang: %s", terms, lang);
+        NetworkManager.getNetworkController(mContext).searchGiphy(terms, lang, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 clearGifs();
