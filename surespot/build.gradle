@@ -38,7 +38,7 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('/Users/adam/dev/surespot/keystore/custom-debug.keystore')
+            storeFile file('/home/adam/dev/surespot/keystore/custom-debug.keystore')
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
@@ -68,8 +68,8 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
     implementation 'com.jakewharton:disklrucache:2.0.2'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'com.google.android.gms:play-services-auth:11.0.2'
     implementation 'com.google.android.gms:play-services-gcm:11.0.2'
     implementation 'com.google.android.gms:play-services-analytics:11.0.2'
