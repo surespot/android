@@ -55,13 +55,15 @@ public class FriendMenuFragment extends DialogFragment {
         mIdItems = new ArrayList<Integer>(6);
 
         if (mFriend.isFriend()) {
-            if (mFriend.isMuted()) {
-                mMenuItems.add(getString(R.string.unmute));
-                mIdItems.add(R.string.unmute);
-            }
-            else {
-                mMenuItems.add(getString(R.string.mute));
-                mIdItems.add(R.string.mute);
+            if (!mFriend.isDeleted()) {
+                if (mFriend.isMuted()) {
+                    mMenuItems.add(getString(R.string.unmute));
+                    mIdItems.add(R.string.unmute);
+                }
+                else {
+                    mMenuItems.add(getString(R.string.mute));
+                    mIdItems.add(R.string.mute);
+                }
             }
 
             if (mFriend.isChatActive()) {
