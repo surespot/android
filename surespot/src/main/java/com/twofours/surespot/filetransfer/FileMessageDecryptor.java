@@ -82,7 +82,7 @@ public class FileMessageDecryptor {
         public void run() {
             final CharSequence plainText = EncryptionController.symmetricDecrypt(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
                     mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
-            SurespotLog.d(TAG, "decryption Task, decrypted plainText: %s", plainText);
+            //SurespotLog.d(TAG, "decryption Task, decrypted plainText: %s", plainText);
             CharSequence plainData = null;
             if (plainText != null) {
                 if (mMessage.getMimeType().equals(SurespotConstants.MimeTypes.FILE)) {

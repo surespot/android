@@ -303,8 +303,7 @@ public class ChatController {
                         final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
                                 message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
-                        SurespotLog.d(TAG, "handle message, decrypted plain text: %s", plainText);
-
+                        //SurespotLog.d(TAG, "handle message, decrypted plain text: %s", plainText);
                         if (plainText != null) {
                             // set plaintext in message so we don't have to decrypt again
                             switch (message.getMimeType()) {
