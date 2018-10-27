@@ -161,8 +161,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private AlertDialog mDialog;
     private String mUser;
     private boolean mEnterToSend;
-    private boolean mSuppressTextWatcher;
-    private boolean mMessagePasted;
 
     // control booleans
     private boolean mLaunched;
@@ -410,9 +408,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                     Friend friend = mCurrentFriend;
                     if (friend != null) {
-
-                        if (mEtMessage.getText().toString().length() > 0 && !cc.isFriendDeleted(friend.getName())) {
-                            sendMessage(friend.getName());
+                        String message = mEtMessage.getText().toString();
+                        if (message.length() > 0 && !cc.isFriendDeleted(friend.getName())) {
+                            sendMessage(friend.getName(), message);
                         }
                         else {
                             // go to home
@@ -441,8 +439,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                             cc.closeTab();
                         }
                         else {
-                            if (mEtMessage.getText().toString().length() > 0) {
-                                sendMessage(friend.getName());
+                            String message = mEtMessage.getText().toString();
+                            if (message.length() > 0) {
+                                sendMessage(friend.getName(), message);
                             }
                             else {
                                 SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
@@ -569,42 +568,31 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
+                SurespotLog.d(TAG, "on EditorAction (text)");
 
                 Friend friend = mCurrentFriend;
                 if (friend != null) {
                     if (actionId == EditorInfo.IME_ACTION_SEND) {
-                        sendMessage(friend.getName());
+                        SurespotLog.d(TAG, "on EditorAction ACTION_SEND (text)");
+                        sendMessage(friend.getName(), v.getText().toString());
                         handled = true;
                     }
-
-                    if (mEnterToSend == true && actionId == EditorInfo.IME_NULL && event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
-                        sendMessage(friend.getName());
-                        handled = true;
+                    else {
+                        //if we pasted the message it might have carriage returns which cause it to send, so suppress
+                        if (mEnterToSend && actionId == EditorInfo.IME_NULL && event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
+                            SurespotLog.d(TAG, "on EditorAction ACTION_DOWN (text)");
+                            sendMessage(friend.getName(), v.getText().toString());
+                            handled = true;
+                        }
                     }
                 }
                 return handled;
             }
         });
 
-        mEtMessage.setOnCutCopyPasteListener(new EmojiconEditText.OnCutCopyPasteListener() {
-            @Override
-            public void onCut() {
-
-            }
-
-            @Override
-            public void onCopy() {
-
-            }
-
-            @Override
-            public void onPaste() {
-                mMessagePasted = true;
-            }
-        });
-
         TextWatcher tw = new ChatTextWatcher();
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
+        SurespotLog.d(TAG,"adding text watcher");
         mEtMessage.addTextChangedListener(tw);
         mEtMessage.setOnTouchListener(new OnTouchListener() {
             @Override
@@ -1660,42 +1648,45 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
 
     class ChatTextWatcher implements TextWatcher {
+        private int mDelta;
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
         }
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             setButtonText();
+            mDelta = count - before;
+            SurespotLog.v(TAG, "onTextChanged, start: %d, before: %d, count: %d, delta: %d", start, before, count, mDelta);
         }
 
         @Override
         public void afterTextChanged(Editable s) {
-            SurespotLog.d(TAG, "After text changed: %s, message pasted: %b, suppress text watcher: %b", s, mMessagePasted, mSuppressTextWatcher);
-            //if they pasted the text don't do anything
-            if ( mMessagePasted) {
-                mMessagePasted = false;
+            //if they pasted or shared the text the delta will be bigger than 1
+            // don't do anything as they may want to edit first
+            if (mDelta > 1) {
                 return;
             }
 
-            if (!MainActivity.this.mSuppressTextWatcher && MainActivity.this.mEnterToSend) {
-                String message = s.toString();
+            String message = s.toString();
+            if (message.length() > 0 && MainActivity.this.mEnterToSend && message.contains("\n")) {
 
-                //strip last carriage return
+                //strip last carriage return before sending
                 if (message.endsWith("\n")) {
-                    mSuppressTextWatcher = true;
+                    message = message.substring(0, message.length() - 1);
+                }
 
-                    int idx = message.lastIndexOf('\n');
-                    s.delete(idx, idx + 1);
-
-                    mSuppressTextWatcher = false;
+                //if the carriage return was the only character, there will be no characters left so reset the edit text
+                if (message.length() == 0) {
+                    s.clear();
+                    return;
                 }
 
                 ChatController cc = ChatManager.getChatController(mUser);
-
-                if (cc != null && mEtMessage.getText().toString().length() > 0 && !cc.isFriendDeleted(mCurrentFriend.getName())) {
-                     sendMessage(mCurrentFriend.getName());
+                if (cc != null && !cc.isFriendDeleted(mCurrentFriend.getName())) {
+                    sendMessage(mCurrentFriend.getName(), message);
                 }
             }
         }
@@ -1718,9 +1709,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             if (SurespotConstants.MimeTypes.TEXT.equals(type)) {
                 String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
                 SurespotLog.d(TAG, "received action send, data: %s", sharedText);
-            //    mSuppressTextWatcher = true;
                 mEtMessage.append(sharedText);
-           //     mSuppressTextWatcher = false;
             }
             else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
@@ -1777,8 +1766,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
 
-    private void sendMessage(String username) {
-        final String message = mEtMessage.getText().toString();
+    private void sendMessage(String username, String message) {
         if (!message.isEmpty()) {
             ChatController cc = ChatManager.getChatController(mUser);
             if (cc != null) {
@@ -2385,7 +2373,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 else {
                     switchViews();
                 }
-                
+
                 break;
             case MESSAGE_MODE_GIF:
                 mCurrentMessageMode = MESSAGE_MODE_GIF;
@@ -2509,9 +2497,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 break;
         }
 
-     //  SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
+        //  SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
     }
-    
+
     private void switchViews() {
         int keyboardHeight = mActivityLayout.getKeyboardHeight();
         SurespotLog.d(TAG, "switchViews, mode: %s, keyboardHeight: %d", mCurrentMessageMode, keyboardHeight);
@@ -2587,43 +2575,43 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
             }
         },
-            new IAsyncCallback<Object>() {
+                new IAsyncCallback<Object>() {
 
-                @Override
-                public void handleResponse(Object result) {
-                    final ChatController cc = ChatManager.getChatController(mUser);
-                    final String currentChat = cc.getCurrentChat();
-                    if (currentChat == null) {
-                        return;
-                    }
-                    if (currentChat == null || mCurrentFriend == null) {
-                        return;
-                    }
+                    @Override
+                    public void handleResponse(Object result) {
+                        final ChatController cc = ChatManager.getChatController(mUser);
+                        final String currentChat = cc.getCurrentChat();
+                        if (currentChat == null) {
+                            return;
+                        }
+                        if (currentChat == null || mCurrentFriend == null) {
+                            return;
+                        }
 
-                    // can't send images to deleted folk
-                    if (mCurrentFriend.isDeleted()) {
-                        return;
-                    }
+                        // can't send images to deleted folk
+                        if (mCurrentFriend.isDeleted()) {
+                            return;
+                        }
 
-                    new AsyncTask<Void, Void, Void>() {
-                        protected Void doInBackground(Void... params) {
-                            if (mCurrentFriend == null) {
+                        new AsyncTask<Void, Void, Void>() {
+                            protected Void doInBackground(Void... params) {
+                                if (mCurrentFriend == null) {
+                                    return null;
+                                }
+                                Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
+                                intent.putExtra("to", currentChat);
+                                intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
+                                intent.putExtra("from", mUser);
+                                intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
+                                // set start intent to avoid restarting every rotation
+                                intent.putExtra("start", true);
+                                intent.putExtra("friendImage", false);
+                                startActivity(intent);
                                 return null;
                             }
-                            Intent intent = new Intent(MainActivity.this, ImageSelectActivity.class);
-                            intent.putExtra("to", currentChat);
-                            intent.putExtra("toAlias", mCurrentFriend.getNameOrAlias());
-                            intent.putExtra("from", mUser);
-                            intent.putExtra("size", ImageSelectActivity.IMAGE_SIZE_LARGE);
-                            // set start intent to avoid restarting every rotation
-                            intent.putExtra("start", true);
-                            intent.putExtra("friendImage", false);
-                            startActivity(intent);
-                            return null;
-                        }
-                    }.execute();
+                        }.execute();
+                    }
                 }
-            }
         );
 
         mGalleryView = getLayoutInflater().inflate(R.layout.gallery_message_mode_view, null, false);
