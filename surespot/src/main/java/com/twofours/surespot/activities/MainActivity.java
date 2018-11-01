@@ -2019,6 +2019,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (isCollapsed) {
             isCollapsed = false;
+            // Older versions of android (pre API 21) cancel animations for views with a height of 0.
+            mButtons.getLayoutParams().width = 1;
+
             ViewGroup.LayoutParams lp = mButtons.getLayoutParams();
             int widthSpec = View.MeasureSpec.makeMeasureSpec(lp.width, View.MeasureSpec.UNSPECIFIED);
             mButtons.measure(widthSpec, LayoutParams.MATCH_PARENT);
@@ -2026,8 +2029,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             final int targetWidth = mButtons.getMeasuredWidth();
 
             SurespotLog.d(TAG, "expand, targetWidth: %d, currentWidth: %d", targetWidth, mButtons.getWidth());
-            // Older versions of android (pre API 21) cancel animations for views with a height of 0.
-            //  v.getLayoutParams().width = 1;
 
             Animation a = new Animation() {
                 @Override
@@ -2054,6 +2055,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     public void collapse() {
         if (!isCollapsed) {
             isCollapsed = true;
+
+            mButtons.getLayoutParams().width = 1;
 
             ViewGroup.LayoutParams lp = mButtons.getLayoutParams();
 
