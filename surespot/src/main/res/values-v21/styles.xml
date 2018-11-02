@@ -1,0 +1,9 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="BlackTheme" parent="@style/BlackThemeBase">
+        <item name="android:popupTheme">@style/ToolbarPopupTheme</item>
+    </style>
+
+    <style name="ToolbarPopupTheme" parent="@android:style/Theme.Holo">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+</resources>
