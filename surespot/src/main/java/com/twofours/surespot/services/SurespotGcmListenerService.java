@@ -17,10 +17,14 @@
 package com.twofours.surespot.services;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -55,14 +59,24 @@ public class SurespotGcmListenerService extends GcmListenerService {
     private PowerManager mPm;
     NotificationCompat.Builder mBuilder;
     NotificationManagerCompat mNotificationManager;
+    private static final String CHANNEL_ID = "surespot_channel";
 
     @Override
     public void onCreate() {
         super.onCreate();
         mPm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
-        mBuilder = new NotificationCompat.Builder(this);
+        mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID);
         mNotificationManager = NotificationManagerCompat.from(this);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
+            channel.setShowBadge(true);
+            channel.enableLights(true);
+            channel.enableVibration(true);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
     }
 
 
@@ -96,8 +110,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             if (mPm != null) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
                     isScreenOn = mPm.isInteractive();
-                }
-                else {
+                } else {
                     isScreenOn = mPm.isScreenOn();
                 }
             }
@@ -176,8 +189,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             SurespotLog.d(TAG, "added gcm message directly to disk");
                             added = true;
                             SurespotApplication.getStateController().saveMessages(to, spot, messages);
-                        }
-                        else {
+                        } else {
                             SurespotLog.d(TAG, "did not add gcm message directly to disk as it's already there");
                             // AEP what was happening here is it wasn't adding the message because
                             // it's already been received on the websocket and saved to disk before the push message arrives
@@ -281,6 +293,11 @@ public class SurespotGcmListenerService extends GcmListenerService {
     }
     // [END receive_message]
 
+    private int getNotificationIcon() {
+        boolean useTransparentIcon = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP);
+        return useTransparentIcon ? R.drawable.surespot_logo_transparent : R.drawable.surespot_logo;
+    }
+
     private void generateNotification(Context context, String type, String from, String to, String title, String message, String tag, int id) {
         SurespotLog.d(TAG, "generateNotification");
         // get shared prefs
@@ -289,11 +306,18 @@ public class SurespotGcmListenerService extends GcmListenerService {
             return;
         }
 
-        int icon = R.drawable.surespot_logo;
+        int icon = getNotificationIcon();
+       // Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.drawable.surespot_logo);
 
         // need to use same builder for only alert once to work:
         // http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
-        mBuilder.setSmallIcon(icon).setContentTitle(title).setAutoCancel(true).setOnlyAlertOnce(false).setContentText(message);
+        mBuilder.setSmallIcon(icon)
+                .setColor(getResources().getColor(R.color.surespotBlue))
+           //     .setLargeIcon(largeIcon)
+                .setContentTitle(title)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(false)
+                .setContentText(message);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
 
         Intent mainIntent = null;
@@ -319,8 +343,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             SurespotLog.v(TAG, "showing notification led");
             mBuilder.setLights(color, 500, 5000);
             defaults |= Notification.FLAG_SHOW_LIGHTS; // shouldn't need this - setLights does it.  Just to make sure though...
-        }
-        else {
+        } else {
             mBuilder.setLights(color, 0, 0);
         }
 
@@ -335,28 +358,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
         }
 
         mBuilder.setWhen(new Date().getTime());
+
         mBuilder.setDefaults(defaults);
         mNotificationManager.notify(tag, id, mBuilder.build());
-    }
-
-    private void generateSystemNotification(Context context, String title, String message, String tag, int id) {
-
-        // need to use same builder for only alert once to work:
-        // http://stackoverflow.com/questions/6406730/updating-an-ongoing-notification-quietly
-        mBuilder.setAutoCancel(true).setOnlyAlertOnce(true);
-
-        int defaults = 0;
-
-        mBuilder.setLights(0xff0000FF, 500, 5000);
-        defaults |= Notification.DEFAULT_SOUND;
-        defaults |= Notification.DEFAULT_VIBRATE;
-
-        mBuilder.setDefaults(defaults);
-
-        PendingIntent contentIntent = PendingIntent.getActivity(context, (int) new Date().getTime(), new Intent(), PendingIntent.FLAG_CANCEL_CURRENT);
-
-        Notification notification = UIUtils.generateNotification(mBuilder, contentIntent, getPackageName(), title, message);
-
-        mNotificationManager.notify(tag, id, notification);
     }
 }
