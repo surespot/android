@@ -1,14 +1,14 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="10dp"
-        tools:context=".BillingActivity" >
+        tools:context=".BillingActivity">
 
         <TextView
             android:id="@+id/tvPwyl"
@@ -20,27 +20,27 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
             android:layout_marginTop="15dp"
+            android:layout_marginBottom="5dp"
             android:text="@string/via_google_play_in_app_purchase"
             android:textSize="12sp"
-            android:textStyle="bold" >
-        </TextView>
+            android:textStyle="bold"></TextView>
 
         <LinearLayout
             android:id="@+id/inAppButtons1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -60,9 +60,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -82,9 +83,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -104,9 +106,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -127,15 +130,16 @@
             android:id="@+id/inAppButtons2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -155,9 +159,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -177,9 +182,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="3"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <Button
+                    style="?android:attr/borderlessButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="onPurchase"
@@ -199,21 +205,21 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
             android:layout_marginTop="15dp"
+            android:layout_marginBottom="5dp"
             android:text="@string/via_paypal"
             android:textSize="12sp"
-            android:textStyle="bold" >
-        </TextView>
+            android:textStyle="bold"></TextView>
 
         <Button
-            android:textColor="@color/surespotBlue"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:onClick="onPaypalBrowser"
-            android:text="@string/open_link_in_browser" />
+            android:text="@string/open_link_in_browser"
+            android:textColor="@color/surespotBlue" />
 
         <View
             android:layout_width="match_parent"
@@ -223,13 +229,14 @@
             android:background="#aaa" />
 
         <Button
-            android:textColor="@color/surespotBlue"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:onClick="onPaypalEmail"
-            android:text="@string/send_link_in_email" />
+            android:text="@string/send_link_in_email"
+            android:textColor="@color/surespotBlue" />
 
         <TextView
             android:layout_width="match_parent"
@@ -237,8 +244,7 @@
             android:layout_marginTop="10dp"
             android:text="@string/via_bitcoin"
             android:textSize="12sp"
-            android:textStyle="bold" >
-        </TextView>
+            android:textStyle="bold"></TextView>
 
         <TextView
             android:layout_width="match_parent"
@@ -246,17 +252,17 @@
             android:layout_margin="10sp"
             android:gravity="center"
             android:text="@string/donations__bitcoin"
-            android:textSize="14sp" >
-        </TextView>
+            android:textSize="14sp"></TextView>
 
         <Button
-            android:textColor="@color/surespotBlue"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:onClick="onBitcoinClipboard"
-            android:text="@string/copy_address_to_clipboard" />
+            android:text="@string/copy_address_to_clipboard"
+            android:textColor="@color/surespotBlue" />
 
         <View
             android:layout_width="match_parent"
@@ -266,13 +272,14 @@
             android:background="#aaa" />
 
         <Button
-            android:textColor="@color/surespotBlue"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:onClick="onBitcoinEmail"
-            android:text="@string/send_address_and_qr_code_in_email" />
+            android:text="@string/send_address_and_qr_code_in_email"
+            android:textColor="@color/surespotBlue" />
 
         <View
             android:layout_width="match_parent"
@@ -282,13 +289,14 @@
             android:background="#aaa" />
 
         <Button
-            android:textColor="@color/surespotBlue"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:onClick="onBitcoinWallet"
-            android:text="@string/open_bitcoin_wallet" />
+            android:text="@string/open_bitcoin_wallet"
+            android:textColor="@color/surespotBlue" />
 
     </LinearLayout>
 

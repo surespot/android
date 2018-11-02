@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="10dp"
-    tools:context=".DeleteIdentityActivity" >
+    tools:context=".DeleteIdentityActivity">
 
     <TextView
         android:layout_width="wrap_content"
@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
@@ -33,20 +33,20 @@
 
     <Button
         android:id="@+id/bDeleteIdentity"
+        style="?android:attr/borderlessButtonStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/delete_identity"
-        android:textColor="@color/surespotBlue"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:textSize="16dp" >
-    </Button>
+        android:text="@string/delete_identity"
+        android:textColor="@color/surespotBlue"
+        android:textSize="16dp"></Button>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"        
+        android:layout_marginRight="10dp"
         android:background="#aaa" />
 
 </LinearLayout>

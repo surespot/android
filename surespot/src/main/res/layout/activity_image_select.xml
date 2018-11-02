@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/cancel"
+            style="?android:attr/borderlessButtonStyle"
             android:textColor="@color/surespotBlue"></Button>
 
         <View
@@ -42,6 +43,7 @@
             android:layout_weight="1"
             android:enabled="false"
             android:text="@string/send"
+            style="?android:attr/borderlessButtonStyle"
             android:textColor="@color/surespotBlue"></Button>
     </LinearLayout>
 

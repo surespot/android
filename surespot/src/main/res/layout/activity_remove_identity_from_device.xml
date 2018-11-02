@@ -33,6 +33,7 @@
 
     <Button
         android:id="@+id/bRemoveIdentity"
+        style="?android:attr/borderlessButtonStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/remove_identity_from_device"

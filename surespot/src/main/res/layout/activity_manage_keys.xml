@@ -44,6 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        style="?android:attr/borderlessButtonStyle"
         android:text="@string/regenerate_keys"
         android:textColor="@color/surespotBlue" >
     </Button>
