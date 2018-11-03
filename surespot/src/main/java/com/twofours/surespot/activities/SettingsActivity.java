@@ -27,14 +27,14 @@ import android.widget.LinearLayout;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,6 +72,13 @@ public class SettingsActivity extends PreferenceActivity {
                     return true;
                 }
             });
+
+            //hide notification prefs for oreo
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                PreferenceScreen notifications = (PreferenceScreen) prefMgr.findPreference("pref_notifications");
+                PreferenceScreen options = (PreferenceScreen) prefMgr.findPreference("pref_options");
+                options.removePreference(notifications);
+            }
 
             mBgImagePref = prefMgr.findPreference("pref_background_image");
 

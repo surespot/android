@@ -38,13 +38,17 @@
             </intent>
         </Preference>
     </PreferenceScreen>
-    <PreferenceScreen android:title="@string/pref_title_options">
+    <PreferenceScreen
+        android:key="pref_options"
+        android:title="@string/pref_title_options">
         <Preference
             android:key="pref_background_image"
             android:title="@string/pref_title_background_image_select"/>
 
 
-        <PreferenceScreen android:title="@string/notifications_title">
+        <PreferenceScreen
+            android:key="pref_notifications"
+            android:title="@string/notifications_title">
 
 
             <CheckBoxPreference
