@@ -76,7 +76,7 @@ dependencies {
     implementation('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
     }
-    implementation 'ch.acra:acra:4.8.5'
+    implementation 'ch.acra:acra:4.11'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.12'
     implementation 'net.margaritov.preference.colorpicker.ColorPickerPreference:ColorPickerPreference:1.0.0'
     implementation 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
