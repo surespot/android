@@ -127,7 +127,7 @@ public class SurespotApplication extends Application {
 
         SurespotLog.v(TAG, "starting cache service");
         Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-        startService(cacheIntent);
+        ContextCompat.startForegroundService(this, cacheIntent);
 
         mBillingController = new BillingController(this);
         FileUtils.wipeImageCaptureDir(this);

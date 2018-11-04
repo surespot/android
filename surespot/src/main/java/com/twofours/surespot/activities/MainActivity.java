@@ -2275,7 +2275,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void bindCacheService() {
         SurespotLog.d(TAG, "binding cache service");
         Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-        startService(cacheIntent);
+        ContextCompat.startForegroundService(this, cacheIntent);
         bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
