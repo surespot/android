@@ -145,22 +145,6 @@ public class SettingsActivity extends PreferenceActivity {
                 }
             });
 
-
-            boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
-            final CheckBoxPreference stopCachePref = (CheckBoxPreference) prefMgr.findPreference("pref_stop_cache_logout_control");
-            stopCachePref.setChecked(stopCache);
-            SurespotLog.d(TAG, "read kill cache on logout: %b", stopCache);
-
-            stopCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    boolean newChecked = stopCachePref.isChecked();
-                    SurespotLog.d(TAG, "set kill cache on logout: %b", newChecked);
-                    Utils.putSharedPrefsBoolean(SettingsActivity.this, "pref_stop_cache_logout", newChecked);
-                    return true;
-                }
-            });
-
             boolean enableKeystore = Utils.getSharedPrefsBoolean(this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
             final CheckBoxPreference enableKeystorePref = (CheckBoxPreference) prefMgr.findPreference("pref_enable_keystore_control");
             enableKeystorePref.setChecked(enableKeystore);

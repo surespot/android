@@ -3,39 +3,33 @@
 
     <PreferenceScreen android:title="@string/pref_title_identity_management">
         <Preference android:title="@string/pref_title_change_password">
-            <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity">
-            </intent>
+            <intent android:action="com.twofours.surespot.identity.ChangePasswordActivity"></intent>
         </Preference>
         <Preference
             android:summary="@string/pref_summary_export_identity"
             android:title="@string/export_identity_label">
-            <intent android:action="com.twofours.surespot.backup.ExportIdentityActivity">
-            </intent>
+            <intent android:action="com.twofours.surespot.backup.ExportIdentityActivity"></intent>
         </Preference>
         <Preference
             android:key="pref_import_identity"
             android:summary="@string/pref_summary_import_identity"
             android:title="@string/import_identity_label">
-            <intent android:action="com.twofours.surespot.backup.ImportIdentityActivity">
-            </intent>
+            <intent android:action="com.twofours.surespot.backup.ImportIdentityActivity"></intent>
         </Preference>
         <Preference
             android:summary="@string/pref_summary_delete_identity"
             android:title="@string/pref_title_delete_identity">
-            <intent android:action="com.twofours.surespot.identity.DeleteIdentityActivity">
-            </intent>
+            <intent android:action="com.twofours.surespot.identity.DeleteIdentityActivity"></intent>
         </Preference>
         <Preference
             android:summary="@string/pref_summary_remove_identity_from_device"
             android:title="@string/pref_title_remove_identity_from_device">
-            <intent android:action="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity">
-            </intent>
+            <intent android:action="com.twofours.surespot.identity.RemoveIdentityFromDeviceActivity"></intent>
         </Preference>
         <Preference
             android:summary="@string/pref_summary_regen_keys"
             android:title="@string/key_management">
-            <intent android:action="com.twofours.surespot.activities.ManageKeysActivity">
-            </intent>
+            <intent android:action="com.twofours.surespot.activities.ManageKeysActivity"></intent>
         </Preference>
     </PreferenceScreen>
     <PreferenceScreen
@@ -43,7 +37,7 @@
         android:title="@string/pref_title_options">
         <Preference
             android:key="pref_background_image"
-            android:title="@string/pref_title_background_image_select"/>
+            android:title="@string/pref_title_background_image_select" />
 
 
         <PreferenceScreen
@@ -54,68 +48,67 @@
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:key="pref_notifications_enabled"
-                android:title="@string/notifications_enabled"/>
+                android:title="@string/notifications_enabled" />
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:dependency="pref_notifications_enabled"
                 android:key="pref_notifications_sound"
-                android:title="@string/notifications_sound"/>
+                android:title="@string/notifications_sound" />
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:dependency="pref_notifications_enabled"
                 android:key="pref_notifications_vibration"
-                android:title="@string/notifications_vibration"/>
+                android:title="@string/notifications_vibration" />
             <CheckBoxPreference
                 android:defaultValue="true"
                 android:dependency="pref_notifications_enabled"
                 android:key="pref_notifications_led"
-                android:title="@string/notifications_led"/>
+                android:title="@string/notifications_led" />
             <net.margaritov.preference.colorpicker.ColorPickerPreference
                 alphaSlider="false"
                 android:defaultValue="@color/surespotBlue"
                 android:key="pref_notification_color"
                 android:summary="@string/pref_summary_notification_color"
-                android:title="@string/pref_title_notification_color"
-                />
+                android:title="@string/pref_title_notification_color" />
         </PreferenceScreen>
 
 
         <ListPreference
-            android:key="pref_giphy_search_language"
             android:defaultValue="en"
-            android:title="@string/pref_giphy_search_language_title"
             android:entries="@array/pref_giphy_language_entries"
-            android:entryValues="@array/pref_giphy_language_values"/>
+            android:entryValues="@array/pref_giphy_language_values"
+            android:key="pref_giphy_search_language"
+            android:title="@string/pref_giphy_search_language_title" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_download_gifs"
             android:summary="@string/pref_summary_download_gifs"
-            android:title="@string/pref_title_download_gifs"/>
+            android:title="@string/pref_title_download_gifs" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_enter_to_send"
             android:summary="@string/pref_summary_enter_to_send"
-            android:title="@string/pref_title_enter_to_send"/>
+            android:title="@string/pref_title_enter_to_send" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_disable_voice"
             android:summary="@string/pref_disable_voice"
-            android:title="@string/pref_disable_voice_title"/>
+            android:title="@string/pref_disable_voice_title" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_message"
             android:summary="@string/pref_summary_delete_message"
-            android:title="@string/pref_title_delete_message"/>
+            android:title="@string/pref_title_delete_message" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_delete_all_messages"
             android:summary="@string/pref_summary_delete_all_messages"
-            android:title="@string/pref_title_delete_all_messages"/>
+            android:title="@string/pref_title_delete_all_messages" />
 
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_confirm_image_send"
-            android:title="@string/pref_title_confirm_image_send"/>
+            android:title="@string/pref_title_confirm_image_send" />
         <!--<CheckBoxPreference-->
         <!--android:defaultValue="false"-->
         <!--android:key="pref_debug_mode"-->
@@ -135,20 +128,13 @@
             android:defaultValue="false"
             android:key="pref_enable_keystore_control"
             android:summary="@string/pref_summary_enable_keystore"
-            android:title="@string/pref_title_enable_keystore"/>
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_stop_cache_logout_control"
-            android:summary="@string/pref_stop_cache_logout_summary"
-            android:title="@string/pref_stop_cache_logout_title"/>
+            android:title="@string/pref_title_enable_keystore" />
     </PreferenceScreen>
     <Preference
         android:key="pref_help"
-        android:title="@string/pref_title_help">
-    </Preference>
+        android:title="@string/pref_title_help"></Preference>
     <Preference android:title="@string/pref_title_about_surespot">
-        <intent android:action="com.twofours.surespot.activities.AboutActivity">
-        </intent>
+        <intent android:action="com.twofours.surespot.activities.AboutActivity"></intent>
     </Preference>
 
 </PreferenceScreen>
