@@ -26,13 +26,13 @@ import android.widget.SeekBar;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.SurespotApplication;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,8 +56,10 @@ public class VoiceMessageDownloader {
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
+    private Context mContext;
 
-    public VoiceMessageDownloader(String username, ChatAdapter chatAdapter) {
+    public VoiceMessageDownloader(Context context, String username, ChatAdapter chatAdapter) {
+        mContext = context;
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
@@ -208,7 +210,7 @@ public class VoiceMessageDownloader {
                                 return;
                             }
 
-                            EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
+                            EncryptionController.runDecryptTask(mContext, mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                     voiceStream, out);
 
                             soundbytes = Utils.inputStreamToBytes(inputStream);

@@ -294,7 +294,7 @@ public class ChatUtils {
 
                     final String ourVersion = IdentityController.getOurLatestVersion(activity, ourName);
 
-                    final String iv = EncryptionController.runEncryptTask(ourName, ourVersion, ourName, ourVersion, new BufferedInputStream(dataStream),
+                    final String iv = EncryptionController.runEncryptTask(activity, ourName, ourVersion, ourName, ourVersion, new BufferedInputStream(dataStream),
                             encryptionOutputStream);
 
                     NetworkManager.getNetworkController(activity, ourName).postFriendImageStream(friendName, ourVersion, iv, encryptionInputStream, new IAsyncCallback<String>() {

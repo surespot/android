@@ -16,6 +16,7 @@
 
 package com.twofours.surespot.images;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -30,10 +31,10 @@ import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.chat.ChatAdapter;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 
@@ -61,9 +62,11 @@ public class MessageImageDownloader {
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
+    private Context mContext;
 
 
-    public MessageImageDownloader(String username, ChatAdapter chatAdapter) {
+    public MessageImageDownloader(Context context, String username, ChatAdapter chatAdapter) {
+        mContext = context;
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
@@ -208,7 +211,7 @@ public class MessageImageDownloader {
                     try {
                         inputStream = new PipedInputStream(out);
 
-                        EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
+                        EncryptionController.runDecryptTask(mContext, mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(),
                                 new BufferedInputStream(encryptedImageStream), out);
 
                         if (mCancelled) {

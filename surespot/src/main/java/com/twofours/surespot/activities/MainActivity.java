@@ -3,11 +3,9 @@ package com.twofours.surespot.activities;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
@@ -95,7 +93,6 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
-import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.services.RegistrationIntentService;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.utils.ChatUtils;
@@ -130,7 +127,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallback<Object> m401Handler;
 
-    private boolean mCacheServiceBound;
     private Menu mMenuOverflow;
     private BroadcastReceiver mExternalStorageReceiver;
     private boolean mExternalStorageAvailable = false;
@@ -211,20 +207,17 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 intent.putExtra("signingUp", true);
                 startActivity(newIntent);
                 finish();
-            }
-            else {
+            } else {
                 SurespotLog.d(TAG, "I was deleted and there are different users so starting login activity.");
                 Intent newIntent = new Intent(MainActivity.this, LoginActivity.class);
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(newIntent);
                 finish();
             }
-        }
-        else {
+        } else {
             if (!needsSignup()) {
                 processLaunch();
-            }
-            else {
+            } else {
                 mSigningUp = true;
             }
         }
@@ -271,20 +264,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (!needsSignup()) {
             processLaunch();
-        }
-        else {
+        } else {
             if (!mSigningUp) {
                 mSigningUp = intent.getBooleanExtra("signingUp", false);
 
                 if (!mSigningUp) {
-                    if (mCacheServiceBound) {
-                        processLaunch();
-                    }
-                    else {
-                        if (!mCacheServiceBound) {
-                            bindCacheService();
-                        }
-                    }
+                    processLaunch();
                 }
             }
         }
@@ -295,25 +280,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.d(TAG, "processLaunch, launchUser: %s, mUser: %s", user, mUser);
         if (user == null) {
             launchLogin();
-        }
-        else {
+        } else {
             mUser = user;
 
-            if (!mCacheServiceBound) {
-                bindCacheService();
-            }
 
-            if (mCacheServiceBound) {
-                SurespotLog.d(TAG, "cache service already bound");
-                if (!mUnlocking) {
-                    SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
-                    postServiceProcess();
-                }
-                else {
-                    SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
-                }
-            }
-
+            SurespotLog.d(TAG, "processLaunch calling postServiceProcess");
+            postServiceProcess();
         }
     }
 
@@ -371,8 +343,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 if (segments.size() > 1) {
                     if (dataUri) {
                         intent.setData(null);
-                    }
-                    else {
+                    } else {
                         intent.removeExtra("autoinviteurl");
                     }
 
@@ -381,8 +352,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         aid.setUsername(segments.get(1));
                         aid.setSource(segments.get(2));
                         return aid;
-                    }
-                    catch (IndexOutOfBoundsException e) {
+                    } catch (IndexOutOfBoundsException e) {
                         SurespotLog.i(TAG, e, "getAutoInviteData");
                     }
                 }
@@ -411,13 +381,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         String message = mEtMessage.getText().toString();
                         if (message.length() > 0 && !cc.isFriendDeleted(friend.getName())) {
                             sendMessage(friend.getName(), message);
-                        }
-                        else {
+                        } else {
                             // go to home
                             cc.setCurrentChat(null);
                         }
-                    }
-                    else {
+                    } else {
                         inviteFriend();
                     }
                 }
@@ -437,19 +405,16 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         // if they're deleted always close the tab
                         if (cc.isFriendDeleted(friend.getName())) {
                             cc.closeTab();
-                        }
-                        else {
+                        } else {
                             String message = mEtMessage.getText().toString();
                             if (message.length() > 0) {
                                 sendMessage(friend.getName(), message);
-                            }
-                            else {
+                            } else {
                                 SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
                                 boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
                                 if (!disableVoice) {
                                     VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
-                                }
-                                else {
+                                } else {
                                     cc.closeTab();
                                 }
                             }
@@ -576,8 +541,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         SurespotLog.d(TAG, "on EditorAction ACTION_SEND (text)");
                         sendMessage(friend.getName(), v.getText().toString());
                         handled = true;
-                    }
-                    else {
+                    } else {
                         //if we pasted the message it might have carriage returns which cause it to send, so suppress
                         if (mEnterToSend && actionId == EditorInfo.IME_NULL && event != null && event.getAction() == KeyEvent.ACTION_DOWN) {
                             SurespotLog.d(TAG, "on EditorAction ACTION_DOWN (text)");
@@ -592,7 +556,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         TextWatcher tw = new ChatTextWatcher();
         mEtMessage.setFilters(new InputFilter[]{new InputFilter.LengthFilter(SurespotConfiguration.MAX_MESSAGE_LENGTH)});
-        SurespotLog.d(TAG,"adding text watcher");
+        SurespotLog.d(TAG, "adding text watcher");
         mEtMessage.addTextChangedListener(tw);
         mEtMessage.setOnTouchListener(new OnTouchListener() {
             @Override
@@ -697,7 +661,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             ChatManager.detach(this, this.hashCode());
             mUser = identityName;
 
-            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            CredentialCachingService ccs = SurespotApplication.getCachingService(this);
             if (ccs == null || !ccs.setSession(this, mUser)) {
                 launchLogin();
                 return;
@@ -758,16 +722,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             user = intent.getStringExtra(SurespotConstants.ExtraNames.NAME);
 
-        }
-        else if (!TextUtils.isEmpty(messageTo)
+        } else if (!TextUtils.isEmpty(messageTo)
                 && (SurespotConstants.IntentFilters.MESSAGE_RECEIVED.equals(notificationType)
                 || SurespotConstants.IntentFilters.INVITE_REQUEST.equals(notificationType) || SurespotConstants.IntentFilters.INVITE_RESPONSE
                 .equals(notificationType))) {
 
             user = messageTo;
             Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.LAST_USER, user);
-        }
-        else {
+        } else {
             user = IdentityController.getLastLoggedInUser(this);
         }
 
@@ -776,32 +738,8 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     }
 
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(android.content.ComponentName name, android.os.IBinder service) {
-            SurespotLog.d(TAG, "caching service bound");
-            CredentialCachingBinder binder = (CredentialCachingBinder) service;
-            CredentialCachingService ccs = binder.getService();
-
-            SurespotApplication.setCachingService(ccs);
-            mCacheServiceBound = true;
-
-            if (!mUnlocking) {
-                SurespotLog.d(TAG, "caching service calling postServiceProcess");
-                postServiceProcess();
-            }
-            else {
-                SurespotLog.d(TAG, "unlock activity launched, not post service processing until resume");
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };
-
     private void postServiceProcess() {
-        CredentialCachingService ccs = SurespotApplication.getCachingService();
+        CredentialCachingService ccs = SurespotApplication.getCachingService(this);
         if (ccs == null || !ccs.setSession(this, mUser)) {
             launchLogin();
             return;
@@ -817,8 +755,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
     private void setupGlobal() {
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
+
             Intent intent = new Intent(this, RegistrationIntentService.class);
-            startService(intent);
+            RegistrationIntentService.enqueueWork(this, intent);
         }
 
         setupBilling();
@@ -899,13 +838,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (MESSAGE_MODE_GALLERY.equals(mCurrentMessageMode)) {
                         setGalleryMode();
                         mWaitingForKeyboardToShow = false;
-                    }
-                    else {
+                    } else {
                         if (MESSAGE_MODE_EMOJI.equals(mCurrentMessageMode)) {
                             switchViews();
                             mWaitingForKeyboardToShow = false;
-                        }
-                        else {
+                        } else {
                             SurespotLog.d(TAG, "OnKeyboardShown: hiding emoji drawer waiting for keyboard to show");
                             disableMessageMode(false);
                             mWaitingForKeyboardToShow = false;
@@ -963,8 +900,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             if (apiAvailability.isUserResolvableError(resultCode)) {
                 apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
                         .show();
-            }
-            else {
+            } else {
                 Log.i(TAG, "This device is not supported.");
                 finish();
             }
@@ -1028,8 +964,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
                 cc.setCurrentChat(null);
                 mSet = true;
-            }
-            else {
+            } else {
                 Utils.clearIntent(intent);
             }
         }
@@ -1079,7 +1014,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             SurespotLog.d(TAG, "setting mUnlocking to false");
             mUnlocking = false;
 
-            if (SurespotApplication.getCachingService() != null) {
+            if (SurespotApplication.getCachingService(this) != null) {
                 SurespotLog.d(TAG, "unlock activity was launched, resume calling postServiceProcess");
                 postServiceProcess();
             }
@@ -1146,16 +1081,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         try {
             hideKeyboard();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
         }
         ChatManager.pause(mUser, this.hashCode());
 
         if (mEtMessage != null) {
             if (TextUtils.isEmpty(mEtMessage.getText())) {
                 Utils.removeUserPref(this, mUser, "message_text");
-            }
-            else {
+            } else {
                 Utils.putUserSharedPrefsString(this, mUser, "message_text", mEtMessage.getText().toString());
             }
         }
@@ -1194,16 +1127,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 try {
                                     File file = new File(new URI(selectedImageUri.toString()));
                                     SurespotLog.d(TAG, "deleted temp image file: %b", file.delete());
-                                }
-                                catch (URISyntaxException e) {
+                                } catch (URISyntaxException e) {
                                 }
 
                                 ChatController cc = ChatManager.getChatController(mUser);
 
                                 if (cc == null || url == null) {
                                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_upload_friend_image));
-                                }
-                                else {
+                                } else {
                                     if (cc != null) {
                                         cc.setImageUrl(to, url, version, iv, true);
                                     }
@@ -1228,16 +1159,14 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         if (mUser != null && currentChat != null) {
                             FileTransferUtils.handleClipDataFileSelection(this, cc, mUser, currentChat, data);
                         }
-                    }
-                    else if (data.getData() != null) {
+                    } else if (data.getData() != null) {
                         SurespotLog.d(TAG, "chose, data: %s", data);
 
                         if (mUser != null && currentChat != null) {
 
                             FileTransferUtils.uploadFileAsync(this, cc, mUser, currentChat, data.getData());
                         }
-                    }
-                    else {
+                    } else {
                         SurespotLog.i(TAG, "Not able to support multiple file selection and no appropriate data returned from file picker");
                         Utils.makeLongToast(this, getString(R.string.could_not_select_image));
                     }
@@ -1250,8 +1179,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 // Pass on the activity result to the helper for handling
                 if (!SurespotApplication.getBillingController().getIabHelper().handleActivityResult(requestCode, resultCode, data)) {
                     super.onActivityResult(requestCode, resultCode, data);
-                }
-                else {
+                } else {
                     // TODO upload token to server
                     SurespotLog.d(TAG, "onActivityResult handled by IABUtil.");
                 }
@@ -1263,8 +1191,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     final Intent intent = getIntent();
                     intent.putExtra("themeChanged", true);
                     startActivity(intent);
-                }
-                else {
+                } else {
                     //update drawer with identities as a new one may have been restored
                     updateDrawer();
                 }
@@ -1352,12 +1279,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 if (TextUtils.isEmpty(cc.getCurrentChat())) {
                     if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
                         mDrawerLayout.closeDrawer(GravityCompat.START);
-                    }
-                    else {
+                    } else {
                         mDrawerLayout.openDrawer(GravityCompat.START);
                     }
-                }
-                else {
+                } else {
                     cc.setCurrentChat(null);
                 }
                 return true;
@@ -1424,8 +1349,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                     }
                                 }
                             });
-                }
-                else {
+                } else {
                     logout();
                 }
 
@@ -1445,8 +1369,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                     }
                                 }
                             });
-                }
-                else {
+                } else {
                     cc.deleteMessages(currentChat);
                 }
 
@@ -1493,8 +1416,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (!SurespotApplication.getThemeChanged()) {
             destroy();
-        }
-        else {
+        } else {
             SurespotApplication.setThemeChanged(null);
         }
 
@@ -1502,11 +1424,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
     private void destroy() {
         SurespotLog.d(TAG, "destroy unbinding");
-
-        if (mCacheServiceBound && mConnection != null) {
-            unbindService(mConnection);
-        }
-
         ChatManager.detach(this, this.hashCode());
         Utils.removeUserPref(this, mUser, "message_text");
     }
@@ -1550,8 +1467,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         // don't puke if we can't unregister
         try {
             unregisterReceiver(mExternalStorageReceiver);
-        }
-        catch (java.lang.IllegalArgumentException e) {
+        } catch (java.lang.IllegalArgumentException e) {
         }
     }
 
@@ -1560,12 +1476,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         SurespotLog.d(TAG, "updateExternalStorageState:  " + state);
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             mExternalStorageAvailable = mExternalStorageWriteable = true;
-        }
-        else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             mExternalStorageAvailable = true;
             mExternalStorageWriteable = false;
-        }
-        else {
+        } else {
 
             mExternalStorageAvailable = mExternalStorageWriteable = false;
         }
@@ -1630,8 +1544,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (!mInProgress) {
                         UIUtils.showProgressAnimation(MainActivity.this, mHomeImageView);
                     }
-                }
-                else {
+                } else {
                     mHomeImageView.clearAnimation();
                 }
 
@@ -1710,8 +1623,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 String sharedText = intent.getExtras().get(Intent.EXTRA_TEXT).toString();
                 SurespotLog.d(TAG, "received action send, data: %s", sharedText);
                 mEtMessage.append(sharedText);
-            }
-            else {
+            } else {
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
 
                     final Uri imageUri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
@@ -1728,14 +1640,12 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 mUser,
                                 mCurrentFriend.getName(),
                                 true);
-                    }
-                    else {
+                    } else {
                         //TODO
                     }
                 }
             }
-        }
-        else {
+        } else {
             if (action.equals(Intent.ACTION_SEND_MULTIPLE)) {
                 Utils.configureActionBar(this, "", mUser, true);
                 if (type.startsWith(SurespotConstants.MimeTypes.IMAGE)) {
@@ -1839,16 +1749,13 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         if (cc != null) {
                             if (cc.getFriendAdapter().addFriendInvited(friend)) {
                                 Utils.makeToast(MainActivity.this, getString(R.string.has_been_invited, friend));
-                            }
-                            else {
+                            } else {
                                 Utils.makeToast(MainActivity.this, getString(R.string.has_accepted, friend));
                             }
-                        }
-                        else {
+                        } else {
                             Utils.makeToast(MainActivity.this, getString(R.string.could_not_invite));
                         }
-                    }
-                    else {
+                    } else {
                         switch (response.code()) {
                             case 404:
                                 Utils.makeToast(MainActivity.this, getString(R.string.user_does_not_exist));
@@ -1875,22 +1782,19 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             mIvVoice.setVisibility(GONE);
             mIvHome.setVisibility(GONE);
             mIvSend.setVisibility(GONE);
-        }
-        else {
+        } else {
             if (mCurrentFriend.isDeleted()) {
                 mIvInvite.setVisibility(GONE);
                 mIvVoice.setVisibility(GONE);
                 mIvHome.setVisibility(View.VISIBLE);
                 mIvSend.setVisibility(GONE);
-            }
-            else {
+            } else {
                 if (mEtMessage.getText().length() > 0) {
                     mIvInvite.setVisibility(GONE);
                     mIvVoice.setVisibility(GONE);
                     mIvHome.setVisibility(GONE);
                     mIvSend.setVisibility(View.VISIBLE);
-                }
-                else {
+                } else {
                     mIvInvite.setVisibility(GONE);
                     SharedPreferences sp = getSharedPreferences(mUser, Context.MODE_PRIVATE);
                     boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
@@ -1898,8 +1802,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (disableVoice) {
                         mIvVoice.setVisibility(GONE);
                         mIvHome.setVisibility(View.VISIBLE);
-                    }
-                    else {
+                    } else {
                         mIvVoice.setVisibility(View.VISIBLE);
                         mIvHome.setVisibility(GONE);
                     }
@@ -1929,8 +1832,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mCameraButton.setVisibility(View.GONE);
                 mGalleryButton.setVisibility(View.GONE);
                 mMoreButton.setVisibility(View.GONE);
-            }
-            else {
+            } else {
                 mQRButton.setVisibility(View.GONE);
                 mExpandButton.setVisibility(View.GONE);
                 mEmojiButton.setVisibility(View.VISIBLE);
@@ -1940,8 +1842,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mMoreButton.setVisibility(View.GONE);
                 expand = true;
             }
-        }
-        else {
+        } else {
 
             View bShow;
 
@@ -1987,8 +1888,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mGalleryButton.setVisibility(bShow == mGalleryButton ? View.VISIBLE : View.GONE);
                 mCameraButton.setVisibility(bShow == mCameraButton ? View.VISIBLE : View.GONE);
                 mMoreButton.setVisibility(bShow == mMoreButton ? View.GONE : View.GONE);
-            }
-            else {
+            } else {
                 mQRButton.setVisibility(View.GONE);
                 mExpandButton.setVisibility(View.GONE);
                 mEmojiButton.setVisibility(View.VISIBLE);
@@ -2008,8 +1908,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         if (expand) {
             expand();
-        }
-        else {
+        } else {
             collapse();
         }
     }
@@ -2114,8 +2013,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
-            }
-            else {
+            } else {
 
                 ViewGroup home = (ViewGroup) findViewById(android.R.id.home).getParent();
                 // get the first child (up imageview)
@@ -2123,12 +2021,10 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         // change the icon according to your needs
                         .setImageResource(R.drawable.ic_drawer);
             }
-        }
-        else {
+        } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 getActionBar().setHomeAsUpIndicator(R.drawable.ic_ab_back_holo_dark_am);
-            }
-            else {
+            } else {
                 ViewGroup home = (ViewGroup) findViewById(android.R.id.home).getParent();
                 // get the first child (up imageview)
                 ((ImageView) home.getChildAt(0))
@@ -2140,8 +2036,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mEtMessage.setVisibility(GONE);
 
 
-            }
-            else {
+            } else {
                 mEtMessage.setVisibility(View.VISIBLE);
             }
 
@@ -2170,8 +2065,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             imageView.setImageURI(Uri.parse(backgroundImageUrl));
             imageView.setAlpha(125);
             SurespotConfiguration.setBackgroundImageSet(true);
-        }
-        else {
+        } else {
             imageView.setImageDrawable(null);
             SurespotConfiguration.setBackgroundImageSet(false);
         }
@@ -2222,8 +2116,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                             }
                         }
                     });
-                }
-                else {
+                } else {
                     Utils.makeToast(MainActivity.this, getString(R.string.could_not_assign_friend_alias));
                 }
             }
@@ -2241,8 +2134,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                 }
             });
-        }
-        else {
+        } else {
             Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_image));
         }
     }
@@ -2258,8 +2150,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     }
                 }
             });
-        }
-        else {
+        } else {
             Utils.makeToast(MainActivity.this, getString(R.string.could_not_remove_friend_alias));
         }
     }
@@ -2271,14 +2162,6 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         hideKeyboard();
         disableMessageMode(false);
     }
-
-    private void bindCacheService() {
-        SurespotLog.d(TAG, "binding cache service");
-        Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-        ContextCompat.startForegroundService(this, cacheIntent);
-        bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
-    }
-
 
     public boolean messageModeActive() {
         return !TextUtils.isEmpty(mCurrentMessageMode);
@@ -2334,8 +2217,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         }
                     };
                     mHandler.postDelayed(runnable, 500);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     SurespotLog.e(TAG, e, "error adding emoji view");
                     return;
                 }
@@ -2372,8 +2254,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (input != null) {
                         input.showSoftInput(mEtMessage, 0);
                     }
-                }
-                else {
+                } else {
                     switchViews();
                 }
 
@@ -2414,8 +2295,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                         }
                     };
                     mHandler.postDelayed(runnable, 500);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     SurespotLog.e(TAG, e, "error adding emoji view");
                     return;
                 }
@@ -2463,8 +2343,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     if (input != null) {
                         input.showSoftInput(mEtMessage, 0);
                     }
-                }
-                else {
+                } else {
                     setGalleryMode();
                 }
 
@@ -2528,8 +2407,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
             };
             mHandler.post(runnable3);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SurespotLog.e(TAG, e, "error adding view");
             return;
         }
@@ -2563,9 +2441,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                             }
                                         }
                                     });
-                        }
-
-                        else {
+                        } else {
                             ChatUtils.uploadPictureMessageAsync(
                                     MainActivity.this,
                                     cc,
@@ -2658,8 +2534,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 File file = files[i];
                 if (file.isDirectory()) {
                     traverse(file, toBeScanned);
-                }
-                else {
+                } else {
                     // do something here with the file
                     String path = file.getAbsolutePath();
                     SurespotLog.d(TAG, "adding file to scanner: %s", path);
@@ -2673,8 +2548,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                     });
                 }
             }
-        }
-        else {
+        } else {
             SurespotLog.d(TAG, "404: %s", dir);
         }
 
@@ -2758,8 +2632,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         if (!view.hasFocus()) {
             SurespotLog.d(TAG, "requestFocus, view does not have focus, requesting focus");
             view.requestFocus();
-        }
-        else {
+        } else {
             SurespotLog.d(TAG, "requestFocus, view has focus, not requesting focus");
         }
     }

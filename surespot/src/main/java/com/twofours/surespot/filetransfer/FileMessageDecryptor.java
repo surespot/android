@@ -16,6 +16,7 @@
 
 package com.twofours.surespot.filetransfer;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.SpannableStringBuilder;
@@ -39,8 +40,10 @@ public class FileMessageDecryptor {
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
+    private Context mContext;
 
-    public FileMessageDecryptor(String username, ChatAdapter chatAdapter) {
+    public FileMessageDecryptor(Context context, String username, ChatAdapter chatAdapter) {
+        mContext = context;
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
@@ -80,7 +83,7 @@ public class FileMessageDecryptor {
 
         @Override
         public void run() {
-            final CharSequence plainText = EncryptionController.symmetricDecrypt(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
+            final CharSequence plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
                     mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
             //SurespotLog.d(TAG, "decryption Task, decrypted plainText: %s", plainText);
             CharSequence plainData = null;

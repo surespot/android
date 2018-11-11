@@ -300,7 +300,7 @@ public class ChatController {
 
 
                         // decrypt it before adding
-                        final String plainText = EncryptionController.symmetricDecrypt(mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
+                        final String plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, message.getOurVersion(mUsername), message.getOtherUser(mUsername),
                                 message.getTheirVersion(mUsername), message.getIv(), message.isHashed(), message.getData());
 
                         //SurespotLog.d(TAG, "handle message, decrypted plain text: %s", plainText);
@@ -1174,7 +1174,7 @@ public class ChatController {
             StateController.wipeUserState(mContext, mUsername, deletedUser);
 
             // clear in memory cached data
-            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            CredentialCachingService ccs = SurespotApplication.getCachingService(mContext);
             if (ccs != null) {
                 ccs.clearUserData(deleter, deletedUser);
             }
@@ -2069,7 +2069,7 @@ public class ChatController {
 
                 @Override
                 protected String doInBackground(Void... params) {
-                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), mUsername,
+                    String plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, friend.getAliasVersion(), mUsername,
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
                     return plainText;
@@ -2221,7 +2221,7 @@ public class ChatController {
         final String version = IdentityController.getOurLatestVersion(mContext, mUsername);
 
         byte[] iv = EncryptionController.getIv();
-        final String cipherAlias = EncryptionController.symmetricEncrypt(mUsername, version, mUsername, version, alias, iv);
+        final String cipherAlias = EncryptionController.symmetricEncrypt(mContext, mUsername, version, mUsername, version, alias, iv);
         final String ivString = new String(ChatUtils.base64EncodeNowrap(iv));
 
         mNetworkController.assignFriendAlias(name, version, cipherAlias, ivString, new MainThreadCallbackWrapper(new MainThreadCallbackWrapper.MainThreadCallback() {
@@ -2315,7 +2315,7 @@ public class ChatController {
                             @SuppressWarnings("unchecked")
                             Map<String, List> headers = (Map<String, List>) args[0];
                             // set header
-                            Cookie cookie = IdentityController.getCookieForUser(mUsername);
+                            Cookie cookie = IdentityController.getCookieForUser(mContext, mUsername);
                             if (cookie != null) {
                                 ArrayList<String> cookies = new ArrayList<String>();
                                 cookies.add(cookie.name() + "=" + cookie.value());
@@ -2482,7 +2482,7 @@ public class ChatController {
         }
 
         String ourLatestVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
-        String theirLatestVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+        String theirLatestVersion = IdentityController.getTheirLatestVersion(mContext, message.getFrom(), message.getTo());
         synchronized (ChatController.this) {
 
             if (theirLatestVersion == null) {
@@ -2494,7 +2494,7 @@ public class ChatController {
 
 
             byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
-            String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
+            String result = EncryptionController.symmetricEncrypt(mContext, message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, plainData.toString(), iv);
 
             if (result != null) {
                 //update unsent message
@@ -2531,7 +2531,7 @@ public class ChatController {
 
 
             byte[] iv = ChatUtils.base64DecodeNowrap(message.getIv());
-            String result = EncryptionController.symmetricEncrypt(message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, fmd.toJSONStringSocket(), iv);
+            String result = EncryptionController.symmetricEncrypt(mContext, message.getFrom(), ourLatestVersion, message.getTo(), theirLatestVersion, fmd.toJSONStringSocket(), iv);
 
             if (result != null) {
                 //update unsent message
@@ -2591,7 +2591,7 @@ public class ChatController {
                         try {
 
                             final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
-                            final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+                            final String theirVersion = IdentityController.getTheirLatestVersion(mContext, message.getFrom(), message.getTo());
 
                             if (theirVersion == null) {
                                 SurespotLog.d(TAG, "prepAndSendFileMessage: could not encrypt file message - could not get latest version, iv: %s", message.getIv());
@@ -2612,7 +2612,7 @@ public class ChatController {
                             //encrypt
                             PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                             final PipedInputStream encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-                            EncryptionController.runEncryptTask(mUsername, ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+                            EncryptionController.runEncryptTask(mContext, mUsername, ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
 
                             int bufferSize = 1024;
                             byte[] buffer = new byte[bufferSize];
@@ -3477,7 +3477,7 @@ public class ChatController {
                         }
 
                         final String ourVersion = IdentityController.getOurLatestVersion(mContext, message.getFrom());
-                        final String theirVersion = IdentityController.getTheirLatestVersion(message.getFrom(), message.getTo());
+                        final String theirVersion = IdentityController.getTheirLatestVersion(mContext, message.getFrom(), message.getTo());
                         final String iv = message.getIv();
 
                         if (theirVersion == null) {
@@ -3494,7 +3494,7 @@ public class ChatController {
                             //encrypt
                             PipedOutputStream encryptionOutputStream = new PipedOutputStream();
                             encryptionInputStream = new PipedInputStream(encryptionOutputStream);
-                            EncryptionController.runEncryptTask(message.getFrom(), ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
+                            EncryptionController.runEncryptTask(mContext, message.getFrom(), ourVersion, message.getTo(), theirVersion, iv, new BufferedInputStream(fileInputStream), encryptionOutputStream);
 
                         }
                         catch (Exception e) {

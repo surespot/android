@@ -92,7 +92,7 @@ public class FileTransferManager {
             try {
                 inputStream = new PipedInputStream(out);
 
-                EncryptionController.runDecryptTask(mOurUsername, mOurVersion, mTheirUsername, mTheirVersion, mIv, true,
+                EncryptionController.runDecryptTask(mContext, mOurUsername, mOurVersion, mTheirUsername, mTheirVersion, mIv, true,
                         new BufferedInputStream(encryptedFileStream), out);
 
                 File file = new File(String.format("/sdcard/Download/%s", mFilename));

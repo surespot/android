@@ -1,15 +1,12 @@
 package com.twofours.surespot.activities;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.text.InputFilter;
 import android.text.Spannable;
@@ -35,22 +32,19 @@ import android.widget.TextView.BufferType;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.backup.ImportIdentityActivity;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.CookieResponseHandler;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.MainThreadCallbackWrapper;
 import com.twofours.surespot.network.NetworkManager;
-import com.twofours.surespot.services.CredentialCachingService;
-import com.twofours.surespot.services.CredentialCachingService.CredentialCachingBinder;
 import com.twofours.surespot.ui.LetterOrDigitInputFilter;
 import com.twofours.surespot.ui.MultiProgressDialog;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
 
@@ -99,10 +93,6 @@ public class SignupActivity extends Activity {
 
         mUsernameValid = findViewById(R.id.ivUsernameValid);
         mUsernameInvalid = findViewById(R.id.ivUsernameInvalid);
-
-        SurespotLog.d(TAG, "binding cache service, service is null? %b", SurespotApplication.getCachingService() == null);
-        Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-        bindService(cacheIntent, mConnection, Context.BIND_AUTO_CREATE);
 
         mMpd = new MultiProgressDialog(this, getString(R.string.create_user_progress), 250);
         mMpdCheck = new MultiProgressDialog(this, getString(R.string.user_exists_progress), 500);
@@ -175,30 +165,6 @@ public class SignupActivity extends Activity {
 
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            SurespotLog.v(TAG, "caching service bound");
-            CredentialCachingBinder binder = (CredentialCachingBinder) service;
-
-            CredentialCachingService credentialCachingService = binder.getService();
-            mCacheServiceBound = true;
-
-            SurespotApplication.setCachingService(credentialCachingService);
-
-            // if they've already clicked login, login
-            if (mSignupAttempted) {
-                mSignupAttempted = false;
-                signup();
-                mMpd.decrProgress();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };
-
     private void checkUsername() {
         final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
         final String username = userText.getText().toString();
@@ -254,11 +220,6 @@ public class SignupActivity extends Activity {
     }
 
     private void signup() {
-        if (SurespotApplication.getCachingService() == null) {
-            mSignupAttempted = true;
-            mMpd.incrProgress();
-            return;
-        }
 
         final EditText userText = (EditText) SignupActivity.this.findViewById(R.id.etSignupUsername);
         final String username = userText.getText().toString();
@@ -421,27 +382,6 @@ public class SignupActivity extends Activity {
                 }
             }
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if (mCacheServiceBound && mConnection != null) {
-            unbindService(mConnection);
-        }
-
-        if (!mLoggedIn && isTaskRoot()) {
-            boolean stopCache = Utils.getSharedPrefsBoolean(this, "pref_stop_cache_logout");
-
-            if (stopCache) {
-
-                if (SurespotApplication.getCachingService() != null) {
-                    SurespotLog.i(TAG, "stopping cache");
-                    SurespotApplication.getCachingService().stopSelf();
-                }
-            }
-        }
     }
 
     @Override

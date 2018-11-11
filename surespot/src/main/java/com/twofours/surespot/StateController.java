@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
@@ -15,6 +14,7 @@ import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
 import com.twofours.surespot.services.CredentialCachingService.SharedSecretKey;
 import com.twofours.surespot.services.CredentialCachingService.VersionMap;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.Utils;
 
@@ -324,7 +324,7 @@ public class StateController {
                 String localImageDir = FileUtils.getFileUploadDir(context);
                 FileUtils.deleteRecursive(new File(localImageDir));
 
-                CredentialCachingService ccs = SurespotApplication.getCachingService();
+                CredentialCachingService ccs = SurespotApplication.getCachingService(context);
                 if (ccs != null) {
                     ccs.clear();
                 }

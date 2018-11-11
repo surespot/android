@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.twofours.surespot"
-    android:versionCode="73"
-    android:versionName="73">
+    android:versionCode="74"
+    android:versionName="74">
 
 
     <permission
@@ -87,10 +87,9 @@
         <!-- [END instanceId_listener] -->
         <service
             android:name=".services.RegistrationIntentService"
-            android:exported="false"/>
-        <service
-            android:name="com.twofours.surespot.services.CredentialCachingService"
-            android:exported="false"/>
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            />
 
         <activity
             android:name="com.twofours.surespot.activities.MainActivity"

@@ -1,23 +1,24 @@
 package com.twofours.surespot.friends;
 
-import java.lang.ref.WeakReference;
-
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.widget.TextView;
 
 import com.twofours.surespot.SurespotApplication;
-import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.encryption.EncryptionController;
-import com.twofours.surespot.identity.IdentityController;
+
+import java.lang.ref.WeakReference;
 
 public class FriendAliasDecryptor {
 	private static final String TAG = "FriendAliasDecryptor";
 	private static Handler mHandler = new Handler(Looper.getMainLooper());
 	private FriendAdapter mFriendAdapter;
+	private Context mContext;
 
-	public FriendAliasDecryptor(FriendAdapter friendAdapter) {
+	public FriendAliasDecryptor(Context context, FriendAdapter friendAdapter) {
+		mContext = context;
 		mFriendAdapter = friendAdapter;
 	}
 
@@ -75,7 +76,7 @@ public class FriendAliasDecryptor {
 
 		@Override
 		public void run() {
-			final String plainText = EncryptionController.symmetricDecrypt(mOurUsername, mFriend.getAliasVersion(), mOurUsername,
+			final String plainText = EncryptionController.symmetricDecrypt(mContext, mOurUsername, mFriend.getAliasVersion(), mOurUsername,
 					mFriend.getAliasVersion(), mFriend.getAliasIv(), mFriend.isAliasHashed(), mFriend.getAliasData());
 
 			mFriend.setAliasPlain(plainText);

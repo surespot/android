@@ -76,11 +76,11 @@ public class ChatAdapter extends BaseAdapter {
         SharedPreferences pm = context.getSharedPreferences(mOurUsername, Context.MODE_PRIVATE);
         mDebugMode = pm.getBoolean("pref_debug_mode", false);
 
-        mMessageDecryptor = new MessageDecryptor(mOurUsername, this);
-        mMessageImageDownloader = new MessageImageDownloader(mOurUsername, this);
-        mMessageVoiceDownloader = new VoiceMessageDownloader(mOurUsername, this);
-        mGifDownloader = new GifMessageDownloader(ourUsername, this);
-        mFileMessageDecryptor = new FileMessageDecryptor(ourUsername, this);
+        mMessageDecryptor = new MessageDecryptor(context, mOurUsername, this);
+        mMessageImageDownloader = new MessageImageDownloader(context, mOurUsername, this);
+        mMessageVoiceDownloader = new VoiceMessageDownloader(context, mOurUsername, this);
+        mGifDownloader = new GifMessageDownloader(context, ourUsername, this);
+        mFileMessageDecryptor = new FileMessageDecryptor(context, ourUsername, this);
     }
 
     public void doneCheckingSequence() {

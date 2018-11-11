@@ -16,6 +16,7 @@
 
 package com.twofours.surespot.gifs;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -57,9 +58,11 @@ public class GifMessageDownloader {
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
+    private Context mContext;
 
 
-    public GifMessageDownloader(String username, ChatAdapter chatAdapter) {
+    public GifMessageDownloader(Context context, String username, ChatAdapter chatAdapter) {
+        mContext = context;
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
@@ -176,7 +179,7 @@ public class GifMessageDownloader {
 
             //decrypt the url
             if (TextUtils.isEmpty(mMessage.getPlainData())) {
-                CharSequence plainText = EncryptionController.symmetricDecrypt(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
+                CharSequence plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
                         mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
                 mMessage.setPlainData(plainText);
             }

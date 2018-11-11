@@ -9,16 +9,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
 
 import com.twofours.surespot.R;
-import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
+import com.twofours.surespot.chat.SurespotMessage;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -62,7 +61,7 @@ public class ImageViewActivity extends Activity {
                         try {
                             inputStream = new PipedInputStream(out);
 
-                            EncryptionController.runDecryptTask(ourUsername, message.getOurVersion(ourUsername), message.getOtherUser(ourUsername), message.getTheirVersion(ourUsername), message.getIv(), message.isHashed(),
+                            EncryptionController.runDecryptTask(ImageViewActivity.this, ourUsername, message.getOurVersion(ourUsername), message.getOtherUser(ourUsername), message.getTheirVersion(ourUsername), message.getIv(), message.isHashed(),
                                     new BufferedInputStream(imageStream), out);
 
                             bitmap = BitmapFactory.decodeStream(inputStream);

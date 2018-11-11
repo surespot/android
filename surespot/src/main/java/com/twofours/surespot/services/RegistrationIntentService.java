@@ -16,8 +16,10 @@
 
 package com.twofours.surespot.services;
 
-import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.v4.app.JobIntentService;
 
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -25,25 +27,30 @@ import com.google.android.gms.iid.InstanceID;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.IOException;
 import java.util.List;
 
 
-public class RegistrationIntentService extends IntentService {
+public class RegistrationIntentService extends JobIntentService {
 
     private static final String TAG = "RegIntentService";
     public static final String SENDER_ID = "428168563991";
     private static final String[] TOPICS = {"global"};
+    static final int SERVICE_JOB_ID = 1;
 
-    public RegistrationIntentService() {
-        super(TAG);
+    public static void enqueueWork(Context context, Intent work) {
+        enqueueWork(context, RegistrationIntentService.class, SERVICE_JOB_ID, work);
     }
 
     @Override
+    protected void onHandleWork(@NonNull Intent intent) {
+        onHandleIntent(intent);
+    }
+
     protected void onHandleIntent(Intent intent) {
         //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 

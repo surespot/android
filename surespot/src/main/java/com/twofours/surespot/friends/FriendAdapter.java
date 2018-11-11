@@ -56,7 +56,7 @@ public class FriendAdapter extends BaseAdapter {
     public FriendAdapter(Context context, String username) {
         mContext = context;
         mUsername = username;
-        mFriendAliasDecryptor = new FriendAliasDecryptor(this);
+        mFriendAliasDecryptor = new FriendAliasDecryptor(context,this);
 
         // clear invite notifications
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -173,7 +173,7 @@ public class FriendAdapter extends BaseAdapter {
         synchronized (mFriends) {
             for (Friend friend : mFriends) {
                 if (friend.hasFriendAliasAssigned() && TextUtils.isEmpty(friend.getAliasPlain())) {
-                    String plainText = EncryptionController.symmetricDecrypt(mUsername, friend.getAliasVersion(), mUsername,
+                    String plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, friend.getAliasVersion(), mUsername,
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
 
               //      SurespotLog.v(TAG, "setting alias for %s", friend.getName());
@@ -262,7 +262,7 @@ public class FriendAdapter extends BaseAdapter {
         );
 
         if (friend.hasFriendImageAssigned()) {
-            FriendImageDownloader.download(friendViewHolder.avatarImage, mUsername, friend);
+            FriendImageDownloader.download(mContext, friendViewHolder.avatarImage, mUsername, friend);
         } else {
         	friendViewHolder.avatarImage.setImageDrawable(friendViewHolder.avatarImage.getResources().getDrawable(R.drawable.surespot_logo));
             friendViewHolder.avatarImage.setAlpha(0.5f);

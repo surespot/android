@@ -3,7 +3,6 @@ package com.twofours.surespot.services;
 
 import android.content.Intent;
 
-import com.google.android.gms.iid.InstanceID;
 import com.google.android.gms.iid.InstanceIDListenerService;
 
 
@@ -23,6 +22,6 @@ public class SurespotInstanceIDListenerService extends InstanceIDListenerService
     public void onTokenRefresh() {
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
         Intent intent = new Intent(this, RegistrationIntentService.class);
-        startService(intent);
+        RegistrationIntentService.enqueueWork(this, intent);
     }
 }

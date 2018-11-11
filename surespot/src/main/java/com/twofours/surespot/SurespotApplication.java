@@ -2,7 +2,6 @@ package com.twofours.surespot;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
@@ -124,11 +123,6 @@ public class SurespotApplication extends Application {
 
         }
 
-
-        SurespotLog.v(TAG, "starting cache service");
-        Intent cacheIntent = new Intent(this, CredentialCachingService.class);
-        ContextCompat.startForegroundService(this, cacheIntent);
-
         mBillingController = new BillingController(this);
         FileUtils.wipeImageCaptureDir(this);
 
@@ -151,12 +145,11 @@ public class SurespotApplication extends Application {
         return false;
     }
 
-    public static CredentialCachingService getCachingService() {
+    public static CredentialCachingService getCachingService(Context context) {
+        if (mCredentialCachingService == null) {
+            mCredentialCachingService = new CredentialCachingService(context);
+        }
         return mCredentialCachingService;
-    }
-
-    public static void setCachingService(CredentialCachingService credentialCachingService) {
-        SurespotApplication.mCredentialCachingService = credentialCachingService;
     }
 
     public static StateController getStateController() {

@@ -30,10 +30,10 @@ import android.widget.ImageView;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
@@ -58,13 +58,14 @@ public class FriendImageDownloader {
     private static BitmapCache mBitmapCache = new BitmapCache();
     private static Handler mHandler = new Handler(Looper.getMainLooper());
 
+
     /**
      * Download the specified image from the Internet and binds it to the provided ImageView. The binding is immediate if the image is found in the cache and
      * will be done asynchronously otherwise. A null bitmap will be associated to the ImageView if an error occurs.
      *
      * @param imageView The ImageView to bind the downloaded image to.
      */
-    public static void download(ImageView imageView, String ourUsername, Friend friend) {
+    public static void download(Context context, ImageView imageView, String ourUsername, Friend friend) {
         String imageUrl = friend.getImageUrl();
       //  SurespotLog.v(TAG, "downloading image for %s", friend);
 
@@ -76,7 +77,7 @@ public class FriendImageDownloader {
 
         if (bitmap == null) {
             SurespotLog.v(TAG, "bitmap not in cache: %s, %s", friend.getName(), imageUrl);
-            forceDownload(imageView, ourUsername, friend);
+            forceDownload(context, imageView, ourUsername, friend);
         } else {
             SurespotLog.v(TAG, "loading bitmap from cache: %s, %s", friend.getName(), imageUrl);
             cancelPotentialDownload(imageView, ourUsername, friend);
@@ -90,9 +91,9 @@ public class FriendImageDownloader {
     /**
      * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
      */
-    private static void forceDownload(ImageView imageView, String ourUsername, Friend friend) {
+    private static void forceDownload(Context context, ImageView imageView, String ourUsername, Friend friend) {
         if (cancelPotentialDownload(imageView, ourUsername, friend)) {
-            BitmapDownloaderTask task = new BitmapDownloaderTask(imageView, ourUsername, friend);
+            BitmapDownloaderTask task = new BitmapDownloaderTask(context, imageView, ourUsername, friend);
             DownloadedDrawable downloadedDrawable = new DownloadedDrawable(task);
             imageView.setImageDrawable(downloadedDrawable);
             SurespotApplication.THREAD_POOL_EXECUTOR.execute(task);
@@ -140,6 +141,7 @@ public class FriendImageDownloader {
         private String mOurUsername;
         private Friend mFriend;
         private boolean mCancelled;
+        private Context mContext;
 
         public Friend getFriend() {
             return mFriend;
@@ -147,7 +149,8 @@ public class FriendImageDownloader {
 
         private final WeakReference<ImageView> imageViewReference;
 
-        private BitmapDownloaderTask(ImageView imageView, String ourUsername, Friend friend) {
+        private BitmapDownloaderTask(Context context, ImageView imageView, String ourUsername, Friend friend) {
+            mContext = context;
             mFriend = friend;
             mOurUsername = ourUsername;
             imageViewReference = new WeakReference<ImageView>(imageView);
@@ -185,7 +188,7 @@ public class FriendImageDownloader {
                 try {
                     inputStream = new PipedInputStream(out);
 
-                    EncryptionController.runDecryptTask(mOurUsername, mFriend.getImageVersion(), mOurUsername, mFriend.getImageVersion(),
+                    EncryptionController.runDecryptTask(mContext, mOurUsername, mFriend.getImageVersion(), mOurUsername, mFriend.getImageVersion(),
                             mFriend.getImageIv(), mFriend.isImageHashed(), new BufferedInputStream(imageStream), out);
 
                     if (mCancelled) {

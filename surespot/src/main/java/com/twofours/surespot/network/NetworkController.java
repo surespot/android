@@ -73,7 +73,7 @@ public class NetworkController {
         mCookieStore = new SurespotCookieJar();
 
         if (mUsername != null) {
-            Cookie cookie = IdentityController.getCookieForUser(mUsername);
+            Cookie cookie = IdentityController.getCookieForUser(context, mUsername);
             if (cookie != null) {
                 SurespotLog.d(TAG, "got cookie for username: %s", mUsername);
                 mCookieStore.setCookie(cookie);

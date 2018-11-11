@@ -16,6 +16,7 @@
 
 package com.twofours.surespot.chat;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.SpannableStringBuilder;
@@ -45,8 +46,10 @@ public class MessageDecryptor {
     private static Handler mHandler = new Handler(Looper.getMainLooper());
     private ChatAdapter mChatAdapter;
     private String mUsername;
+    private Context mContext;
 
-    public MessageDecryptor(String username, ChatAdapter chatAdapter) {
+    public MessageDecryptor(Context context, String username, ChatAdapter chatAdapter) {
+        mContext = context;
         mUsername = username;
         mChatAdapter = chatAdapter;
     }
@@ -99,7 +102,7 @@ public class MessageDecryptor {
 
         @Override
         public void run() {
-            final CharSequence plainText = EncryptionController.symmetricDecrypt(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
+            final CharSequence plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername),
                     mMessage.getTheirVersion(mUsername), mMessage.getIv(), mMessage.isHashed(), mMessage.getData());
 
             CharSequence plainData = null;

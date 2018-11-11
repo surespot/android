@@ -18,7 +18,6 @@ import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.LoginActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
-import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.encryption.PrivateKeyPairs;
 import com.twofours.surespot.encryption.PublicKeys;
@@ -28,6 +27,7 @@ import com.twofours.surespot.network.IAsyncCallbackTuple;
 import com.twofours.surespot.network.NetworkController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.services.CredentialCachingService;
+import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
 import com.twofours.surespot.utils.Utils;
@@ -83,7 +83,7 @@ public class IdentityController {
         if (identity != null) {
             setLastUser(context, identity.getUsername());
             Utils.putSharedPrefsString(context, "referrer", null);
-            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            CredentialCachingService ccs = SurespotApplication.getCachingService(context);
             if (ccs != null) {
                 ccs.login(identity, cookie, password);
             }
@@ -319,7 +319,7 @@ public class IdentityController {
             isLoggedIn = true;
         }
 
-        CredentialCachingService ccs = SurespotApplication.getCachingService();
+        CredentialCachingService ccs = SurespotApplication.getCachingService(context);
         if (ccs != null) {
             ccs.clearIdentityData(deletedUsername, true);
         }
@@ -367,7 +367,7 @@ public class IdentityController {
             return null;
         }
 
-        CredentialCachingService ccs = SurespotApplication.getCachingService();
+        CredentialCachingService ccs = SurespotApplication.getCachingService(context);
 
         SurespotIdentity identity = null;
         if (ccs != null) {
@@ -502,7 +502,7 @@ public class IdentityController {
                                 String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
                                 if (file != null) {
                                     updateKeychainPassword(context, finalusername, password);
-                                    CredentialCachingService ccs = SurespotApplication.getCachingService();
+                                    CredentialCachingService ccs = SurespotApplication.getCachingService(context);
                                     if (ccs != null) {
                                         ccs.updateIdentity(identity, true);
                                     }
@@ -564,7 +564,7 @@ public class IdentityController {
                                 String file = saveIdentity(context, true, identity, password + CACHE_IDENTITY_ID);
                                 if (file != null) {
                                     updateKeychainPassword(context, finalusername, password);
-                                    CredentialCachingService ccs = SurespotApplication.getCachingService();
+                                    CredentialCachingService ccs = SurespotApplication.getCachingService(context);
                                     if (ccs != null) {
                                         ccs.updateIdentity(identity, true);
                                     }
@@ -1035,7 +1035,7 @@ public class IdentityController {
             NetworkManager.getNetworkController(context, username).logout();
         }
 
-        CredentialCachingService cache = SurespotApplication.getCachingService();
+        CredentialCachingService cache = SurespotApplication.getCachingService(context);
         if (cache != null) {
             cache.logout(username, deleted);
         }
@@ -1099,9 +1099,9 @@ public class IdentityController {
         return Utils.getSharedPrefsString(context, SurespotConstants.PrefNames.LAST_USER);
     }
 
-    public static Cookie getCookieForUser(String username) {
+    public static Cookie getCookieForUser(Context context, String username) {
         Cookie cookie = null;
-        CredentialCachingService service = SurespotApplication.getCachingService();
+        CredentialCachingService service = SurespotApplication.getCachingService(context);
         if (service != null) {
 
             if (username != null) {
@@ -1116,8 +1116,8 @@ public class IdentityController {
 
     }
 
-    public static String getTheirLatestVersion(String ourUsername, String theirUsername) {
-        CredentialCachingService cachingService = SurespotApplication.getCachingService();
+    public static String getTheirLatestVersion(Context context, String ourUsername, String theirUsername) {
+        CredentialCachingService cachingService = SurespotApplication.getCachingService(context);
         if (cachingService != null) {
             return cachingService.getLatestVersion(ourUsername, theirUsername);
         }
@@ -1125,7 +1125,7 @@ public class IdentityController {
     }
 
     public static String getOurLatestVersion(Context context, String username) {
-        CredentialCachingService cachingService = SurespotApplication.getCachingService();
+        CredentialCachingService cachingService = SurespotApplication.getCachingService(context);
         if (cachingService != null) {
             SurespotIdentity identity = cachingService.getIdentity(context, username, null);
             if (identity != null) {
@@ -1152,7 +1152,7 @@ public class IdentityController {
             SurespotLog.e(TAG, new Exception("could not save identity after rolling keys"), "could not save identity after rolling keys");
         }
 
-        CredentialCachingService ccs = SurespotApplication.getCachingService();
+        CredentialCachingService ccs = SurespotApplication.getCachingService(context);
         if (ccs != null) {
             ccs.updateIdentity(identity, true);
         }
@@ -1185,7 +1185,7 @@ public class IdentityController {
         }
         else {
             //not us
-            CredentialCachingService ccs = SurespotApplication.getCachingService();
+            CredentialCachingService ccs = SurespotApplication.getCachingService(context);
             if (ccs != null) {
                 ccs.updateLatestVersion(getLoggedInUser(), username, version);
             }

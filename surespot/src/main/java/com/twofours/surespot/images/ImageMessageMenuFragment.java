@@ -12,17 +12,17 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.twofours.surespot.R;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.chat.SurespotMessage;
-import com.twofours.surespot.utils.FileUtils;
-import com.twofours.surespot.SurespotLog;
-import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.encryption.EncryptionController;
 import com.twofours.surespot.network.IAsyncCallback;
 import com.twofours.surespot.network.NetworkManager;
+import com.twofours.surespot.utils.FileUtils;
 import com.twofours.surespot.utils.UIUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -151,7 +151,7 @@ public class ImageMessageMenuFragment extends DialogFragment {
 
 									InputStream imageStream = NetworkManager.getNetworkController(getActivity(), mUsername).getFileStream(mMessage.getData());
 
-									EncryptionController.runDecryptTask(mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername),
+									EncryptionController.runDecryptTask(getActivity(), mUsername, mMessage.getOurVersion(mUsername), mMessage.getOtherUser(mUsername), mMessage.getTheirVersion(mUsername),
 											mMessage.getIv(), mMessage.isHashed(), new BufferedInputStream(imageStream), fos);
 
 									FileUtils.galleryAddPic(mActivity, galleryFile.getAbsolutePath());
