@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -150,7 +151,7 @@ public class ExportIdentityActivity extends Activity {
                     }
                 }
                 else {
-                    chooseAccount(false);
+                    checkPermissionGetAccounts(ExportIdentityActivity.this, false);
                 }
             }
         });
@@ -166,39 +167,124 @@ public class ExportIdentityActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                chooseAccount(true);
+                checkPermissionGetAccounts(ExportIdentityActivity.this, true);
             }
         });
     }
 
-    public void checkPermissionWriteStorage(Activity activity) {
-//        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE);
-//        }
-//        else {
-        exportLocally();
-        //}
+    private void checkPermissionWriteStorage(final Activity activity) {
+        SurespotLog.d(TAG, "checkPermissionReadStorage");
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getString(R.string.need_storage_permission),
+                        getString(R.string.permission_required),
+                        getString(R.string.ok),
+                        getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            @Override
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE);
+                                }
+                            }
+                        }
+                );
+            }
+            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE);
+            }
+        }
+        else {
+            exportLocally();
+        }
+    }
+
+    private void checkPermissionGetAccounts(final Activity activity, boolean ask) {
+        SurespotLog.d(TAG, "checkPermissionGetAccounts");
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.GET_ACCOUNTS)) {
+                UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getString(R.string.need_contacts_permission),
+                        getString(R.string.permission_required),
+                        getString(R.string.ok),
+                        getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            @Override
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+                                }
+                            }
+                        }
+                );
+            }
+            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+            }
+        }
+        else {
+            chooseAccount(ask);
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
+            case SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS: {
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    checkPermissionGetAccounts(ExportIdentityActivity.this, false);
+                }
+                else {
+                    UIUtils.createAndShowConfirmationDialog(
+                            this,
+                            getString(R.string.need_contacts_permission),
+                            getString(R.string.permission_required),
+                            getString(R.string.ok),
+                            getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                @Override
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        ActivityCompat.requestPermissions(ExportIdentityActivity.this, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+                                    }
+                                }
+                            });
+                }
+            }
+            break;
             case SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE: {
-                //premission to read storage
-                if (grantResults.length > 0) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        exportLocally();
-                    }
-                    else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                            Utils.makeLongToast(this, getString(R.string.need_storage_permission));
-                        }
-                        else {
-                            //didn't want to give us permission
-                            Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
-                        }
-                    }
+
+                //permission to write storage
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    exportLocally();
+                }
+                else {
+                    UIUtils.createAndShowConfirmationDialog(
+                            this,
+                            getString(R.string.need_storage_permission),
+                            getString(R.string.permission_required),
+                            getString(R.string.ok),
+                            getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                @Override
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        ActivityCompat.requestPermissions(ExportIdentityActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.WRITE_EXTERNAL_STORAGE);
+                                    }
+                                    else {
+                                        UIUtils.createAndShowOKDialog(
+                                                ExportIdentityActivity.this,
+                                                getString(R.string.enable_storage_permission),
+                                                getString(R.string.permission_required),
+                                                null
+                                        );
+                                    }
+                                }
+                            });
                 }
             }
         }
