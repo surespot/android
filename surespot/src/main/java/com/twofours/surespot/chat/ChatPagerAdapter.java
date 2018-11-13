@@ -1,8 +1,7 @@
 package com.twofours.surespot.chat;
-
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;

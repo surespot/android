@@ -2,11 +2,11 @@ package com.twofours.surespot.voice;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 
 import com.twofours.surespot.R;
 import com.twofours.surespot.activities.MainActivity;

@@ -1,9 +1,10 @@
 package com.twofours.surespot.chat;
 
-import android.app.DialogFragment;
-import android.app.Fragment;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -145,21 +146,21 @@ public class ChatFragment extends Fragment {
                     switch (message.getMimeType()) {
                         case SurespotConstants.MimeTypes.TEXT:
                             dialog = TextMessageMenuFragment.newInstance(mOurUsername, message);
-                            dialog.show(getActivity().getFragmentManager(), "TextMessageMenuFragment");
+                            dialog.show(getActivity().getSupportFragmentManager(), "TextMessageMenuFragment");
                             break;
                         case SurespotConstants.MimeTypes.IMAGE:
                             dialog = ImageMessageMenuFragment.newInstance(mOurUsername, message);
-                            dialog.show(getActivity().getFragmentManager(), "ImageMessageMenuFragment");
+                            dialog.show(getActivity().getSupportFragmentManager(), "ImageMessageMenuFragment");
                             break;
                         case SurespotConstants.MimeTypes.M4A:
                             dialog = VoiceMessageMenuFragment.newInstance(mOurUsername, message);
-                            dialog.show(getActivity().getFragmentManager(), "VoiceMessageMenuFragment");
+                            dialog.show(getActivity().getSupportFragmentManager(), "VoiceMessageMenuFragment");
                             break;
                         case SurespotConstants.MimeTypes.GIF_LINK:
                         case SurespotConstants.MimeTypes.FILE:
                         default:
                             dialog = GifMessageMenuFragment.newInstance(mOurUsername, message);
-                            dialog.show(getActivity().getFragmentManager(), "GifMessageMenuFragment");
+                            dialog.show(getActivity().getSupportFragmentManager(), "GifMessageMenuFragment");
                             break;
                     }
 

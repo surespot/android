@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -117,7 +118,7 @@ import okhttp3.Response;
 import static android.view.View.GONE;
 import static com.twofours.surespot.SurespotConstants.ExtraNames.MESSAGE_TO;
 
-public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
+public class MainActivity extends FragmentActivity implements EmojiconsView.OnEmojiconBackspaceClickedListener, OnEmojiconClickedListener {
     public static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String MESSAGE_MODE_KEYBOARD = "keyboard";
@@ -882,7 +883,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 mUser,
                 this.hashCode(),
                 (ViewPager) mainView.findViewById(R.id.pager),
-                getFragmentManager(),
+                getSupportFragmentManager(),
                 titlePageIndicator,
                 mMenuItems,
                 new IAsyncCallback<Boolean>() {
@@ -2894,9 +2895,9 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
         EmojiconsView.input(mEtMessage, emojicon);
     }
 
-    void sendBackPressed() {
-        this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-    }
+//    void sendBackPressed() {
+//        this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+//    }
 
     void requestFocus(View view) {
 
