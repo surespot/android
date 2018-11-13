@@ -23,15 +23,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.twofours.surespot.R;
@@ -47,7 +44,6 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.utils.ChatUtils;
-import com.twofours.surespot.utils.UIUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,7 +91,21 @@ public class SurespotGcmListenerService extends GcmListenerService {
         String type = bundle.getString("type");
         String from = bundle.getString("sentfrom");
 
+        //show different notification on lollipop and above
+        boolean is21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+
         ChatController chatController = ChatManager.getChatController(to);
+
+        boolean sameUser = ChatManager.isChatControllerAttached(to);
+        //get alias if we can
+        String fromName = from;
+        if (sameUser && chatController != null) {
+            fromName = chatController.getAliasedName(from);
+            //if we have an alias show it
+            if (!fromName.equals(from)) {
+                fromName = fromName + " (" + from + ")";
+            }
+        }
 
         if ("message".equals(type)) {
             // make sure to is someone on this phone
@@ -114,8 +124,8 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     isScreenOn = mPm.isScreenOn();
                 }
             }
+
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
-            boolean sameUser = ChatManager.isChatControllerAttached(to);
             boolean chatControllerConnected = false;
 
             //if current chat controller is for to user
@@ -138,7 +148,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
                     }
                 }
             }
-
 
             boolean uiAttached = ChatManager.isUIAttached();
 
@@ -213,21 +222,13 @@ public class SurespotGcmListenerService extends GcmListenerService {
                             //SurespotLog.d(TAG, "GOT PASSWORD: %s",  password);
 
 
-                            String fromName = null;
-                            //get friend name if we can otherwise no name
-                            if (sameUser && chatController != null) {
-                                fromName = chatController.getAliasedName(from);
-                            }
-
                             generateNotification(
                                     this,
                                     SurespotConstants.IntentFilters.MESSAGE_RECEIVED,
                                     from,
                                     to,
-                                    getString(R.string.notification_title),
-                                    TextUtils.isEmpty(fromName) ?
-                                            getString(R.string.notification_message_no_from, to) :
-                                            getString(R.string.notification_message, to, fromName),
+                                    is21 ? to : getString(R.string.notification_title),
+                                    is21 ? getString(R.string.notification_message_21, fromName) : getString(R.string.notification_message, to, fromName),
                                     to + ":" + spot,
                                     SurespotConstants.IntentRequestCodes.NEW_MESSAGE_NOTIFICATION);
                         }
@@ -243,22 +244,13 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
 
-            boolean sameUser = ChatManager.isChatControllerAttached(to);
-            String fromName = null;
-            //get friend name if we can otherwise no name
-            if (sameUser && chatController != null) {
-                fromName = chatController.getAliasedName(from);
-            }
-
             generateNotification(
                     this,
                     SurespotConstants.IntentFilters.INVITE_REQUEST,
                     from,
                     to,
-                    getString(R.string.notification_title),
-                    TextUtils.isEmpty(fromName) ?
-                            getString(R.string.notification_invite_no_from, to) :
-                            getString(R.string.notification_invite, to, fromName),
+                    is21 ? to : getString(R.string.notification_title),
+                    is21 ? getString(R.string.notification_invite_21, fromName) : getString(R.string.notification_invite, to, fromName),
                     to + ":" + from,
                     SurespotConstants.IntentRequestCodes.INVITE_REQUEST_NOTIFICATION);
             return;
@@ -270,22 +262,13 @@ public class SurespotGcmListenerService extends GcmListenerService {
                 return;
             }
 
-            boolean sameUser = ChatManager.isChatControllerAttached(to);
-            String fromName = null;
-            //get friend name if we can otherwise no name
-            if (sameUser && chatController != null) {
-                fromName = chatController.getAliasedName(from);
-            }
-
             generateNotification(
                     this,
                     SurespotConstants.IntentFilters.INVITE_RESPONSE,
                     from,
                     to,
-                    getString(R.string.notification_title),
-                    TextUtils.isEmpty(fromName) ?
-                            getString(R.string.notification_invite_accept_no_from, to) :
-                            getString(R.string.notification_invite_accept, to, fromName),
+                    is21 ? to : getString(R.string.notification_title),
+                    is21 ? getString(R.string.notification_invite_accept_21, fromName) : getString(R.string.notification_invite_accept, to, fromName),
                     to,
                     SurespotConstants.IntentRequestCodes.INVITE_RESPONSE_NOTIFICATION);
             return;

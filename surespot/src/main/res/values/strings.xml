@@ -355,9 +355,6 @@
     <string name="disable_keystore_title">Disable keychain?</string>
     <string name="pref_title_enable_keystore">Keychain enabled</string>
     <string name="pref_summary_enable_keystore">Enable by electing to save password on login screen</string>
-    <string name="notification_message_no_from">%s: New message received.</string>
-    <string name="notification_invite_no_from">%s: Friend invite received.</string>
-    <string name="notification_invite_accept_no_from">%s: Friend invite accepted.</string>
     <string name="pref_disable_voice_title">Disable voice</string>
     <string name="pref_disable_voice">Disable voice messaging</string>
     <string name="need_storage_permission">surespot can not manage identities on the device without Storage permission.</string>
@@ -397,4 +394,7 @@
     <string name="need_storage_permission_gallery">surespot needs Storage permission to access photos.</string>
     <string name="disable_voice_messaging_permission">Do you wish to disable voice messaging?\n(You can always re-enable in identity options in surespot settings).</string>
     <string name="need_storage_permission_save_to_gallery">surespot needs Storage permission to save photos.</string>
+    <string name="notification_message_21">"New message from %s."</string>
+    <string name="notification_invite_21">"Friend invite from %s."</string>
+    <string name="notification_invite_accept_21">%s has accepted your friend invite.</string>
 </resources>
