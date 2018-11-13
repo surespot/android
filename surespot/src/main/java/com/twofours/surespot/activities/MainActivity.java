@@ -2394,35 +2394,11 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 updateMessageBar();
                 break;
             case MESSAGE_MODE_GALLERY:
-                mCurrentMessageMode = MESSAGE_MODE_GALLERY;
-                gifFrame.setVisibility(GONE);
-                mGiphySearchFieldLayout.setVisibility(GONE);
-                mSendButton.setVisibility(View.VISIBLE);
-
-                //wait until the keyboard's shown if it's not visible so we can get the height
-                if (!mActivityLayout.isKeyboardVisible()) {
-                    mWaitingForKeyboardToShow = true;
-                    mEtMessage.setVisibility(View.VISIBLE);
-                    requestFocus(mEtMessage);
-                    if (input != null) {
-                        input.showSoftInput(mEtMessage, 0);
-                    }
+                // can't send images to deleted folk
+                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+                    return;
                 }
-                else {
-                    setGalleryMode();
-                }
-
-
-//                scanFiles(new IAsyncCallbackTuple<String, Uri>() {
-//                    @Override
-//                    public void handleResponse(String path, Uri uri) {
-//       //                 if (path == null) return;
-
-
-                //    if (mGalleryModeHandler == null) {
-
-//                    }
-//                });
+                checkPermissionGallery(MainActivity.this);
                 break;
             case MESSAGE_MODE_CAMERA:
                 // can't send images to deleted folk
@@ -2437,6 +2413,59 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
 
         //  SurespotLog.v(TAG, "setMode keyboard height: %d", keyboardHeight);
     }
+
+    private void checkPermissionGallery(final Activity activity) {
+        SurespotLog.d(TAG, "checkPermissionReadStorage");
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getString(R.string.need_storage_permission_gallery),
+                        getString(R.string.permission_required),
+                        getString(R.string.ok),
+                        getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            @Override
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+                                }
+                            }
+                        }
+                );
+            }
+            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
+            }
+        }
+        else {
+            showGallery();
+        }
+    }
+
+    private void showGallery() {
+        final InputMethodManager input = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        final View gifFrame = findViewById(R.id.gifFrame);
+
+        mCurrentMessageMode = MESSAGE_MODE_GALLERY;
+        gifFrame.setVisibility(GONE);
+        mGiphySearchFieldLayout.setVisibility(GONE);
+        mSendButton.setVisibility(View.VISIBLE);
+
+        //wait until the keyboard's shown if it's not visible so we can get the height
+        if (!mActivityLayout.isKeyboardVisible()) {
+            mWaitingForKeyboardToShow = true;
+            mEtMessage.setVisibility(View.VISIBLE);
+            requestFocus(mEtMessage);
+            if (input != null) {
+                input.showSoftInput(mEtMessage, 0);
+            }
+        }
+        else {
+            setGalleryMode();
+        }
+    }
+
 
     private void checkPermissionCamera(final Activity activity) {
         SurespotLog.d(TAG, "checkPermissionReadStorage");
@@ -2487,6 +2516,28 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 public void handleResponse(Boolean result) {
                                     if (result) {
                                         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
+                                    }
+                                }
+                            });
+                }
+            }
+            break;
+            case SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE: {
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    showGallery();
+                }
+                else {
+                    UIUtils.createAndShowConfirmationDialog(
+                            this,
+                            getString(R.string.need_storage_permission_gallery),
+                            getString(R.string.permission_required),
+                            getString(R.string.ok),
+                            getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                @Override
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.REQUEST_SELECT_IMAGE);
                                     }
                                 }
                             });
