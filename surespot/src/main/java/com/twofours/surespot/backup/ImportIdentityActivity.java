@@ -552,7 +552,7 @@ public class ImportIdentityActivity extends Activity {
                 else {
                     UIUtils.createAndShowConfirmationDialog(
                             this,
-                            getString(R.string.enable_storage_permission),
+                            getString(R.string.need_storage_permission),
                             getString(R.string.permission_required),
                             getString(R.string.ok),
                             getString(R.string.cancel),
