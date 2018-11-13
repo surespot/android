@@ -393,7 +393,7 @@
     <string name="permission_required">Permission Required</string>
     <string name="need_contacts_permission">surespot needs Contacts permission to obtain Google accounts for Drive access.</string>
     <string name="need_mic_permission">surespot needs Microphone permission to record audio for voice messages.</string>
-    <string name="need_camera_permission">surespot needs Camera permission to take pictures.</string>
+    <string name="need_camera_permission">surespot needs Camera and Storage permissions to take pictures.</string>
     <string name="need_storage_permission_gallery">surespot needs Storage permission to access photos.</string>
     <string name="disable_voice_messaging_permission">Do you wish to disable voice messaging?\n(You can always re-enable in identity options in surespot settings).</string>
     <string name="need_storage_permission_save_to_gallery">surespot needs Storage permission to save photos.</string>

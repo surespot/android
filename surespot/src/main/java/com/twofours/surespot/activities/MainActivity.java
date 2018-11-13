@@ -2470,8 +2470,14 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
 
     private void checkPermissionCamera(final Activity activity) {
         SurespotLog.d(TAG, "checkPermissionReadStorage");
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+        //camera needs camera and write_external_storage
+        if ((ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) &&
+            (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+
+            captureImage();
+        }
+        else {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA) || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 UIUtils.createAndShowConfirmationDialog(
                         activity,
                         getString(R.string.need_camera_permission),
@@ -2482,27 +2488,25 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                             @Override
                             public void handleResponse(Boolean result) {
                                 if (result) {
-                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
                                 }
                             }
                         }
                 );
             }
             else {
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
             }
-        }
-        else {
-            captureImage();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE: {
-                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                if ((grantResults.length > 1) && (grantResults[0] == PackageManager.PERMISSION_GRANTED) && (grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
                     captureImage();
                 }
                 else {
@@ -2516,7 +2520,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                                 @Override
                                 public void handleResponse(Boolean result) {
                                     if (result) {
-                                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
+                                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
                                     }
                                 }
                             });
