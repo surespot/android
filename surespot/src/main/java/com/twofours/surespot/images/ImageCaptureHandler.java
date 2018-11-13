@@ -5,14 +5,16 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 
+import com.twofours.surespot.BuildConfig;
+import com.twofours.surespot.SurespotConstants;
+import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.chat.ChatController;
 import com.twofours.surespot.chat.ChatManager;
 import com.twofours.surespot.utils.ChatUtils;
 import com.twofours.surespot.utils.FileUtils;
-import com.twofours.surespot.SurespotConstants;
-import com.twofours.surespot.SurespotLog;
 
 import java.io.File;
 
@@ -49,11 +51,13 @@ public class ImageCaptureHandler implements Parcelable {
         try {
             f = FileUtils.createGalleryImageFile(".jpg");
             mCurrentPhotoPath = f.getAbsolutePath();
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
+
+            Uri photoURI = FileProvider.getUriForFile(activity,BuildConfig.APPLICATION_ID + ".provider",f);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
 
             activity.startActivityForResult(intent, SurespotConstants.IntentRequestCodes.REQUEST_CAPTURE_IMAGE);
         } catch (Exception e) {
-            SurespotLog.w(TAG, "capture", e);
+            SurespotLog.w(TAG,e, "capture");
         }
 
     }
