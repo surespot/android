@@ -117,7 +117,7 @@ public class ImportIdentityActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                chooseAccount(true);
+                checkPermissionGetAccounts(ImportIdentityActivity.this, true);
             }
         });
 
@@ -265,7 +265,6 @@ public class ImportIdentityActivity extends Activity {
                     if (checked) {
                         if (view.getTag().equals("drive")) {
                             if (mShowingLocal) {
-                                //request contacts
 
                                 mDriveListview.setAdapter(null);
                                 mSwitcher.showNext();
@@ -288,7 +287,7 @@ public class ImportIdentityActivity extends Activity {
                                         }
                                     }
                                     else {
-                                        chooseAccount(false);
+                                        checkPermissionGetAccounts(ImportIdentityActivity.this, false);
                                     }
                                 }
 
@@ -326,9 +325,7 @@ public class ImportIdentityActivity extends Activity {
                     return null;
                 }
             }.execute();
-
         }
-
     }
 
     private void setupLocal() {
@@ -462,34 +459,58 @@ public class ImportIdentityActivity extends Activity {
         });
     }
 
-    private void checkPermissionReadStorage(Activity activity) {
+    private void checkPermissionReadStorage(final Activity activity) {
         SurespotLog.d(TAG, "checkPermissionReadStorage");
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                Utils.makeLongToast(this, getString(R.string.need_storage_permission));
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getString(R.string.need_storage_permission),
+                        getString(R.string.permission_required),
+                        getString(R.string.ok),
+                        getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            @Override
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
+                                }
+                            }
+                        }
+                );
+            }
+            else {
                 ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
-//            }
-//            else {
-//                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
-//            }
-
+            }
         }
         else {
             setupLocal();
         }
     }
 
-    private void checkPermissionGetAccounts(Activity activity, boolean ask) {
+    private void checkPermissionGetAccounts(final Activity activity, boolean ask) {
         SurespotLog.d(TAG, "checkPermissionGetAccounts");
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.GET_ACCOUNTS)) {
-//                Utils.makeLongToast(this, getString(R.string.need_storage_permission));
-//                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
-//            }
-//            else {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.GET_ACCOUNTS)) {
+                UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getString(R.string.need_contacts_permission),
+                        getString(R.string.permission_required),
+                        getString(R.string.ok),
+                        getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            @Override
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+                                }
+                            }
+                        }
+                );
+            }
+            else {
                 ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
-            //}
-
+            }
         }
         else {
             chooseAccount(ask);
@@ -506,7 +527,20 @@ public class ImportIdentityActivity extends Activity {
                     chooseAccount(false);
                 }
                 else {
-                    Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
+                    UIUtils.createAndShowConfirmationDialog(
+                            this,
+                            getString(R.string.need_contacts_permission),
+                            getString(R.string.permission_required),
+                            getString(R.string.ok),
+                            getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                @Override
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        ActivityCompat.requestPermissions(ImportIdentityActivity.this, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+                                    }
+                                }
+                            });
                 }
             }
             break;
@@ -516,8 +550,29 @@ public class ImportIdentityActivity extends Activity {
                     setupLocal();
                 }
                 else {
-                    Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
+                    UIUtils.createAndShowConfirmationDialog(
+                            this,
+                            getString(R.string.enable_storage_permission),
+                            getString(R.string.permission_required),
+                            getString(R.string.ok),
+                            getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                @Override
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        ActivityCompat.requestPermissions(ImportIdentityActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
+                                    }
 
+                                    else {
+                                        UIUtils.createAndShowOKDialog(
+                                                ImportIdentityActivity.this,
+                                                getString(R.string.enable_storage_permission),
+                                                getString(R.string.permission_required),
+                                                null
+                                        );
+                                    }
+                                }
+                            });
                 }
             }
         }
@@ -538,7 +593,7 @@ public class ImportIdentityActivity extends Activity {
         }
 
         if (mDriveHelper.getDriveAccount() == null) {
-            chooseAccount(false);
+            checkPermissionGetAccounts(this, false);
             return;
         }
 
@@ -940,7 +995,6 @@ public class ImportIdentityActivity extends Activity {
                 }
         }
     }
-
 
 
     private void chooseAccount(boolean ask) {

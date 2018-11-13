@@ -145,6 +145,25 @@ public class UIUtils {
 
     }
 
+    public static AlertDialog createAndShowOKDialog(Context context, String message, String title, final IAsyncCallback<Boolean> callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(message).setTitle(title).setPositiveButton(context.getString(R.string.ok), new OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (callback != null) {
+                    callback.handleResponse(true);
+                }
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        return dialog;
+
+    }
+
     public static void launchMainActivityDeleted(Context context) {
         Intent finalIntent = new Intent(context, MainActivity.class);
         finalIntent.putExtra("deleted", true);

@@ -390,4 +390,9 @@
     <string name="close_all_tabs">Close all tabs</string>
     <string name="pref_giphy_search_language_title">GIPHY Search Language...</string>
     <string name="channel_name">General</string>
+    <string name="permission_required">Permission Required</string>
+    <string name="need_contacts_permission">surespot needs Contacts permission to obtain Google accounts for Drive access.</string>
+    <string name="need_mic_permission">surespot needs Microphone permission to record audio for voice messages.</string>
+    <string name="need_camera_permission">surespot needs Camera permission to take pictures.</string>
+    <string name="need_storage_permission_gallery">surespot needs Storage permission to access photos.</string>
 </resources>
