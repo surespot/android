@@ -427,7 +427,7 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                                 SharedPreferences sp = MainActivity.this.getSharedPreferences(mUser, Context.MODE_PRIVATE);
                                 boolean disableVoice = sp.getBoolean(SurespotConstants.PrefNames.VOICE_DISABLED, false);
                                 if (!disableVoice) {
-                                    VoiceController.startRecording(MainActivity.this, mUser, friend.getName());
+                                    checkPermissionVoice(MainActivity.this);
                                 }
                                 else {
                                     cc.closeTab();
@@ -2544,6 +2544,44 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
                 }
             }
             break;
+            case SurespotConstants.IntentRequestCodes.REQUEST_MICROPHONE: {
+                if (grantResults.length ==0 || ((grantResults.length > 0) && (grantResults[0] != PackageManager.PERMISSION_GRANTED)) ) {
+                    UIUtils.createAndShowConfirmationDialog(
+                            this,
+                            getString(R.string.need_mic_permission),
+                            getString(R.string.permission_required),
+                            getString(R.string.ok),
+                            getString(R.string.cancel),
+                            new IAsyncCallback<Boolean>() {
+                                @Override
+                                public void handleResponse(Boolean result) {
+                                    if (result) {
+                                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, SurespotConstants.IntentRequestCodes.REQUEST_MICROPHONE);
+                                    }
+                                    else {
+                                        UIUtils.createAndShowConfirmationDialog(
+                                                MainActivity.this,
+                                                getString(R.string.disable_voice_messaging_permission),
+                                                getString(R.string.pref_disable_voice),
+                                                getString(R.string.ok),
+                                                getString(R.string.cancel),
+                                                new IAsyncCallback<Boolean>() {
+                                                    @Override
+                                                    public void handleResponse(Boolean result) {
+                                                        if (result) {
+                                                            //disable voice
+                                                            Utils.putUserSharedPrefsBoolean(MainActivity.this, mUser,SurespotConstants.PrefNames.VOICE_DISABLED, true);
+                                                            setButtonText();
+                                                        }
+                                                    }
+                                                }
+                                        );
+                                    }
+                                }
+                            });
+                }
+            }
+            break;
         }
     }
 
@@ -2559,6 +2597,56 @@ public class MainActivity extends Activity implements EmojiconsView.OnEmojiconBa
             }
         }.execute();
 
+    }
+
+    private void checkPermissionVoice(final Activity activity) {
+        SurespotLog.d(TAG, "checkPermissionMicrophone");
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
+                UIUtils.createAndShowConfirmationDialog(
+                        activity,
+                        getString(R.string.need_mic_permission),
+                        getString(R.string.permission_required),
+                        getString(R.string.ok),
+                        getString(R.string.cancel),
+                        new IAsyncCallback<Boolean>() {
+                            @Override
+                            public void handleResponse(Boolean result) {
+                                if (result) {
+                                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, SurespotConstants.IntentRequestCodes.REQUEST_MICROPHONE);
+                                }
+                                else {
+                                    UIUtils.createAndShowConfirmationDialog(
+                                            activity,
+                                            getString(R.string.disable_voice_messaging_permission),
+                                            getString(R.string.pref_disable_voice),
+                                            getString(R.string.ok),
+                                            getString(R.string.cancel),
+                                            new IAsyncCallback<Boolean>() {
+                                                @Override
+                                                public void handleResponse(Boolean result) {
+                                                    if (result) {
+                                                        //disable voice
+                                                        Utils.putUserSharedPrefsBoolean(MainActivity.this, mUser,SurespotConstants.PrefNames.VOICE_DISABLED, true);
+                                                        setButtonText();
+                                                    }
+                                                }
+                                            }
+                                    );
+                                }
+                            }
+                        }
+                );
+            }
+            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, SurespotConstants.IntentRequestCodes.REQUEST_MICROPHONE);
+            }
+        }
+        else {
+            if (mUser != null && mCurrentFriend != null) {
+                VoiceController.startRecording(MainActivity.this, mUser, mCurrentFriend.getName());
+            }
+        }
     }
 
     private void switchViews() {

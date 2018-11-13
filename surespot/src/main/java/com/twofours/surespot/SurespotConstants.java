@@ -95,6 +95,7 @@ public class SurespotConstants {
 		public final static int WRITE_EXTERNAL_STORAGE = 20;
 		public final static int REQUEST_SELECT_FILE = 21;
 		public final static int REQUEST_GET_ACCOUNTS = 22;
+		public final static int REQUEST_MICROPHONE = 23;
 
 	}
 	

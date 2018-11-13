@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -225,6 +226,10 @@ public class VoiceController {
     }
 
     public static synchronized void startRecording(Activity context, String from, String to) {
+        if (TextUtils.isEmpty(from) || TextUtils.isEmpty(to)) {
+            return;
+        }
+
         if (!mRecording) {
             stopPlaying();
             // disable rotation
