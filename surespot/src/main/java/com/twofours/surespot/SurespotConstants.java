@@ -14,7 +14,7 @@ public class SurespotConstants {
 	public static final String SERVER_PUBLIC_KEY =  PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
 
 	public final static boolean LOGGING = true;
-	public final static int MAX_IDENTITIES = 30;
+	public final static int MAX_IDENTITIES = 3;
 
 	public final static boolean SSL_STRICT = true;
 
@@ -42,6 +42,7 @@ public class SurespotConstants {
 		public static final String IMAGE_MESSAGE = "image_message";
 		public static final String NOTIFICATION_TYPE = "notification_type";
 		public static final String UNSENT_MESSAGES = "unsent_messages";
+
 
 	}
 
@@ -93,6 +94,7 @@ public class SurespotConstants {
 		public final static int READ_EXTERNAL_STORAGE = 19;
 		public final static int WRITE_EXTERNAL_STORAGE = 20;
 		public final static int REQUEST_SELECT_FILE = 21;
+		public final static int REQUEST_GET_ACCOUNTS = 22;
 
 	}
 	

@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.view.MenuItem;
@@ -50,9 +51,7 @@ import com.twofours.surespot.utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,8 +133,7 @@ public class ImportIdentityActivity extends Activity {
                     return;
                 }
 
-                @SuppressWarnings("unchecked")
-                final Map<String, String> map = (Map<String, String>) mDriveAdapter.getItem(position);
+                @SuppressWarnings("unchecked") final Map<String, String> map = (Map<String, String>) mDriveAdapter.getItem(position);
 
                 final String user = map.get("name");
 
@@ -267,6 +265,7 @@ public class ImportIdentityActivity extends Activity {
                     if (checked) {
                         if (view.getTag().equals("drive")) {
                             if (mShowingLocal) {
+                                //request contacts
 
                                 mDriveListview.setAdapter(null);
                                 mSwitcher.showNext();
@@ -341,28 +340,30 @@ public class ImportIdentityActivity extends Activity {
         final java.io.File exportDir = FileUtils.getIdentityExportDir();
         SurespotLog.d(TAG, "exportDir: %s", exportDir.getAbsolutePath());
         java.io.File[] files = IdentityController.getExportIdentityFiles(this, exportDir.getPath());
-        Arrays.sort(files, new Comparator() {
-
-            public int compare(Object o1, Object o2) {
-                Long x1 = ((java.io.File) o1).lastModified();
-                Long x2 = ((java.io.File) o2).lastModified();
-
-                int sComp = x2.compareTo(x1);
-
-                if (sComp != 0) {
-                    return sComp;
-                }
-
-                String s1 = ((java.io.File) o1).getName();
-                String s2 = ((java.io.File) o2).getName();
-                return s1.compareTo(s2);
-            }});
 
         SurespotLog.d(TAG, "files: %s", Arrays.toString(files));
         TextView tvLocalLocation = (TextView) findViewById(R.id.restoreLocalLocation);
 
         List<HashMap<String, String>> items = new ArrayList<HashMap<String, String>>();
         if (files != null) {
+            Arrays.sort(files, new Comparator() {
+
+                public int compare(Object o1, Object o2) {
+                    Long x1 = ((java.io.File) o1).lastModified();
+                    Long x2 = ((java.io.File) o2).lastModified();
+
+                    int sComp = x2.compareTo(x1);
+
+                    if (sComp != 0) {
+                        return sComp;
+                    }
+
+                    String s1 = ((java.io.File) o1).getName();
+                    String s2 = ((java.io.File) o2).getName();
+                    return s1.compareTo(s2);
+                }
+            });
+
             for (java.io.File file : files) {
                 long modTime = file.lastModified();
                 String date = DateFormat.getDateFormat(this).format(modTime) + " " + DateFormat.getTimeFormat(this).format(modTime);
@@ -461,35 +462,62 @@ public class ImportIdentityActivity extends Activity {
         });
     }
 
-    public void checkPermissionReadStorage(Activity activity) {
+    private void checkPermissionReadStorage(Activity activity) {
         SurespotLog.d(TAG, "checkPermissionReadStorage");
-//        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
-//        }
-//        else {
-        setupLocal();
-        //}
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+//                Utils.makeLongToast(this, getString(R.string.need_storage_permission));
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
+//            }
+//            else {
+//                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE);
+//            }
+
+        }
+        else {
+            setupLocal();
+        }
     }
+
+    private void checkPermissionGetAccounts(Activity activity, boolean ask) {
+        SurespotLog.d(TAG, "checkPermissionGetAccounts");
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.GET_ACCOUNTS)) {
+//                Utils.makeLongToast(this, getString(R.string.need_storage_permission));
+//                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+//            }
+//            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.GET_ACCOUNTS}, SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS);
+            //}
+
+        }
+        else {
+            chooseAccount(ask);
+        }
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
+            case SurespotConstants.IntentRequestCodes.REQUEST_GET_ACCOUNTS: {
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    chooseAccount(false);
+                }
+                else {
+                    Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
+                }
+            }
+            break;
             case SurespotConstants.IntentRequestCodes.READ_EXTERNAL_STORAGE: {
                 //premission to read storage
-                if (grantResults.length > 0) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        setupLocal();
-                    }
-                    else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                            Utils.makeLongToast(this, getString(R.string.need_storage_permission));
-                        }
-                        else {
-                            //didn't want to give us permission
-                            Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
-                        }
-                    }
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    setupLocal();
+                }
+                else {
+                    Utils.makeLongToast(this, getString(R.string.enable_storage_permission));
+
                 }
             }
         }
@@ -913,6 +941,8 @@ public class ImportIdentityActivity extends Activity {
         }
     }
 
+
+
     private void chooseAccount(boolean ask) {
         String descriptionText = null;
         if (mMode == MODE_DRIVE) {
@@ -950,4 +980,5 @@ public class ImportIdentityActivity extends Activity {
             mDialog.dismiss();
         }
     }
+
 }

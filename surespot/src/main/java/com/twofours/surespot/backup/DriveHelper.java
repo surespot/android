@@ -44,7 +44,7 @@ public class DriveHelper {
 				scopes.add("https://www.googleapis.com/auth/drive.install");
 				GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(mContext, scopes);
 				credential.setSelectedAccountName(mAccount.name);
-				mService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), new JacksonFactory().getDefaultInstance(), credential).build();
+				mService = new Drive.Builder(AndroidHttp.newCompatibleTransport(), JacksonFactory.getDefaultInstance(), credential).build();
 
 			}
 
