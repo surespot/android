@@ -29,6 +29,7 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.text.TextUtils;
 
 import com.google.android.gms.gcm.GcmListenerService;
 import com.twofours.surespot.R;
@@ -44,6 +45,7 @@ import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.friends.FriendAdapter;
 import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.utils.ChatUtils;
+import com.twofours.surespot.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -88,6 +90,12 @@ public class SurespotGcmListenerService extends GcmListenerService {
     public void onMessageReceived(String senderId, Bundle bundle) {
         SurespotLog.i(TAG, "received GCM message, bundle: " + bundle);
         String to = bundle.getString("to");
+
+        // make sure to is someone on this phone
+        if (!IdentityController.getIdentityNames(this).contains(to)) {
+            return;
+        }
+
         String type = bundle.getString("type");
         String from = bundle.getString("sentfrom");
 
@@ -96,23 +104,15 @@ public class SurespotGcmListenerService extends GcmListenerService {
 
         ChatController chatController = ChatManager.getChatController(to);
 
-        boolean sameUser = ChatManager.isChatControllerAttached(to);
-        //get alias if we can
-        String fromName = from;
-        if (sameUser && chatController != null) {
-            fromName = chatController.getAliasedName(from);
-            //if we have an alias show it
-            if (!fromName.equals(from)) {
-                fromName = fromName + " (" + from + ")";
-            }
+        //get alias
+        String fromName = Utils.getAlias(this, to, from);
+
+        //if we don't have alias use from
+        if (TextUtils.isEmpty(fromName)) {
+            fromName = from;
         }
 
         if ("message".equals(type)) {
-            // make sure to is someone on this phone
-            if (!IdentityController.getIdentityNames(this).contains(to)) {
-                return;
-            }
-
             // if the chat is currently showing don't show a notification
             // TODO setting for this
 
@@ -126,6 +126,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             }
 
             boolean hasLoggedInUser = IdentityController.hasLoggedInUser();
+            boolean sameUser = ChatManager.isChatControllerAttached(to);
             boolean chatControllerConnected = false;
 
             //if current chat controller is for to user
@@ -239,11 +240,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
         }
 
         if ("invite".equals(type)) {
-            // make sure to is someone on this phone
-            if (!IdentityController.getIdentityNames(this).contains(to)) {
-                return;
-            }
-
             generateNotification(
                     this,
                     SurespotConstants.IntentFilters.INVITE_REQUEST,
@@ -257,11 +253,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
         }
 
         if ("inviteResponse".equals(type)) {
-            // make sure to is someone on this phone
-            if (!IdentityController.getIdentityNames(this).contains(to)) {
-                return;
-            }
-
             generateNotification(
                     this,
                     SurespotConstants.IntentFilters.INVITE_RESPONSE,

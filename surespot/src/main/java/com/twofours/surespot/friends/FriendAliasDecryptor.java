@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.encryption.EncryptionController;
+import com.twofours.surespot.utils.Utils;
 
 import java.lang.ref.WeakReference;
 
@@ -80,6 +81,7 @@ public class FriendAliasDecryptor {
 					mFriend.getAliasVersion(), mFriend.getAliasIv(), mFriend.isAliasHashed(), mFriend.getAliasData());
 
 			mFriend.setAliasPlain(plainText);
+			Utils.putAlias(mContext, mOurUsername, mFriend.getName(), plainText);
 
 			if (textViewReference != null) {
 

@@ -154,6 +154,21 @@ public class Utils {
 
 	}
 
+	public static boolean putAlias(Context context, String username, String friendname, String alias) {
+		return putUserSharedPrefsString(context,username,"alias_" + friendname, alias);
+	}
+
+	public static String getAlias(Context context, String username, String friendname) {
+		return getUserSharedPrefsString(context, username, "alias_" + friendname);
+	}
+
+
+	public static boolean removeAlias(Context context, String username, String friendname) {
+		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);
+		Editor e = sp.edit();
+		e.remove("alias_" + friendname);
+		return e.commit();
+	}
 
 	public static String getUserSharedPrefsString(Context context, String username, String key) {
 		SharedPreferences sp = context.getSharedPreferences(username, Context.MODE_PRIVATE);

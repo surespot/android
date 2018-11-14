@@ -178,6 +178,7 @@ public class FriendAdapter extends BaseAdapter {
 
               //      SurespotLog.v(TAG, "setting alias for %s", friend.getName());
                     friend.setAliasPlain(plainText);
+                    Utils.putAlias(mContext, mUsername, friend.getName(), plainText);
                 }
             }
         }

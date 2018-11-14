@@ -2057,7 +2057,7 @@ public class ChatController {
         }
     }
 
-    public void setFriendAlias(String name, String data, String version, String iv, boolean hashed) {
+    public void setFriendAlias(final String name, String data, String version, String iv, boolean hashed) {
         final Friend friend = mFriendAdapter.getFriend(name);
         if (friend != null) {
             friend.setAliasData(data);
@@ -2071,13 +2071,14 @@ public class ChatController {
                 protected String doInBackground(Void... params) {
                     String plainText = EncryptionController.symmetricDecrypt(mContext, mUsername, friend.getAliasVersion(), mUsername,
                             friend.getAliasVersion(), friend.getAliasIv(), friend.isAliasHashed(), friend.getAliasData());
-
+                    Utils.putAlias(mContext, mUsername, name, plainText);
                     return plainText;
                 }
 
                 protected void onPostExecute(String plainAlias) {
 
                     friend.setAliasPlain(plainAlias);
+
                     saveFriends();
                     mFriendAdapter.notifyFriendAliasChanged();
                     mFriendAdapter.sort();
@@ -2127,6 +2128,7 @@ public class ChatController {
 
     private void removeFriendAlias(String name) {
         final Friend friend = mFriendAdapter.getFriend(name);
+        Utils.removeAlias(mContext, mUsername, name);
         if (friend != null) {
             friend.setAliasData(null);
             friend.setAliasIv(null);
