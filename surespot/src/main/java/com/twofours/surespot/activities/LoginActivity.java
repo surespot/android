@@ -59,10 +59,7 @@ public class LoginActivity extends Activity {
     private static final String TAG = "LoginActivity";
     MultiProgressDialog mMpd;
     private List<String> mIdentityNames;
-    private boolean mLoginAttempted;
-    private boolean mCacheServiceBound;
     private Menu mMenuOverflow;
-    private boolean mLoggedIn = false;
     private EditText mEtPassword;
     private CheckBox mCbSavePassword;
     private boolean mKeystoreNeededUnlocking;
@@ -281,7 +278,6 @@ public class LoginActivity extends Activity {
                             public void onSuccess(int responseCode, String result, okhttp3.Cookie cookie) {
                                 mMpd.decrProgress();
                                 IdentityController.userLoggedIn(LoginActivity.this, idSig.identity, cookie, password);
-                                mLoggedIn = true;
                                 boolean enableKeystore = Utils.getSharedPrefsBoolean(LoginActivity.this, SurespotConstants.PrefNames.KEYSTORE_ENABLED);
 
                                 if (enableKeystore) {

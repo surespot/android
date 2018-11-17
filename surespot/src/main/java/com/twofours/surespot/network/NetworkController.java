@@ -53,6 +53,7 @@ public class NetworkController {
     private static String mBaseUrl;
 
     private OkHttpClient mClient;
+    private OkHttpClient mNonRetryingClient;
     private SurespotCookieJar mCookieStore;
 
     private String mUsername;
@@ -147,6 +148,8 @@ public class NetworkController {
 
         if (SurespotConfiguration.isSslCheckingStrict()) {
             mClient = builder.build();
+            builder.retryOnConnectionFailure(false);
+            mNonRetryingClient = builder.build();
         }
         else {
             try {
@@ -180,7 +183,11 @@ public class NetworkController {
                         return true;
                     }
                 };
-                mClient = builder.sslSocketFactory(sslSocketFactory).hostnameVerifier(mHostnameVerifier).build();
+
+                builder.sslSocketFactory(sslSocketFactory).hostnameVerifier(mHostnameVerifier);
+                mClient = builder.build();
+                builder.retryOnConnectionFailure(false);
+                mNonRetryingClient = builder.build();
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
@@ -223,7 +230,7 @@ public class NetworkController {
                 .url(mBaseUrl + url)
                 .post(RequestBody.create(null, new byte[0]))
                 .build();
-        mClient.newCall(request).enqueue(responseHandler);
+        mNonRetryingClient.newCall(request).enqueue(responseHandler);
     }
 
     public Call postJSON(String url, JSONObject jsonParams, Callback responseHandler) {
@@ -235,7 +242,7 @@ public class NetworkController {
                 .post(body)
                 .build();
 
-        Call call = mClient.newCall(request);
+        Call call = mNonRetryingClient.newCall(request);
         call.enqueue(responseHandler);
         return call;
     }
@@ -249,7 +256,7 @@ public class NetworkController {
                 .post(body)
                 .build();
 
-        Call call = mClient.newCall(request);
+        Call call = mNonRetryingClient.newCall(request);
 
         return call.execute();
 

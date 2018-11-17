@@ -59,13 +59,10 @@ public class SignupActivity extends Activity {
     private Button signupButton;
     private MultiProgressDialog mMpd;
     private MultiProgressDialog mMpdCheck;
-    private boolean mSignupAttempted;
-    private boolean mCacheServiceBound;
 
     private View mUsernameValid;
     private View mUsernameInvalid;
     private Menu mMenuOverflow;
-    private boolean mLoggedIn = false;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private boolean mSigningUp = false;
 
@@ -310,7 +307,6 @@ public class SignupActivity extends Activity {
                                     pwText.setText("");
 
                                     if (responseCode == 201) {
-                                        mLoggedIn = true;
                                         // save key pair now
                                         // that we've created
                                         // a
