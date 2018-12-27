@@ -1938,7 +1938,7 @@ public class ChatController {
     public void closeAllTabs() {
         int count = mChatPagerAdapter.getCount() - 1;
         if (count > 0) {
-           for (int position=count;position>0;position--) {
+            for (int position = count; position > 0; position--) {
                 String name = mChatPagerAdapter.getChatName(position);
                 if (name != null) {
                     SurespotLog.d(TAG, "closeTab, name: %s, position: %d", name, position);
@@ -3264,7 +3264,6 @@ public class ChatController {
             }
 
 
-
             connect();
             processNextMessage();
         }
@@ -3584,7 +3583,7 @@ public class ChatController {
                 if (playedMessage.getTo().equals(mUsername) && playedMessage.getFrom().equals(mCurrentChat)) {
                     int lastPlayedId = playedMessage.getId();
                     for (SurespotMessage message : chatAdapter.getMessages()) {
-                        if (message.getId() > lastPlayedId && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A) && !message.isVoicePlayed()) {
+                        if (message.getId() != null && message.getId() > lastPlayedId && message.getMimeType().equals(SurespotConstants.MimeTypes.M4A) && !message.isVoicePlayed()) {
                             VoiceController.playVoiceMessage(mContext, getSeekBarForMessage(messageListView, message), message);
                             break;
                         }
