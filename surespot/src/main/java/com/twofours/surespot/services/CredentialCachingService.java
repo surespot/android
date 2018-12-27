@@ -7,6 +7,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.LoadingCache;
+import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.Tuple;
@@ -203,9 +204,12 @@ public class CredentialCachingService {
             // load from disk if we have password
             String password = getPassword(mContext, username);
             if (password != null) {
-                cookie = SurespotApplication.getStateController().loadCookie(username, password);
-                if (cookie != null) {
-                    mCookies.put(username, cookie);
+                StateController stateController = SurespotApplication.getStateController();
+                if (stateController != null) {
+                    cookie = stateController.loadCookie(username, password);
+                    if (cookie != null) {
+                        mCookies.put(username, cookie);
+                    }
                 }
             }
         }
