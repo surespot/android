@@ -1066,7 +1066,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
         public void handleResponse(SurespotMessage message) {
             SurespotLog.d(TAG, "voice message play completed");
             //if we're still on the same tab
-            if (message.getFrom().equals(mCurrentFriend.getName())) {
+            if (message != null && mCurrentFriend != null && message.getFrom().equals(mCurrentFriend.getName())) {
                 //tell the adapter
                 ChatController cc = ChatManager.getChatController(mUser);
                 if (cc != null) {
