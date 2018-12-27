@@ -2593,7 +2593,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
     private void captureImage() {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
-                if (mCurrentFriend != null && mCurrentFriend.isDeleted()) {
+                if (mCurrentFriend == null || (mCurrentFriend != null && mCurrentFriend.isDeleted())) {
                     return null;
                 }
                 mImageCaptureHandler = new ImageCaptureHandler(mUser, mCurrentFriend.getName());
