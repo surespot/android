@@ -186,7 +186,7 @@ public class SignupActivity extends Activity {
 
 
             @Override
-            public void onResponse(Call call, Response response, String responseString) throws IOException {
+            public void onResponse(Call call, Response response, String responseString) {
                 mMpdCheck.decrProgress();
                 if (response.isSuccessful()) {
                     if (responseString.equals("true")) {
@@ -306,6 +306,7 @@ public class SignupActivity extends Activity {
                                     confirmPwText.setText("");
                                     pwText.setText("");
 
+
                                     if (responseCode == 201) {
                                         // save key pair now
                                         // that we've created
@@ -364,7 +365,14 @@ public class SignupActivity extends Activity {
                                     SurespotLog.i(TAG,  "signup error %s", content);
                                     mMpd.decrProgress();
                                     mSigningUp = false;
-                                    Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
+
+                                    switch (code) {
+                                        case 403:
+                                            Utils.makeToast(SignupActivity.this, getString(R.string.signup_update));
+                                            break;
+                                        default:
+                                            Utils.makeToast(SignupActivity.this, getString(R.string.could_not_create_user));
+                                    }
                                 }
                             });
                         }

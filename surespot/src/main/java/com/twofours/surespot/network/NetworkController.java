@@ -346,27 +346,27 @@ public class NetworkController {
 
             @Override
             public void onResponse(Call call, Response response, String responseString) throws IOException {
-                Cookie cookie = null;
                 if (response.isSuccessful()) {
-                    cookie = extractConnectCookie(mCookieStore);
-                }
+                    Cookie cookie = extractConnectCookie(mCookieStore);
 
-                if (cookie == null) {
-                    SurespotLog.w(TAG, "did not get cookie from signup");
-                    responseHandler.onFailure(new IOException("Did not get cookie."), 401, "Did not get cookie.");
+                    if (cookie == null) {
+                        SurespotLog.w(TAG, "did not get cookie from signup");
+                        responseHandler.onFailure(new IOException("Did not get cookie."), 401, "Did not get cookie.");
+                    }
+                    else {
+                        setUnauthorized(false, false);
+                        // update shared prefs
+                        if (gcmUpdated) {
+                            Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
+                        }
+
+                        responseHandler.onSuccess(response.code(), responseString, cookie);
+                    }
                 }
                 else {
-                    setUnauthorized(false, false);
-                    // update shared prefs
-                    if (gcmUpdated) {
-                        Utils.putUserSharedPrefsString(mContext, username, SurespotConstants.PrefNames.GCM_ID_SENT, gcmIdReceived);
-                    }
-
-                    responseHandler.onSuccess(response.code(), responseString, cookie);
+                    responseHandler.onFailure(new Exception("Error creating user."), response.code(), String.format("Error creating user, code: %d", response.code()));
                 }
             }
-
-
         }));
     }
 
