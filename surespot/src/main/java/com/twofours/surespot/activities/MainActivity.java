@@ -1638,7 +1638,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 }
 
                 ChatController cc = ChatManager.getChatController(mUser);
-                if (cc != null && !cc.isFriendDeleted(mCurrentFriend.getName())) {
+                if (cc != null && mCurrentFriend != null && !cc.isFriendDeleted(mCurrentFriend.getName())) {
                     sendMessage(mCurrentFriend.getName(), message);
                 }
             }
