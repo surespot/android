@@ -107,7 +107,9 @@ public class GalleryModeDownloader {
             //no thumbnail, generate our own
             uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, data.getId());
             bitmap = ChatUtils.decodeSampledBitmapFromUri(mContext, uri, data.getOrientation(), Math.max(data.getWidth(), data.getHeight()));
-            SurespotLog.v(TAG, "generated bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+            if (bitmap != null) {
+                SurespotLog.v(TAG, "generated bitmap for id: %d, ratio: %f, width: %d, height: %d, orientation: %d", data.getId(), (double) bitmap.getWidth() / bitmap.getHeight(), bitmap.getWidth(), bitmap.getHeight(), data.getOrientation());
+            }
         }
         ct.close();
         return bitmap;
