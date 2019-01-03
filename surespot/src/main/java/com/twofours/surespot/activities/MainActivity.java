@@ -2832,6 +2832,10 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
 
 
     public void disableMessageMode(boolean showKeyboard) {
+        if (mEtMessage == null) {
+            return;
+        }
+
         mEtMessage.setVisibility(View.VISIBLE);
         requestFocus(mEtMessage);
 

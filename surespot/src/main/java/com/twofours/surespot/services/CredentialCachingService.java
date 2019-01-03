@@ -76,9 +76,11 @@ public class CredentialCachingService {
 
                     saveSharedSecrets(key.getOurUsername());
                     return secret;
-                } catch (InvalidCacheLoadException e) {
+                }
+                catch (InvalidCacheLoadException e) {
                     SurespotLog.w(TAG, e, "secretCacheLoader");
-                } catch (ExecutionException e) {
+                }
+                catch (ExecutionException e) {
                     SurespotLog.w(TAG, e, "secretCacheLoader");
                 }
 
@@ -101,7 +103,6 @@ public class CredentialCachingService {
         mSharedSecrets = CacheBuilder.newBuilder().build(secretCacheLoader);
         mLatestVersions = CacheBuilder.newBuilder().build(versionCacheLoader);
         mIdentities = new HashMap<String, SurespotIdentity>(5);
-
 
 
     }
@@ -156,10 +157,13 @@ public class CredentialCachingService {
         if (sessionSet) {
 
             if (hasPassword) {
-                Map<SharedSecretKey, byte[]> secrets = SurespotApplication.getStateController().loadSharedSecrets(username, password);
-                if (secrets != null) {
-                    SurespotLog.d(TAG, "setSession loaded %d shared secrets for %s", secrets.size(), username);
-                    mSharedSecrets.putAll(secrets);
+                StateController sc = SurespotApplication.getStateController();
+                if (sc != null) {
+                    Map<SharedSecretKey, byte[]> secrets = sc.loadSharedSecrets(username, password);
+                    if (secrets != null) {
+                        SurespotLog.d(TAG, "setSession loaded %d shared secrets for %s", secrets.size(), username);
+                        mSharedSecrets.putAll(secrets);
+                    }
                 }
             }
         }
@@ -221,9 +225,11 @@ public class CredentialCachingService {
             // get the cache for this user
             try {
                 return mSharedSecrets.get(new SharedSecretKey(new VersionMap(ourUsername, ourVersion), new VersionMap(theirUsername, theirVersion), hashed));
-            } catch (InvalidCacheLoadException e) {
+            }
+            catch (InvalidCacheLoadException e) {
                 SurespotLog.w(TAG, e, "getSharedSecret");
-            } catch (ExecutionException e) {
+            }
+            catch (ExecutionException e) {
                 SurespotLog.w(TAG, e, "getSharedSecret");
             }
         }
@@ -312,9 +318,11 @@ public class CredentialCachingService {
                 SurespotLog.v(TAG, "getLatestVersion, username: %s, version: %s", theirUsername, version);
                 return version;
             }
-        } catch (InvalidCacheLoadException e) {
+        }
+        catch (InvalidCacheLoadException e) {
             SurespotLog.w(TAG, e, "getLatestVersion");
-        } catch (ExecutionException e) {
+        }
+        catch (ExecutionException e) {
             SurespotLog.w(TAG, e, "getLatestVersion");
         }
         return null;
@@ -371,14 +379,16 @@ public class CredentialCachingService {
                 if (other.mUsername != null) {
                     return false;
                 }
-            } else if (!mUsername.equals(other.mUsername)) {
+            }
+            else if (!mUsername.equals(other.mUsername)) {
                 return false;
             }
             if (mVersion == null) {
                 if (other.mVersion != null) {
                     return false;
                 }
-            } else if (!mVersion.equals(other.mVersion)) {
+            }
+            else if (!mVersion.equals(other.mVersion)) {
                 return false;
             }
             return true;
@@ -424,7 +434,8 @@ public class CredentialCachingService {
                 if (other.mVersionMap != null) {
                     return false;
                 }
-            } else if (!mVersionMap.equals(other.mVersionMap)) {
+            }
+            else if (!mVersionMap.equals(other.mVersionMap)) {
                 return false;
             }
             return true;
@@ -486,14 +497,16 @@ public class CredentialCachingService {
                 if (other.mOurVersionMap != null) {
                     return false;
                 }
-            } else if (!mOurVersionMap.equals(other.mOurVersionMap)) {
+            }
+            else if (!mOurVersionMap.equals(other.mOurVersionMap)) {
                 return false;
             }
             if (mTheirVersionMap == null) {
                 if (other.mTheirVersionMap != null) {
                     return false;
                 }
-            } else if (!mTheirVersionMap.equals(other.mTheirVersionMap)) {
+            }
+            else if (!mTheirVersionMap.equals(other.mTheirVersionMap)) {
                 return false;
             }
 
