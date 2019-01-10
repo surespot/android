@@ -841,7 +841,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 Configuration config = getResources().getConfiguration();
 
 
-                SurespotLog.d(TAG, "OnKeyboardShown: visible %b, height: %d", visible, mActivityLayout.getKeyboardHeight());
+                //SurespotLog.d(TAG, "OnKeyboardShown: visible %b, height: %d", visible, mActivityLayout.getKeyboardHeight());
                 //gif doesn't have a drawer so don't hide it
 //                if (!visible &&
 //                        mActivityLayout.getPaddingBottom() == 0 &&
@@ -2017,7 +2017,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
             mButtons.measure(widthSpec, LayoutParams.MATCH_PARENT);
             final int initialWidth = mButtons.getWidth();
             final int finalWidth = mButtons.getMeasuredWidth();
-            SurespotLog.d(TAG, "collapse, initialWidth: %d, desiredWidth: %d", initialWidth, finalWidth);
+            //SurespotLog.d(TAG, "collapse, initialWidth: %d, desiredWidth: %d", initialWidth, finalWidth);
 
             if (initialWidth < finalWidth) return;
 
@@ -2026,7 +2026,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 protected void applyTransformation(float interpolatedTime, Transformation t) {
 
                     int newWidth = initialWidth - (int) ((initialWidth - finalWidth) * interpolatedTime);
-                    SurespotLog.d(TAG, "collapse, newWidth: %d", newWidth);
+                    //SurespotLog.d(TAG, "collapse, newWidth: %d", newWidth);
                     mButtons.getLayoutParams().width = newWidth;
                     mButtons.requestLayout();
 
@@ -2906,11 +2906,11 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
     void requestFocus(View view) {
 
         if (!view.hasFocus()) {
-            SurespotLog.d(TAG, "requestFocus, view does not have focus, requesting focus");
+         //   SurespotLog.d(TAG, "requestFocus, view does not have focus, requesting focus");
             view.requestFocus();
         }
         else {
-            SurespotLog.d(TAG, "requestFocus, view has focus, not requesting focus");
+       //     SurespotLog.d(TAG, "requestFocus, view has focus, not requesting focus");
         }
     }
 

@@ -100,10 +100,10 @@ public class MessageImageDownloader {
         }
     }
 
-	/*
+    /*
      * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear. private void
-	 * forceDownload(String url, ImageView view) { forceDownload(url, view, null); }
-	 */
+     * forceDownload(String url, ImageView view) { forceDownload(url, view, null); }
+     */
 
     /**
      * Same as download but the image is always downloaded and the cache is not used. Kept private at the moment as its interest is not clear.
@@ -390,6 +390,21 @@ public class MessageImageDownloader {
                 mBitmapCache.remove(sourceKey);
                 mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
             }
+        }
+    }
+
+    public static void duplicateCacheEntry(String sourceKey, String destKey) {
+        if (sourceKey != null && destKey != null) {
+            Bitmap bitmap = mBitmapCache.getBitmapFromMemCache(sourceKey);
+            if (bitmap != null) {
+                mBitmapCache.addBitmapToMemoryCache(destKey, bitmap);
+            }
+        }
+    }
+
+    public static void removeCacheEntry(String key) {
+        if (key != null && key != null) {
+            mBitmapCache.remove(key);
         }
     }
 }
