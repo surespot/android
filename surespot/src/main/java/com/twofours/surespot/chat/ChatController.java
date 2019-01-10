@@ -459,10 +459,7 @@ public class ChatController {
 
     // add entry to http cache for image we sent so we don't download it again
     public void handleCachedFile(ChatAdapter chatAdapter, SurespotMessage message) {
-
-
         SurespotLog.d(TAG, "handleCachedFile");
-
         SurespotMessage localMessage = chatAdapter.getMessageByIv(message.getIv());
         if (localMessage != null && localMessage.getData() != null) {
             synchronized (localMessage) {
@@ -483,9 +480,9 @@ public class ChatController {
                         MessageImageDownloader.moveCacheEntry(localUri, remoteUri);
                     }
 
-                    // delete the file
+                    // delete the encrypted local file
                     try {
-                        SurespotLog.d(TAG, "handleCachedImage deleting local file: %s", localUri);
+                        SurespotLog.d(TAG, "handleCachedFile deleting encrypted local file: %s", localUri);
 
                         File file = new File(new URI(localUri));
                         file.delete();
@@ -496,7 +493,21 @@ public class ChatController {
 
                     // update message to point to real location
                     localMessage.setData(remoteUri);
+                }
 
+                //delete unencrypted local file
+                CharSequence plainData = localMessage.getPlainData();
+                if (plainData != null) {
+                    try {
+                        String path = plainData.toString();
+                        MessageImageDownloader.removeCacheEntry(path);
+                        boolean deleted = new File(Uri.parse(path).getPath()).delete();
+                        SurespotLog.d(TAG, "handleCachedFile: deleting local unencrypted file %s, iv: %s, success: %b", plainData, localMessage.getIv(), deleted);
+                        localMessage.setPlainData(null);
+                    }
+                    catch (Exception e) {
+                        SurespotLog.w(TAG, e, "error deleting local file");
+                    }
                 }
             }
         }
@@ -2626,9 +2637,9 @@ public class ChatController {
                             fileSaveStream.close();
                             encryptionInputStream.close();
 
-                            //move bitmap cache
+                            //set bitmap cache
                             if (message.getMimeType().equals(SurespotConstants.MimeTypes.IMAGE)) {
-                                MessageImageDownloader.moveCacheEntry(plainData, localImageUri);
+                                MessageImageDownloader.duplicateCacheEntry(plainData, localImageUri);
                             }
 
                             //add encrypted local file to file cache
@@ -2637,12 +2648,6 @@ public class ChatController {
                                 fcc.putEntry(localImageUri, new FileInputStream(localImageFile));
                             }
 
-
-                            boolean deleted = new File(Uri.parse(plainData).getPath()).delete();
-                            SurespotLog.d(TAG, "prepAndSendFileMessage: deleting unencrypted file %s, iv: %s, success: %b", plainData, iv, deleted);
-
-
-                            message.setPlainData(null);
                             message.setData(localImageUri);
                             message.setFromVersion(ourVersion);
                             message.setToVersion(theirVersion);
@@ -2654,7 +2659,6 @@ public class ChatController {
                             message.setErrorStatus(500);
                             return false;
                         }
-
                     }
                 }
 
@@ -2692,7 +2696,14 @@ public class ChatController {
                 try {
                     SurespotLog.d(TAG, "sendFileMessage in thread: %s", message);
                     uploadStream = new FileInputStream(URI.create(message.getData()).getPath());
+                }
+                catch (Exception e) {
+                    //try re-encrypting
+                    SurespotLog.w(TAG, e, "sendFileMessage");
+                    return new Tuple<>(409, null);
+                }
 
+                try {
                     return mNetworkController.postFileStreamSync(
                             message.getOurVersion(message.getFrom()),
                             message.getTo(),
@@ -2726,6 +2737,7 @@ public class ChatController {
                         case 200:
                             //update the message with returned data
                             SurespotLog.d(TAG, "sendFileMessage received 200, response: %s, updating UI", result.second);
+                            clearError();
                             JSONObject fileData = result.second;
 
                             //create a new message and set returned data so handle message works properly
@@ -2735,38 +2747,58 @@ public class ChatController {
                                 newMessage.setData(fileData.getString("url"));
                                 newMessage.setDataSize(fileData.getInt("size"));
                                 newMessage.setDateTime(new Date(fileData.getLong("time")));
+                                handleMessage(newMessage, new IAsyncCallback<Object>() {
+                                    @Override
+                                    public void handleResponse(Object result) {
+                                        saveIfMainActivityPaused(message.getTo());
+                                    }
+                                });
                             }
                             catch (JSONException e) {
                                 //json error
                                 SurespotLog.w(TAG, e, "sendFileMessage: json error parsing file http response.");
                             }
-                            //deliberate fall through to 409
-                        case 409:
-                            SurespotLog.d(TAG, "sendFileMessage received 409");
-                            //success
-                            clearError();
-
-                            //update ui
-                            if (newMessage != null) {
-                                newMessage.setErrorStatus(409);
-                                handleMessage(newMessage, new IAsyncCallback<Object>() {
-                                    @Override
-                                    public void handleResponse(Object result) {
-                                        saveIfMainActivityPaused(message.getTo());
-
-                                    }
-                                });
-                            }
-                            //need to remove the message from the queue before setting the current send iv to null
                             removeQueuedMessage(message);
                             break;
+                        case 409:
+                            SurespotLog.d(TAG, "sendFileMessage received 409");
+                            //retry with different iv
+                            clearError();
+                            //remove this iv from queue
+                            removeQueuedMessage(message);
+
+                            //update iv in chatadapter
+                            String newIv = EncryptionController.getStringIv();
+                            ChatAdapter ca = getChatAdapter(message.getTo());
+                            String iv = message.getIv();
+                            SurespotMessage caMessage = ca.getMessageByIv(iv);
+                            if (caMessage != null) {
+                                SurespotLog.d(TAG, "updating chat adapter unsent message iv from %s to %s", iv, newIv);
+                                caMessage.setIv(iv);
+                            }
+
+                            //set new iv
+                            message.setIv(newIv);
+
+                            //delete old encrypted upload file
+                            CharSequence data = message.getData();
+                            if (data != null) {
+                                boolean deleted = new File(Uri.parse(data.toString()).getPath()).delete();
+                                SurespotLog.d(TAG, "sendFileMessage: deleting encrypted temp upload file %s, iv: %s, success: %b", data, message.getIv(), deleted);
+                                message.setData(null);
+                                enqueueMessage(message);
+                            }
+                            else {
+                                //set errored
+                                message.setErrorStatus(500);
+                            }
+                            //fall through to retry
                         default:
                             //try and send next message again
                             if (!scheduleResendTimer()) {
                                 errorMessageQueue();
                             }
                             break;
-
                     }
                 }
             }
