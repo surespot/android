@@ -734,6 +734,7 @@ public class ChatUtils {
             case 429:
                 statusText = context.getString(R.string.error_message_throttled);
                 break;
+            case 409:
             case 500:
 
                 //if (message.getMimeType().equals(SurespotConstants.MimeTypes.TEXT)) {

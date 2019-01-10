@@ -2748,6 +2748,7 @@ public class ChatController {
 
                             //update ui
                             if (newMessage != null) {
+                                newMessage.setErrorStatus(409);
                                 handleMessage(newMessage, new IAsyncCallback<Object>() {
                                     @Override
                                     public void handleResponse(Object result) {
