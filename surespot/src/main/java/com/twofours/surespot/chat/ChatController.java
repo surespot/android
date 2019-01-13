@@ -746,10 +746,8 @@ public class ChatController {
                                 }
                             }
 
-                            if (friend != null) {
-                                mFriendAdapter.sort();
-                                mFriendAdapter.notifyDataSetChanged();
-                            }
+                            mFriendAdapter.sort();
+                            mFriendAdapter.notifyDataSetChanged();
 
                             handleAutoInvite();
                             processNextMessage();
@@ -1172,8 +1170,7 @@ public class ChatController {
     }
 
     private void handleDeleteUser(String deletedUser, String deleter, boolean notify) {
-        SurespotLog.d(TAG, "handleDeleteUser,  deletedUser: %s, deleter: %s", deletedUser, deleter);
-
+        SurespotLog.d(TAG, "handleDeleteUser,  deletedUser: %s, deleter: %s, notify: %b", deletedUser, deleter, notify);
         Friend friend = mFriendAdapter.getFriend(deletedUser);
 
         boolean iDidTheDeleting = deleter.equals(mUsername);
