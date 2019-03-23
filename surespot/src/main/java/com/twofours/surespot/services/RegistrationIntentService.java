@@ -20,10 +20,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.JobIntentService;
+import android.util.Log;
 
-import com.google.android.gms.gcm.GcmPubSub;
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConstants;
 import com.twofours.surespot.SurespotLog;
@@ -31,19 +33,15 @@ import com.twofours.surespot.identity.IdentityController;
 import com.twofours.surespot.network.NetworkManager;
 import com.twofours.surespot.utils.Utils;
 
-import java.io.IOException;
 import java.util.List;
 
 
 public class RegistrationIntentService extends JobIntentService {
 
     private static final String TAG = "RegIntentService";
-    public static final String SENDER_ID = "428168563991";
-    private static final String[] TOPICS = {"global"};
-    static final int SERVICE_JOB_ID = 1;
 
     public static void enqueueWork(Context context, Intent work) {
-        enqueueWork(context, RegistrationIntentService.class, SERVICE_JOB_ID, work);
+        enqueueWork(context, RegistrationIntentService.class, SurespotConstants.IntentRequestCodes.FCM_REGISTRATION, work);
     }
 
     @Override
@@ -52,42 +50,33 @@ public class RegistrationIntentService extends JobIntentService {
     }
 
     protected void onHandleIntent(Intent intent) {
-        //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         try {
-            // [START register_for_gcm]
-            // Initially this call goes out to the network to retrieve the token, subsequent calls
-            // are local.
-            // [START get_token]
-            InstanceID instanceID = InstanceID.getInstance(this);
-            String token = instanceID.getToken(SENDER_ID, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-            // [END get_token]
-            SurespotLog.i(TAG, "GCM Registration Token: " + token);
+            FirebaseInstanceId.getInstance().getInstanceId()
+                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                            if (!task.isSuccessful()) {
+                                Log.w(TAG, "getInstanceId failed", task.getException());
+                                return;
+                            }
 
-            SurespotLog.i(TAG, "Received gcm id, saving it in shared prefs.");
-            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.GCM_ID_RECEIVED, token);
-            Utils.putSharedPrefsString(this, SurespotConstants.PrefNames.APP_VERSION, SurespotApplication.getVersion());
+                            // Get new Instance ID token
+                            String token = task.getResult().getToken();
+                            // [END get_token]
+                            SurespotLog.i(TAG, "FCM Registration Token: " + token);
 
-            // TODO: Implement this method to send any registration to your app's servers.
-            sendRegistrationToServer(token);
+                            SurespotLog.i(TAG, "Received FCM token, saving it in shared prefs.");
+                            Utils.putSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.GCM_ID_RECEIVED, token);
+                            Utils.putSharedPrefsString(getApplicationContext(), SurespotConstants.PrefNames.APP_VERSION, SurespotApplication.getVersion());
 
-            // Subscribe to topic channels
-            subscribeTopics(token);
+                            sendRegistrationToServer(token);
+                        }
+                    });
 
-            // You should store a boolean that indicates whether the generated token has been
-            // sent to your server. If the boolean is false, send the token to your server,
-            // otherwise your server should have already received the token.
-//            sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, true).apply();
-            // [END register_for_gcm]
-        } catch (Exception e) {
-            SurespotLog.i(TAG, e, "Failed to complete token refresh");
-            // If an exception happens while fetching the new token or updating our registration data
-            // on a third-party server, this ensures that we'll attempt the update at a later time.
-            //  sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false).apply();
         }
-        // Notify UI that registration has completed, so the progress indicator can be hidden.
-        //Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
-        //LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+        catch (Exception e) {
+            SurespotLog.i(TAG, e, "Failed to complete token refresh");
+        }
     }
 
     /**
@@ -98,28 +87,19 @@ public class RegistrationIntentService extends JobIntentService {
      *
      * @param id The new token.
      */
-    private void sendRegistrationToServer(String id) {
+    private void sendRegistrationToServer(final String id) {
         //todo use ChatManager
-        List<String> usernames = IdentityController.getIdentityNames(this);
-        for (String username : usernames) {
-            NetworkManager.getNetworkController(this, username).registerGcmId(this, id);
-        }
 
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                List<String> usernames = IdentityController.getIdentityNames(RegistrationIntentService.this);
+                for (String username : usernames) {
+                    NetworkManager.getNetworkController(RegistrationIntentService.this, username).registerGcmId(RegistrationIntentService.this, id);
+                }
+            }
+        };
+
+        SurespotApplication.THREAD_POOL_EXECUTOR.execute(runnable);
     }
-
-    /**
-     * Subscribe to any GCM topics of interest, as defined by the TOPICS constant.
-     *
-     * @param token GCM token
-     * @throws IOException if unable to reach the GCM PubSub service
-     */
-    // [START subscribe_topics]
-    private void subscribeTopics(String token) throws IOException {
-        GcmPubSub pubSub = GcmPubSub.getInstance(this);
-        for (String topic : TOPICS) {
-            pubSub.subscribe(token, "/topics/" + topic, null);
-        }
-    }
-    // [END subscribe_topics]
-
 }

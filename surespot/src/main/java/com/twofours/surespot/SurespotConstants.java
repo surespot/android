@@ -13,7 +13,7 @@ public class SurespotConstants {
 	public final static boolean PRODUCTION = true;
 	public static final String SERVER_PUBLIC_KEY =  PRODUCTION ? SERVER_PUBLIC_KEY_PROD : SERVER_PUBLIC_KEY_LOCAL;
 
-	public final static boolean LOGGING = true;
+	public final static boolean LOGGING = false;
 	public final static int MAX_IDENTITIES = 3;
 
 	public final static boolean SSL_STRICT = true;
@@ -96,7 +96,7 @@ public class SurespotConstants {
 		public final static int REQUEST_SELECT_FILE = 21;
 		public final static int REQUEST_GET_ACCOUNTS = 22;
 		public final static int REQUEST_MICROPHONE = 23;
-
+		public static final int FCM_REGISTRATION = 24;
 	}
 	
 	

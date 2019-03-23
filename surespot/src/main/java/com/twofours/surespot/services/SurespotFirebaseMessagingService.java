@@ -24,14 +24,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.text.TextUtils;
 
-import com.google.android.gms.gcm.GcmListenerService;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
 import com.twofours.surespot.R;
 import com.twofours.surespot.StateController;
 import com.twofours.surespot.SurespotApplication;
@@ -50,9 +50,9 @@ import com.twofours.surespot.utils.Utils;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class SurespotGcmListenerService extends GcmListenerService {
+public class SurespotFirebaseMessagingService extends FirebaseMessagingService {
 
-    private static final String TAG = "SurespotGcmListenerService";
+    private static final String TAG = "SurespotFirebaseMessagingService";
 
     private PowerManager mPm;
     NotificationCompat.Builder mBuilder;
@@ -77,27 +77,25 @@ public class SurespotGcmListenerService extends GcmListenerService {
         }
     }
 
-
-    /**
-     * Called when message is received.
-     *
-     * @param senderId SenderID of the sender.
-     * @param bundle   Data bundle containing message data as key/value pairs.
-     *                 For Set of keys use data.keySet().
-     */
-    // [START receive_message]
     @Override
-    public void onMessageReceived(String senderId, Bundle bundle) {
-        SurespotLog.i(TAG, "received GCM message, bundle: " + bundle);
-        String to = bundle.getString("to");
+    public void onNewToken(String token) {
+        super.onNewToken(token);
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        RegistrationIntentService.enqueueWork(this, intent);
+    }
+
+    @Override
+    public void onMessageReceived(RemoteMessage remoteMessage) {
+        SurespotLog.d(TAG, "received Fcm message: %s", remoteMessage);
+        String to = remoteMessage.getData().get("to");
 
         // make sure to is someone on this phone
         if (!IdentityController.getIdentityNames(this).contains(to)) {
             return;
         }
 
-        String type = bundle.getString("type");
-        String from = bundle.getString("sentfrom");
+        String type = remoteMessage.getData().get("type");
+        String from = remoteMessage.getData().get("sentfrom");
 
         //show different notification on lollipop and above
         boolean is21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
@@ -176,7 +174,7 @@ public class SurespotGcmListenerService extends GcmListenerService {
             String spot = ChatUtils.getSpot(from, to);
 
             // add the message if it came in the GCM
-            String message = bundle.getString("message");
+            String message = remoteMessage.getData().get("message");
             if (message != null) {
                 SurespotMessage sm = SurespotMessage.toSurespotMessage(message);
                 if (sm != null) {
@@ -336,4 +334,6 @@ public class SurespotGcmListenerService extends GcmListenerService {
         mBuilder.setDefaults(defaults);
         mNotificationManager.notify(tag, id, mBuilder.build());
     }
+
+
 }

@@ -67,11 +67,12 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
     implementation 'com.jakewharton:disklrucache:2.0.2'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
-    implementation 'com.google.android.gms:play-services-auth:11.0.2'
-    implementation 'com.google.android.gms:play-services-gcm:11.0.2'
-    implementation 'com.google.android.gms:play-services-analytics:11.0.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+    implementation 'com.google.android.gms:play-services-auth:16.0.1'
+    implementation "com.google.firebase:firebase-messaging:17.5.0"
+    implementation 'com.google.android.gms:play-services-analytics:16.0.8'
+
     implementation 'com.android.support:multidex:1.0.3'
     implementation('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
