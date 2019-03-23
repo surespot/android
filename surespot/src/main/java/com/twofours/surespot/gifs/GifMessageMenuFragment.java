@@ -28,11 +28,7 @@ public class GifMessageMenuFragment extends DialogFragment {
 
         Bundle args = new Bundle();
         args.putString("message", message.toJSONObject(false).toString());
-
-        // plain text is not converted to json string so store it separately
-        if (message.getPlainData() != null) {
-            args.putString("username", username);
-        }
+        args.putString("username", username);
         f.setArguments(args);
 
         return f;

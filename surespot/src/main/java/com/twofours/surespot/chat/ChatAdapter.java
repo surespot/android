@@ -552,35 +552,24 @@ public class ChatAdapter extends BaseAdapter {
                 break;
             case SurespotConstants.MimeTypes.FILE:
 
-                chatMessageViewHolder.tvText.setVisibility(View.GONE);
+                chatMessageViewHolder.tvText.setVisibility(View.VISIBLE);
                 chatMessageViewHolder.imageView.setVisibility(View.GONE);
                 chatMessageViewHolder.voiceView.setVisibility(View.GONE);
                 chatMessageViewHolder.messageSize.setVisibility(View.GONE);
-                chatMessageViewHolder.mFileView.setVisibility(View.VISIBLE);
-
-                //chatMessageViewHolder.tvText.clearAnimation();
-
-                chatMessageViewHolder.tvText.setText("");
-
-                if (item.getFileMessageData() != null) {
-//                    if (item.getFileMessageData().getLocalUri() == null) {
-//                        chatMessageViewHolder.mFileDownloadButton.setEnabled(true);
-//                        chatMessageViewHolder.mFileOpenButton.setEnabled(false);
-//                    }
-
-
-                    chatMessageViewHolder.mFilename.clearAnimation();
-                    chatMessageViewHolder.mFilename.setText(item.getFileMessageData().getFilename());
+                chatMessageViewHolder.mFileView.setVisibility(View.GONE);
+                chatMessageViewHolder.imageView.clearAnimation();
+                chatMessageViewHolder.imageView.setImageBitmap(null);
+                chatMessageViewHolder.ivNotShareable.setVisibility(View.GONE);
+                chatMessageViewHolder.ivShareable.setVisibility(View.GONE);
+                chatMessageViewHolder.tvText.setText(mContext.getString(R.string.upgrade_for_files));
+                if (item.getDateTime() != null) {
+                    chatMessageViewHolder.tvTime.setText(DateFormat.getDateFormat(mContext).format(item.getDateTime()) + " "
+                            + DateFormat.getTimeFormat(mContext).format(item.getDateTime()));
                 }
                 else {
-                    chatMessageViewHolder.mFilename.setText("");
-                    mFileMessageDecryptor.decrypt(chatMessageViewHolder.mFileView, item);
+                    chatMessageViewHolder.tvTime.setText("");
+                    SurespotLog.v(TAG, "getView, item: %s", item);
                 }
-
-                //set the tag in the parent
-                chatMessageViewHolder.mFileView.setTag(item.getIv());
-
-
                 break;
 
         }

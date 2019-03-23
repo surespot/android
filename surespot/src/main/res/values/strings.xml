@@ -397,4 +397,5 @@
     <string name="notification_message_21">"New message from %s."</string>
     <string name="notification_invite_21">"Friend invite from %s."</string>
     <string name="notification_invite_accept_21">%s has accepted your friend invite.</string>
+    <string name="upgrade_for_files">Please upgrade surespot to view file messages.</string>
 </resources>
