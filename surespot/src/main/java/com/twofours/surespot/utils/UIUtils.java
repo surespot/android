@@ -58,6 +58,7 @@ import com.twofours.surespot.qr.WriterException;
 import com.twofours.surespot.ui.LetterOrDigitOrSpaceInputFilter;
 import com.twofours.surespot.ui.SingleProgressDialog;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.spongycastle.util.encoders.Hex;
 
@@ -255,12 +256,19 @@ public class UIUtils {
                         return;
                     }
 
-                    String sUrl = json.optString("id", null);
-                    if (!TextUtils.isEmpty(sUrl)) {
-                        launchInviteApp(context, progressDialog, sUrl);
-                    } else {
+                    try {
+                        JSONObject data = json.getJSONObject("data");
+                        String sUrl = data.optString("url", longUrl);
+                        if (!TextUtils.isEmpty(sUrl)) {
+                            launchInviteApp(context, progressDialog, sUrl);
+                        } else {
+                            launchInviteApp(context, progressDialog, longUrl);
+                        }
+                    }
+                    catch (JSONException e) {
                         launchInviteApp(context, progressDialog, longUrl);
                     }
+
                 } else {
                     launchInviteApp(context, progressDialog, longUrl);
                 }

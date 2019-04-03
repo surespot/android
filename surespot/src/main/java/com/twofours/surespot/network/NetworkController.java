@@ -420,25 +420,12 @@ public class NetworkController {
     }
 
     public void getShortUrl(String longUrl, Callback responseHandler) {
+        Request request = new Request.Builder()
+                .url(String.format("https://api-ssl.bitly.com/v3/shorten?access_token=%s&longUrl=%s", SurespotConfiguration.getBitlyToken(), longUrl))
+                .build();
 
-        try {
-            JSONObject params = new JSONObject();
-            params.put("longUrl", longUrl);
-
-            RequestBody body = RequestBody.create(JSON, params.toString());
-            Request request = new Request.Builder()
-                    .url("https://www.googleapis.com/urlshortener/v1/url?key=" + SurespotConfiguration.getGoogleApiKey())
-                    .post(body)
-                    .build();
-
-            Call call = mClient.newCall(request);
-            call.enqueue(responseHandler);
-        }
-        catch (JSONException e) {
-            SurespotLog.v(TAG, "getShortUrl", e);
-            responseHandler.onFailure(null, new IOException(e));
-        }
-
+        Call call = mClient.newCall(request);
+        call.enqueue(responseHandler);
     }
 
     public void updateKeys3(final String username, String password, String publicKeyDH, String publicKeyECDSA, String authSignature, String tokenSignature,
@@ -1132,7 +1119,7 @@ public class NetworkController {
                 .addPathSegment("v1")
                 .addPathSegment("gifs")
                 .addPathSegment("search")
-                .addQueryParameter("q",query)
+                .addQueryParameter("q", query)
                 .addQueryParameter("api_key", SurespotConfiguration.getGiphyApiKey())
                 .addQueryParameter("rating", "r")
                 .addQueryParameter("lang", language)
