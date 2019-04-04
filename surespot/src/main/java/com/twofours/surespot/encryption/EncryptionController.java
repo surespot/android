@@ -478,7 +478,7 @@ public class EncryptionController {
                     final IvParameterSpec ivParams = new IvParameterSpec(iv);
                     Cipher ccm = Cipher.getInstance("AES/GCM/NoPadding", "SC");
 
-                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService(context).getSharedSecret(ourUsername, ourVersion, theirUsername, theirVersion, true), 0,
+                    SecretKey key = new SecretKeySpec(SurespotApplication.getCachingService(context).getSharedSecret(ourUsername, ourVersion, theirUsername, theirVersion, hashed), 0,
                             AES_KEY_LENGTH, "AES");
                     ccm.init(Cipher.DECRYPT_MODE, key, ivParams);
 
@@ -546,7 +546,7 @@ public class EncryptionController {
 
             cipherBytes = ChatUtils.base64DecodeNowrap(cipherData);
             iv = ChatUtils.base64DecodeNowrap(ivs);
-            byte[] secret = SurespotApplication.getCachingService(context).getSharedSecret(ourUsername, ourVersion, theirUsername, theirVersion, true);
+            byte[] secret = SurespotApplication.getCachingService(context).getSharedSecret(ourUsername, ourVersion, theirUsername, theirVersion, hashed);
             if (secret == null) {
                 return null;
             }
