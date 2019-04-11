@@ -1,10 +1,16 @@
 package com.twofours.surespot.network;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.security.ProviderInstaller;
 import com.twofours.surespot.SurespotApplication;
 import com.twofours.surespot.SurespotConfiguration;
 import com.twofours.surespot.SurespotConstants;
@@ -21,8 +27,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,11 +40,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.ConnectionSpec;
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -44,6 +55,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.Route;
+import okhttp3.TlsVersion;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class NetworkController {
@@ -147,9 +159,9 @@ public class NetworkController {
 
 
         if (SurespotConfiguration.isSslCheckingStrict()) {
-            mClient = builder.build();
+            mClient = enableTls12OnPreLollipop(builder).build();
             builder.retryOnConnectionFailure(false);
-            mNonRetryingClient = builder.build();
+            mNonRetryingClient = enableTls12OnPreLollipop(builder).build();
         }
         else {
             try {
@@ -170,6 +182,8 @@ public class NetworkController {
                             }
                         }
                 };
+
+
 
                 // Install the all-trusting trust manager
                 mSSLContext = SSLContext.getInstance("SSL");
@@ -197,6 +211,60 @@ public class NetworkController {
         mClient.dispatcher().setMaxRequestsPerHost(16);
     }
 
+    //Enable TLS 1.2 on older devices
+    // https://github.com/square/okhttp/issues/2372
+    private OkHttpClient.Builder enableTls12OnPreLollipop(OkHttpClient.Builder client) {
+        if (Build.VERSION.SDK_INT >= 16 && Build.VERSION.SDK_INT < 22) {
+            try {
+                ProviderInstaller.installIfNeeded(mContext);
+            } catch (GooglePlayServicesRepairableException e) {
+
+                // Indicates that Google Play services is out of date, disabled, etc.
+
+                // Prompt the user to install/update/enable Google Play services.
+                GoogleApiAvailability.getInstance()
+                        .showErrorNotification(mContext, e.getConnectionStatusCode());
+
+                return client;
+
+            } catch (GooglePlayServicesNotAvailableException e) {
+                // Indicates a non-recoverable error; the ProviderInstaller is not able
+                // to install an up-to-date Provider.
+                SurespotLog.e(TAG, e, "Could not install providers");
+                return client;
+            }
+            try {
+                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                        TrustManagerFactory.getDefaultAlgorithm());
+                trustManagerFactory.init((KeyStore) null);
+                TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+                if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+                    throw new IllegalStateException("Unexpected default trust managers:"
+                            + Arrays.toString(trustManagers));
+                }
+                X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
+
+                SSLContext sc = SSLContext.getInstance("TLSv1.2");
+                sc.init(null, null, null);
+                client.sslSocketFactory(new Tls12SocketFactory(sc.getSocketFactory()), trustManager);
+
+                ConnectionSpec cs = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+                        .tlsVersions(TlsVersion.TLS_1_2)
+                        .build();
+
+                List<ConnectionSpec> specs = new ArrayList<>();
+                specs.add(cs);
+                specs.add(ConnectionSpec.COMPATIBLE_TLS);
+                specs.add(ConnectionSpec.CLEARTEXT);
+
+                client.connectionSpecs(specs);
+            } catch (Exception exc) {
+                Log.e("OkHttpTLSCompat", "Error while setting TLS 1.2", exc);
+            }
+        }
+
+        return client;
+    }
 
     public void set401Handler(IAsyncCallback<Object> the401Handler) {
         SurespotLog.d(TAG, "set401Handler, username: %s", mUsername);
