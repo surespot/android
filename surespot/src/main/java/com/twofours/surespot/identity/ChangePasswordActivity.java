@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.text.InputFilter;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -212,7 +213,7 @@ public class ChangePasswordActivity extends Activity {
                                                             newPassword, result.salt);
                                                     resetFields();
                                                     mMpd.decrProgress();
-                                                    Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed));
+                                                    Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed) + " - " + getString(R.string.password_changed_past_backups));
                                                     Intent intent = new Intent(ChangePasswordActivity.this, ExportIdentityActivity.class);
                                                     intent.putExtra("backupUsername", username);
                                                     ChangePasswordActivity.this.startActivity(intent);

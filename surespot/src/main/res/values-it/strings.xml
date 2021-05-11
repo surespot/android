@@ -186,6 +186,8 @@
   <string name="change_password_progress">Cambio password in corso</string>
   <string name="could_not_change_password">Cambio password non riuscito</string>
   <string name="password_changed">Password cambiata, esegui il backup dell\'identità</string>
+  <string name="share_location">Condividi posizione</string>
+  <string name="share_location_error">ERROR - Assicurarsi che il GPS sia acceso e hai dato il permesso nelle impostazioni</string>
   <string name="delete">Cancella</string>
   <string name="delete_identity_progress">Cancellazione identità</string>
   <string name="could_not_delete_identity">Cancellazione identità non riuscita</string>

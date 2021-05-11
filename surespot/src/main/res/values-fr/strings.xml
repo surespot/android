@@ -187,6 +187,8 @@
     <string name="change_password_progress">changement du mot de passe</string>
     <string name="could_not_change_password">impossible de changer le mot de passe</string>
     <string name="password_changed">mot de passe changé, veuillez sauvegarder l\'identité</string>
+    <string name="share_location">Emplacement partagé</string>
+    <string name="share_location_error">Erreur - Assurez-vous que GPS est activé et que vous avez donné la permission dans les paramètres</string>
     <string name="delete">supprimer</string>
     <string name="delete_identity_progress">supression de l\'identité</string>
     <string name="could_not_delete_identity">impossible de supprimer l\'identité</string>
