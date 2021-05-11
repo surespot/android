@@ -209,7 +209,10 @@ public class ChatFragment extends Fragment {
         }
         LocationManager locationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        if (!isGPSEnabled) return;
+        if (!isGPSEnabled) {
+            Utils.makeLongToast(getContext(), getString(R.string.share_location_error));
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
