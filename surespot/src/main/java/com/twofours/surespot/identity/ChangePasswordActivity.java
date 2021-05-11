@@ -213,7 +213,7 @@ public class ChangePasswordActivity extends Activity {
                                                             newPassword, result.salt);
                                                     resetFields();
                                                     mMpd.decrProgress();
-                                                    Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed) + " - " + getString(R.string.password_changed_past_backups));
+                                                    Utils.makeLongToast(ChangePasswordActivity.this, getString(R.string.password_changed));
                                                     Intent intent = new Intent(ChangePasswordActivity.this, ExportIdentityActivity.class);
                                                     intent.putExtra("backupUsername", username);
                                                     ChangePasswordActivity.this.startActivity(intent);
