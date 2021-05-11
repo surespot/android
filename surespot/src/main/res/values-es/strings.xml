@@ -190,7 +190,8 @@
   <string name="change_password_progress">Cambiando contraseña</string>
   <string name="could_not_change_password">No se ha podido cambiar la contraseña</string>
   <string name="password_changed">Contraseña cambiada, por favor haz una copia de seguridad del perfíl</string>
-  <string name="password_changed_past_backups">Las copias de seguridad anteriores seguirán funcionando con la contraseña anterior.</string>
+  <string name="share_location">Comparte ubicacion</string>
+  <string name="share_location_error">Error: asegúrese de que el GPS esté encendido y le haya dado permiso en la configuración</string>
   <string name="delete">borrar</string>
   <string name="delete_identity_progress">Borrando perfil</string>
   <string name="could_not_delete_identity">No se ha podido borrar el perfil</string>
