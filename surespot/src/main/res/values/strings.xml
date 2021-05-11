@@ -199,6 +199,7 @@
     <string name="change_password_progress">Changing password</string>
     <string name="could_not_change_password">Could not change password</string>
     <string name="password_changed">Password changed, please backup the identity</string>
+    <string name="password_changed_past_backups">Past backups still work with the old password</string>
     <string name="delete">Delete</string>
     <string name="delete_identity_progress">Deleting identity</string>
     <string name="could_not_delete_identity">Could not delete identity</string>
