@@ -186,7 +186,9 @@
   <string name="change_password_progress">Cambio password in corso</string>
   <string name="could_not_change_password">Cambio password non riuscito</string>
   <string name="password_changed">Password cambiata, esegui il backup dell\'identità</string>
-  <string name="password_changed_past_backups">I backup precedenti continueranno a funzionare con la vecchia password.</string>
+  <string name="export_chats">Esporta chat</string>
+  <string name="cannot_export_chats">Attendi che le chat vengano caricate completamente e poi riprova</string>
+  <string name="chats_exported">Un\'esportazione JSON di chat viene copiata negli appunti</string>
   <string name="delete">Cancella</string>
   <string name="delete_identity_progress">Cancellazione identità</string>
   <string name="could_not_delete_identity">Cancellazione identità non riuscita</string>
