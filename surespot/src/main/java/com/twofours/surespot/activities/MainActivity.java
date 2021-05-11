@@ -374,34 +374,27 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
     }
 
     private void setupChatControls(View mainView) {
-        mIvInvite = (ImageView) mainView.findViewById(R.id.ivInvite);
-        mIvVoice = (ImageView) mainView.findViewById(R.id.ivVoice);
-        mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
-        mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
-        mSendButton = (View) mainView.findViewById(R.id.bSend);
+        mIvInvite = mainView.findViewById(R.id.ivInvite);
+        mIvVoice = mainView.findViewById(R.id.ivVoice);
+        mIvSend = mainView.findViewById(R.id.ivSend);
+        mIvHome = mainView.findViewById(R.id.ivHome);
+        mSendButton = mainView.findViewById(R.id.bSend);
         mButtons = mainView.findViewById(R.id.fButtons);
+
+         mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
+             @Override
+             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                 if (i == EditorInfo.IME_NULL && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+                     sendTapped();
+                 }
+                 return true;
+             }
+         });
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChatController cc = ChatManager.getChatController(mUser);
-                if (cc != null) {
-
-                    Friend friend = mCurrentFriend;
-                    if (friend != null) {
-                        String message = mEtMessage.getText().toString();
-                        if (message.length() > 0 && !cc.isFriendDeleted(friend.getName())) {
-                            sendMessage(friend.getName(), message);
-                        }
-                        else {
-                            // go to home
-                            cc.setCurrentChat(null);
-                        }
-                    }
-                    else {
-                        inviteFriend();
-                    }
-                }
+                sendTapped();
             }
         });
 
@@ -669,6 +662,27 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 mHandler.post(runnable);
             }
         });
+    }
+
+    private void sendTapped() {
+        ChatController cc = ChatManager.getChatController(mUser);
+        if (cc != null) {
+
+            Friend friend = mCurrentFriend;
+            if (friend != null) {
+                String message = mEtMessage.getText().toString();
+                if (message.length() > 0 && !cc.isFriendDeleted(friend.getName())) {
+                    sendMessage(friend.getName(), message);
+                }
+                else {
+                    // go to home
+                    cc.setCurrentChat(null);
+                }
+            }
+            else {
+                inviteFriend();
+            }
+        }
     }
 
     private void switchUser(String identityName) {
