@@ -190,6 +190,9 @@
   <string name="change_password_progress">Cambiando contraseña</string>
   <string name="could_not_change_password">No se ha podido cambiar la contraseña</string>
   <string name="password_changed">Contraseña cambiada, por favor haz una copia de seguridad del perfíl</string>
+  <string name="export_chats">Exportar chats</string>
+  <string name="cannot_export_chats">Espere a que los chats se carguen por completo y vuelva a intentarlo.</string>
+  <string name="chats_exported">Una exportación JSON de chats se copia en el portapapeles.</string>
   <string name="delete">borrar</string>
   <string name="delete_identity_progress">Borrando perfil</string>
   <string name="could_not_delete_identity">No se ha podido borrar el perfil</string>

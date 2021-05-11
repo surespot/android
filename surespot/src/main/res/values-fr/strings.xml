@@ -187,6 +187,9 @@
     <string name="change_password_progress">changement du mot de passe</string>
     <string name="could_not_change_password">impossible de changer le mot de passe</string>
     <string name="password_changed">mot de passe changé, veuillez sauvegarder l\'identité</string>
+    <string name="export_chats">Exporter des discussions</string>
+    <string name="cannot_export_chats">Veuillez attendre que les discussions soient complètement chargées, puis réessayer</string>
+    <string name="chats_exported">Une exportation JSON de chats est copiée dans le presse-papiers</string>
     <string name="delete">supprimer</string>
     <string name="delete_identity_progress">supression de l\'identité</string>
     <string name="could_not_delete_identity">impossible de supprimer l\'identité</string>

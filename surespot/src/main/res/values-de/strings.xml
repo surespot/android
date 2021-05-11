@@ -196,6 +196,9 @@
   <string name="change_password_progress">Passwort wird geändert</string>
   <string name="could_not_change_password">Passwort konnte nicht geändert werden</string>
   <string name="password_changed">Passwort wurde geändert, bitte erneut Backup erstellen</string>
+  <string name="export_chats">Chats exportieren</string>
+  <string name="cannot_export_chats">Bitte warten Sie, bis die Chats vollständig geladen sind, und versuchen Sie es dann erneut</string>
+  <string name="chats_exported">Ein JSON-Export von Chats wird in die Zwischenablage kopiert</string>
   <string name="delete">löschen</string>
   <string name="delete_identity_progress">Profil löschen</string>
   <string name="could_not_delete_identity">Profil konnte nicht gelöscht werden</string>

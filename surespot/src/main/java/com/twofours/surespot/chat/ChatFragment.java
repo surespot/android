@@ -1,6 +1,9 @@
 package com.twofours.surespot.chat;
 
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -13,6 +16,7 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
@@ -23,10 +27,12 @@ import com.twofours.surespot.SurespotLog;
 import com.twofours.surespot.activities.MainActivity;
 import com.twofours.surespot.friends.Friend;
 import com.twofours.surespot.gifs.GifMessageMenuFragment;
+import com.twofours.surespot.identity.ChangePasswordActivity;
 import com.twofours.surespot.images.ImageMessageMenuFragment;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageMenuFragment;
 
@@ -35,6 +41,9 @@ public class ChatFragment extends Fragment {
     private String mTheirUsername;
     private String mOurUsername;
     private ListView mListView;
+    private Button mExportChatsButton;
+
+    private ChatController chatController;
 
     private boolean mLoading;
     private int mPreviousTotal;
@@ -96,8 +105,24 @@ public class ChatFragment extends Fragment {
         SurespotLog.v(TAG, "onCreateView, username: %s", mTheirUsername);
 
         final View view = inflater.inflate(R.layout.chat_fragment, container, false);
-        mListView = (ListView) view.findViewById(R.id.message_list);
+        mExportChatsButton = view.findViewById(R.id.export_chats);
+        mListView = view.findViewById(R.id.message_list);
         mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+
+        mExportChatsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String chatsJSON = chatController.getMessagesJSONString();
+                if (chatsJSON == null || chatsJSON.equals("")) {
+                    Utils.makeLongToast(getActivity(), getString(R.string.cannot_export_chats));
+                } else {
+                    ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Exported chats in JSON", chatsJSON);
+                    clipboardManager.setPrimaryClip(clip);
+                    Utils.makeLongToast(getActivity(), getString(R.string.chats_exported));
+                }
+            }
+        });
 
         mListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -181,7 +206,7 @@ public class ChatFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ChatController chatController = ChatManager.getChatController(getOurUsername());
+        chatController = ChatManager.getChatController(getOurUsername());
         if (chatController != null) {
             mChatAdapter = chatController.getChatAdapter(mTheirUsername);
             mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {

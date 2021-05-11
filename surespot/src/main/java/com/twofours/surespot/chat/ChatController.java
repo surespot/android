@@ -101,6 +101,8 @@ public class ChatController {
     private HashMap<String, ChatAdapter> mChatAdapters;
     private HashMap<String, Integer> mEarliestMessage;
 
+    private String messagesJSONString = "";
+
     private FriendAdapter mFriendAdapter;
     private ChatPagerAdapter mChatPagerAdapter;
     private ViewPager mViewPager;
@@ -171,6 +173,10 @@ public class ChatController {
         mPreConnectIds = new HashMap<String, ChatController.LatestIdPair>();
 
         // mViewPager.setOffscreenPageLimit(2);
+    }
+
+    public String getMessagesJSONString() {
+        return messagesJSONString;
     }
 
     // this has to be done outside of the contructor as it creates fragments, which need chat controller instance
@@ -710,6 +716,7 @@ public class ChatController {
 
                             JSONArray messageDatas = jsonResponse.optJSONArray("messageData");
                             if (messageDatas != null) {
+                                messagesJSONString = messageDatas.toString();
                                 for (int i = 0; i < messageDatas.length(); i++) {
                                     try {
                                         JSONObject messageData = messageDatas.getJSONObject(i);
