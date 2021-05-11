@@ -1,10 +1,19 @@
 package com.twofours.surespot.chat;
 
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +22,7 @@ import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
@@ -27,14 +37,20 @@ import com.twofours.surespot.images.ImageMessageMenuFragment;
 import com.twofours.surespot.images.ImageViewActivity;
 import com.twofours.surespot.images.MessageImageDownloader;
 import com.twofours.surespot.network.IAsyncCallback;
+import com.twofours.surespot.utils.Utils;
 import com.twofours.surespot.voice.VoiceController;
 import com.twofours.surespot.voice.VoiceMessageMenuFragment;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 public class ChatFragment extends Fragment {
     private String TAG = "ChatFragment";
     private String mTheirUsername;
     private String mOurUsername;
     private ListView mListView;
+    private Button mShareLocationButton;
+
+    private ChatController chatController;
 
     private boolean mLoading;
     private int mPreviousTotal;
@@ -96,8 +112,16 @@ public class ChatFragment extends Fragment {
         SurespotLog.v(TAG, "onCreateView, username: %s", mTheirUsername);
 
         final View view = inflater.inflate(R.layout.chat_fragment, container, false);
-        mListView = (ListView) view.findViewById(R.id.message_list);
+        mShareLocationButton = view.findViewById(R.id.share_location);
+        mListView = view.findViewById(R.id.message_list);
         mListView.setEmptyView(view.findViewById(R.id.message_list_empty));
+
+        mShareLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareLocation();
+            }
+        });
 
         mListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -178,10 +202,46 @@ public class ChatFragment extends Fragment {
         return view;
     }
 
+    private void shareLocation() {
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+            return;
+        }
+        LocationManager locationManager = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!isGPSEnabled) return;
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                if (location == null) return;
+                String locationString = "Latitude: " + location.getLatitude() + " - Longitude: " + location.getLongitude();
+                ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Location", locationString);
+                clipboard.setPrimaryClip(clip);
+                Utils.makeLongToast(getContext(), "Your location data (lat and lon) is copied to clipboard");
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
+            }
+        });
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ChatController chatController = ChatManager.getChatController(getOurUsername());
+        chatController = ChatManager.getChatController(getOurUsername());
         if (chatController != null) {
             mChatAdapter = chatController.getChatAdapter(mTheirUsername);
             mChatAdapter.setAllLoadedCallback(new IAsyncCallback<Boolean>() {
