@@ -112,6 +112,18 @@
             android:visibility="visible"
             />
 
+        <ImageView
+            android:id="@+id/bAddToContacts"
+            android:layout_width="40dp"
+            android:layout_height="35dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="5dp"
+            android:src="@drawable/add_friend"
+            android:visibility="visible"
+            />
+
 
         <ImageView
             android:id="@+id/bPlus"
