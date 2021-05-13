@@ -545,6 +545,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
         });
 
         mEtMessage = mainView.findViewById(R.id.etMessage);
+        mEtMessage.setText("");
         mEtMessage.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
