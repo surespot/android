@@ -25,6 +25,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -127,6 +128,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
     private static final String MESSAGE_MODE_CAMERA = "camera";
     private static final String MESSAGE_MODE_GALLERY = "gallery";
     private static final String MESSAGE_MODE_MORE = "more";
+    private static final String MESSAGE_MODE_ADD_CONTACTS = "contact";
 
     private ArrayList<MenuItem> mMenuItems = new ArrayList<MenuItem>();
     private IAsyncCallback<Object> m401Handler;
@@ -149,6 +151,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
     private ImageView mCameraButton;
     private ImageView mGalleryButton;
     private ImageView mMoreButton;
+    private ImageView mAddToContacts;
 
 
     private Friend mCurrentFriend;
@@ -374,34 +377,17 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
     }
 
     private void setupChatControls(View mainView) {
-        mIvInvite = (ImageView) mainView.findViewById(R.id.ivInvite);
-        mIvVoice = (ImageView) mainView.findViewById(R.id.ivVoice);
-        mIvSend = (ImageView) mainView.findViewById(R.id.ivSend);
-        mIvHome = (ImageView) mainView.findViewById(R.id.ivHome);
-        mSendButton = (View) mainView.findViewById(R.id.bSend);
+        mIvInvite = mainView.findViewById(R.id.ivInvite);
+        mIvVoice = mainView.findViewById(R.id.ivVoice);
+        mIvSend = mainView.findViewById(R.id.ivSend);
+        mIvHome = mainView.findViewById(R.id.ivHome);
+        mSendButton = mainView.findViewById(R.id.bSend);
         mButtons = mainView.findViewById(R.id.fButtons);
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ChatController cc = ChatManager.getChatController(mUser);
-                if (cc != null) {
-
-                    Friend friend = mCurrentFriend;
-                    if (friend != null) {
-                        String message = mEtMessage.getText().toString();
-                        if (message.length() > 0 && !cc.isFriendDeleted(friend.getName())) {
-                            sendMessage(friend.getName(), message);
-                        }
-                        else {
-                            // go to home
-                            cc.setCurrentChat(null);
-                        }
-                    }
-                    else {
-                        inviteFriend();
-                    }
-                }
+                sendTapped();
             }
         });
 
@@ -530,6 +516,15 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
         mGalleryButton = (ImageView) mainView.findViewById(R.id.bGallery);
         mGalleryButton.setOnClickListener(messageModeClickListener);
         mGalleryButton.setTag("gallery");
+
+        mAddToContacts = (ImageView) mainView.findViewById(R.id.bAddToContacts);
+        mAddToContacts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addToContactsTapped();
+            }
+        });
+        mAddToContacts.setTag("contacts");
 
         mMoreButton = (ImageView) mainView.findViewById(R.id.bPlus);
         mMoreButton.setOnClickListener(messageModeClickListener);
@@ -669,6 +664,34 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 mHandler.post(runnable);
             }
         });
+    }
+
+    private void addToContactsTapped() {
+        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+        intent.putExtra(ContactsContract.Intents.Insert.NAME, mCurrentFriend.getNameOrAlias());
+        startActivity(intent);
+    }
+
+    private void sendTapped() {
+        ChatController cc = ChatManager.getChatController(mUser);
+        if (cc != null) {
+
+            Friend friend = mCurrentFriend;
+            if (friend != null) {
+                String message = mEtMessage.getText().toString();
+                if (message.length() > 0 && !cc.isFriendDeleted(friend.getName())) {
+                    sendMessage(friend.getName(), message);
+                }
+                else {
+                    // go to home
+                    cc.setCurrentChat(null);
+                }
+            }
+            else {
+                inviteFriend();
+            }
+        }
     }
 
     private void switchUser(String identityName) {
@@ -1882,6 +1905,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 mCameraButton.setVisibility(View.GONE);
                 mGalleryButton.setVisibility(View.GONE);
                 mMoreButton.setVisibility(View.GONE);
+                mAddToContacts.setVisibility(View.GONE);
             }
             else {
                 mQRButton.setVisibility(View.GONE);
@@ -1890,6 +1914,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 mGifButton.setVisibility(View.VISIBLE);
                 mCameraButton.setVisibility(View.VISIBLE);
                 mGalleryButton.setVisibility(View.VISIBLE);
+                mAddToContacts.setVisibility(View.VISIBLE);
                 mMoreButton.setVisibility(View.GONE);
                 expand = true;
             }
@@ -1927,6 +1952,11 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                     bHighlight = mMoreButton;
                     expand = true;
                     break;
+                case MESSAGE_MODE_ADD_CONTACTS:
+                    bShow = mAddToContacts;
+                    bHighlight = mAddToContacts;
+                    expand = true;
+                    break;
                 default:
                     bShow = mEmojiButton;
                     break;
@@ -1940,6 +1970,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 mGalleryButton.setVisibility(bShow == mGalleryButton ? View.VISIBLE : View.GONE);
                 mCameraButton.setVisibility(bShow == mCameraButton ? View.VISIBLE : View.GONE);
                 mMoreButton.setVisibility(bShow == mMoreButton ? View.GONE : View.GONE);
+                mAddToContacts.setVisibility(bShow == mAddToContacts ? View.GONE : View.GONE);
             }
             else {
                 mQRButton.setVisibility(View.GONE);
@@ -1948,6 +1979,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
                 mGifButton.setVisibility(View.VISIBLE);
                 mCameraButton.setVisibility(View.VISIBLE);
                 mGalleryButton.setVisibility(View.VISIBLE);
+                mAddToContacts.setVisibility(View.VISIBLE);
                 mMoreButton.setVisibility(View.GONE);
             }
         }
@@ -1958,6 +1990,7 @@ public class MainActivity extends FragmentActivity implements EmojiconsView.OnEm
         mCameraButton.setColorFilter(bHighlight == mCameraButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mGalleryButton.setColorFilter(bHighlight == mGalleryButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
         mMoreButton.setColorFilter(bHighlight == mMoreButton ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
+        mAddToContacts.setColorFilter(bHighlight == mAddToContacts ? selectedMask : unselectedMask, PorterDuff.Mode.SRC_IN);
 
         if (expand) {
             expand();
